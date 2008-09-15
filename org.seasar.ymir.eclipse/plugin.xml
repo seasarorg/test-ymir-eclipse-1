@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            category="org.eclipse.jdt.ui.java"
+            class="org.seasar.ymir.eclipse.wizards.NewProjectWizard"
+            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            icon="icons/newYmirProject.gif"
+            id="org.seasar.ymir.eclipse.wizards.NewProjectWizard"
+            name="%newWizard.name"
+            project="true">
+         <description>
+            %newWizard.description
+         </description>
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            objectClass="org.eclipse.core.resources.IFile"
+            id="org.seasar.ymir.eclipse.contribution1">
+         <menu
+               label="New Submenu"
+               path="additions"
+               id="org.seasar.ymir.eclipse.menu1">
+            <separator
+                  name="group1">
+            </separator>
+         </menu>
+         <action
+               label="New Action"
+               class="org.seasar.ymir.eclipse.popup.actions.NewAction"
+               menubarPath="org.seasar.ymir.eclipse.menu1/group1"
+               enablesFor="1"
+               id="org.seasar.ymir.eclipse.newAction">
+         </action>
+      </objectContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            name="Sample Preferences"
+            class="org.seasar.ymir.eclipse.preferences.SamplePreferencePage"
+            id="org.seasar.ymir.eclipse.preferences.SamplePreferencePage">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.seasar.ymir.eclipse.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            name="Sample Page"
+            nameFilter="*.*"
+            class="org.seasar.ymir.eclipse.properties.SamplePropertyPage"
+            id="org.seasar.ymir.eclipse.properties.samplePropertyPage">
+        <enabledWhen>
+          <instanceof value="org.eclipse.core.resources.IProject" />
+        </enabledWhen>
+      </page>
+   </extension>
+
+</plugin>
