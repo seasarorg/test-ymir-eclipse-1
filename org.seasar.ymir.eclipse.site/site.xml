@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.seasar.ymir.eclipse.feature_0.0.1.SNAPSHOT.jar" id="org.seasar.ymir.eclipse.feature" version="0.0.1.SNAPSHOT">
+      <category name="ymir"/>
+   </feature>
+   <category-def name="ymir" label="Ymir"/>
+</site>
