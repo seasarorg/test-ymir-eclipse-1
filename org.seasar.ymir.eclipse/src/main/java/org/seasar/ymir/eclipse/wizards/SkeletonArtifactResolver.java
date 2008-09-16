@@ -38,11 +38,6 @@ public class SkeletonArtifactResolver implements Runnable {
     public void run() {
         page.getShell().getDisplay().asyncExec(new Runnable() {
             public void run() {
-                if (page.isVisible()) {
-                    page.setMessage("スケルトンアーカイブをレポジトリから取得しています。（この処理は時間がかかることがあります）");
-                    page.setErrorMessage(null);
-                }
-
                 Artifact artifact = resolveSkeletonArtifact();
                 if (cancelled) {
                     return;

@@ -1,6 +1,7 @@
 package org.seasar.ymir.eclipse.wizards;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -58,8 +59,6 @@ public class NewProjectWizardSecondPage extends WizardPage {
     private Button useLatestVersionField;
 
     private volatile Artifact skeletonArtifact;
-
-    private Button resolveSkeletonArtifactButton;
 
     private SkeletonArtifactResolver skeletonArtifactResolver;
 
@@ -271,6 +270,11 @@ public class NewProjectWizardSecondPage extends WizardPage {
     private void resolveSkeletonArtifact() {
         skeletonArtifact = null;
         setPageComplete(false);
+
+        if (isVisible()) {
+            setMessage(Messages.getString("NewProjectWizardSecondPage.0"), IMessageProvider.INFORMATION); //$NON-NLS-1$
+            setErrorMessage(null);
+        }
 
         if (!validateToResolveSkeletonArtifact()) {
             return;
