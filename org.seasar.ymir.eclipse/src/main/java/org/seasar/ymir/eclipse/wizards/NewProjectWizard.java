@@ -33,6 +33,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -44,6 +45,7 @@ import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
+import org.seasar.ymir.eclipse.wizards.jre.JREUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
@@ -87,6 +89,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     public NewProjectWizard() {
         super();
         setNeedsProgressMonitor(true);
+        setWindowTitle(Messages.getString("NewProjectWizard.11")); //$NON-NLS-1$
     }
 
     /**
@@ -112,6 +115,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     public boolean performFinish() {
         final IProject project = firstPage.getProjectHandle();
         final IPath locationPath = firstPage.getLocationPath();
+        final IVMInstall jre = firstPage.getJRE();
         final String projectGroupId = firstPage.getProjectGroupId();
         final String projectArtifactId = firstPage.getProjectArtifactId();
         final String projectVersion = firstPage.getProjectVersion();
@@ -121,7 +125,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         IRunnableWithProgress op = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException {
                 try {
-                    createProject(project, locationPath, projectGroupId, projectArtifactId, projectVersion,
+                    createProject(project, locationPath, jre, projectGroupId, projectArtifactId, projectVersion,
                             skeletonArtifact, parameterMap, applicationProperties, monitor);
                 } catch (CoreException e) {
                     throw new InvocationTargetException(e);
@@ -172,7 +176,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             return "\"" + databaseURL + "\""; //$NON-NLS-1$ //$NON-NLS-2$
         } else {
             return "\"" + databaseURL.substring(0, placeHolder) + "\" + application.getRealPath(\"\") + \"" //$NON-NLS-1$ //$NON-NLS-2$
-                    + databaseURL.substring(placeHolder + PLACEHOLDER_WEBAPP.length()) + "\"";
+                    + databaseURL.substring(placeHolder + PLACEHOLDER_WEBAPP.length()) + "\""; //$NON-NLS-1$
         }
     }
 
@@ -206,18 +210,19 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         return prop;
     }
 
-    private void createProject(IProject project, IPath locationPath, String projectGroupId, String projectArtifactId,
-            String projectVersion, Artifact skeletonArtifact, Map<String, Object> parameterMap,
-            Properties applicationProperties, IProgressMonitor monitor) throws CoreException {
+    private void createProject(IProject project, IPath locationPath, IVMInstall jre, String projectGroupId,
+            String projectArtifactId, String projectVersion, Artifact skeletonArtifact,
+            Map<String, Object> parameterMap, Properties applicationProperties, IProgressMonitor monitor)
+            throws CoreException {
         monitor.beginTask(Messages.getString("NewProjectWizard.12"), 5); //$NON-NLS-1$
         try {
             if (!project.exists()) {
-                IProjectDescription desc = project.getWorkspace().newProjectDescription(project.getName());
+                IProjectDescription description = project.getWorkspace().newProjectDescription(project.getName());
                 if (Platform.getLocation().equals(locationPath)) {
                     locationPath = null;
                 }
-                desc.setLocation(locationPath);
-                project.create(desc, new SubProgressMonitor(monitor, 1));
+                description.setLocation(locationPath);
+                project.create(description, new SubProgressMonitor(monitor, 1));
             } else {
                 monitor.worked(1);
             }
@@ -229,6 +234,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
+
+            parameterMap.put(ParameterKeys.JRE_VERSION, getJREVersion(jre));
 
             try {
                 Activator.getDefault().expandSkeleton(project, skeletonArtifact, parameterMap,
@@ -247,10 +254,14 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 throw new OperationCanceledException();
             }
 
-            setUpProject(project, applicationProperties, new SubProgressMonitor(monitor, 1));
+            setUpProject(project, jre, applicationProperties, new SubProgressMonitor(monitor, 1));
         } finally {
             monitor.done();
         }
+    }
+
+    private String getJREVersion(IVMInstall jre) {
+        return JREUtils.getJREVersion(jre.getInstallLocation().getName());
     }
 
     private void createSuperclass(IProject project, String superclass, IProgressMonitor monitor) throws CoreException {
@@ -296,15 +307,16 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
     }
 
-    private void setUpProject(IProject project, Properties applicationProperties, IProgressMonitor monitor)
-            throws CoreException {
+    private void setUpProject(IProject project, IVMInstall jre, Properties applicationProperties,
+            IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("NewProjectWizard.19"), 3); //$NON-NLS-1$
 
+        IJavaProject javaProject = JavaCore.create(project);
         boolean m2eclipseBundled = (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null);
         if (m2eclipseBundled) {
-            setUpClasspathForM2Eclipse(JavaCore.create(project), new SubProgressMonitor(monitor, 1));
+            setUpClasspathForM2Eclipse(javaProject, jre, new SubProgressMonitor(monitor, 1));
         } else {
-            setUpClasspath(JavaCore.create(project), new SubProgressMonitor(monitor, 1));
+            setUpClasspath(javaProject, jre, new SubProgressMonitor(monitor, 1));
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
@@ -391,7 +403,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         file.setContents(bais, false, false, new SubProgressMonitor(monitor, 1));
     }
 
-    private void setUpClasspathForM2Eclipse(IJavaProject javaProject, IProgressMonitor monitor)
+    private void setUpClasspathForM2Eclipse(IJavaProject javaProject, IVMInstall jre, IProgressMonitor monitor)
             throws JavaModelException {
         monitor.beginTask(Messages.getString("NewProjectWizard.23"), 1); //$NON-NLS-1$
 
@@ -420,7 +432,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]), new SubProgressMonitor(monitor, 1));
     }
 
-    private void setUpClasspath(IJavaProject javaProject, IProgressMonitor monitor) throws JavaModelException {
+    private void setUpClasspath(IJavaProject javaProject, IVMInstall jre, IProgressMonitor monitor)
+            throws JavaModelException {
         monitor.beginTask(Messages.getString("NewProjectWizard.23"), 1); //$NON-NLS-1$
 
         List<IClasspathEntry> newEntryList = new ArrayList<IClasspathEntry>();

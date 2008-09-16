@@ -28,4 +28,6 @@ public interface ParameterKeys {
     String DATABASE_USER = "databaseUser";
 
     String DATABASE_PASSWORD = "databasePassword";
+
+    String JRE_VERSION = "JREVersion";
 }

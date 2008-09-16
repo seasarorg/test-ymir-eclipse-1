@@ -2,7 +2,12 @@ package org.seasar.ymir.eclipse.wizards;
 
 import java.io.File;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jdt.launching.IVMInstall;
+import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -17,6 +22,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
+import org.seasar.ymir.eclipse.wizards.jre.BuildJREDescriptor;
+import org.seasar.ymir.eclipse.wizards.jre.JREsComboBlock;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well
@@ -38,6 +45,8 @@ public class NewProjectWizardFirstPage extends WizardNewProjectCreationPage {
     private Text locationPathField;
 
     private String initialLocationPath;
+
+    private JREsComboBlock jreBlock;
 
     private Text rootPackageNameField;
 
@@ -69,6 +78,7 @@ public class NewProjectWizardFirstPage extends WizardNewProjectCreationPage {
         super.createControl(parent);
 
         Composite composite = (Composite) getControl();
+        createJREControl(composite);
         createProjectInformationControl(composite);
 
         projectNameField = null;
@@ -98,7 +108,28 @@ public class NewProjectWizardFirstPage extends WizardNewProjectCreationPage {
         setMessage(null);
     }
 
-    void createProjectInformationControl(Composite parent) {
+    private void createJREControl(Composite parent) {
+        jreBlock = new JREsComboBlock();
+        jreBlock.setDefaultJREDescriptor(new BuildJREDescriptor());
+        jreBlock.setTitle(Messages.getString("NewProjectWizardFirstPage.0")); //$NON-NLS-1$
+        jreBlock.createControl(parent);
+        GridData data = new GridData(GridData.FILL_HORIZONTAL);
+        jreBlock.getControl().setLayoutData(data);
+        jreBlock.addPropertyChangeListener(new IPropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                IStatus status = jreBlock.getStatus();
+                if (status.isOK()) {
+                    setErrorMessage(null);
+                } else {
+                    setErrorMessage(status.getMessage());
+                }
+            }
+        });
+
+        jreBlock.setPath(JavaRuntime.newDefaultJREContainerPath());
+    }
+
+    private void createProjectInformationControl(Composite parent) {
         Group group = new Group(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.numColumns = 2;
@@ -234,6 +265,10 @@ public class NewProjectWizardFirstPage extends WizardNewProjectCreationPage {
         projectVersionField.setText("0.0.1-SNAPSHOT"); //$NON-NLS-1$
 
         setPageComplete(validatePage());
+    }
+
+    public IVMInstall getJRE() {
+        return jreBlock.getSelectedJRE();
     }
 
     public String getRootPackageName() {

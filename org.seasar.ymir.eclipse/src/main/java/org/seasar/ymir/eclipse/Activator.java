@@ -330,4 +330,8 @@ public class Activator extends AbstractUIPlugin {
         }
         monitor.done();
     }
+
+    public static String getId() {
+        return "org.seasar.ymir.eclipse";
+    }
 }
