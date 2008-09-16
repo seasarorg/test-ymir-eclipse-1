@@ -1,6 +1,5 @@
 package org.seasar.ymir.eclipse.wizards;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -19,7 +18,6 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.ArtifactNotFoundException;
 import org.seasar.ymir.eclipse.SkeletonEntry;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -31,7 +29,9 @@ import werkzeugkasten.mvnhack.repository.Artifact;
  */
 
 public class NewProjectWizardSecondPage extends WizardPage {
-    boolean initialized;
+    private boolean initialized;
+
+    private volatile boolean visible;
 
     private SkeletonEntry[] entries;
 
@@ -61,6 +61,8 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private Button resolveSkeletonArtifactButton;
 
+    private SkeletonArtifactResolver skeletonArtifactResolver;
+
     /**
      * Constructor for SampleNewWizardPage.
      * 
@@ -85,7 +87,8 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
         createSkeletonInformationControl(composite);
 
-        setErrorMessage(Messages.getString("NewProjectWizardSecondPage.3")); //$NON-NLS-1$
+        setPageComplete(false);
+        setErrorMessage(null);
         setMessage(null);
     }
 
@@ -125,8 +128,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
                 }
                 skeletonDescriptionText.setText(description);
 
-                resetSkeletonArtifact();
-                setPageComplete(validatePage());
+                resolveSkeletonArtifact();
             }
         });
 
@@ -158,8 +160,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
                 skeletonVersionLabel.setEnabled(versionEnabled);
                 skeletonVersionField.setEnabled(versionEnabled);
 
-                resetSkeletonArtifact();
-                setPageComplete(validatePage());
+                resolveSkeletonArtifact();
             }
         });
 
@@ -172,8 +173,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         skeletonGroupIdField.setLayoutData(data);
         skeletonGroupIdField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                resetSkeletonArtifact();
-                setPageComplete(validatePage());
+                resolveSkeletonArtifact();
             }
         });
 
@@ -186,8 +186,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         skeletonArtifactIdField.setLayoutData(data);
         skeletonArtifactIdField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                resetSkeletonArtifact();
-                setPageComplete(validatePage());
+                resolveSkeletonArtifact();
             }
         });
 
@@ -200,8 +199,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         skeletonVersionField.setLayoutData(data);
         skeletonVersionField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                resetSkeletonArtifact();
-                setPageComplete(validatePage());
+                resolveSkeletonArtifact();
             }
         });
 
@@ -215,27 +213,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
                 skeletonVersionLabel.setEnabled(!enabled);
                 skeletonVersionField.setEnabled(!enabled);
 
-                resetSkeletonArtifact();
-                setPageComplete(validatePage());
-            }
-        });
-
-        resolveSkeletonArtifactButton = new Button(parent, SWT.PUSH);
-        resolveSkeletonArtifactButton.setText(Messages.getString("NewProjectWizardSecondPage.11")); //$NON-NLS-1$
-        resolveSkeletonArtifactButton.setData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
-        resolveSkeletonArtifactButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                skeletonArtifact = resolveSkeletonArtifact();
-                boolean success = (skeletonArtifact != null);
-                resolveSkeletonArtifactButton.setEnabled(!success);
-                if (success) {
-                    setErrorMessage(null);
-                } else {
-                    setErrorMessage(Messages.getString("NewProjectWizardSecondPage.12")); //$NON-NLS-1$
-                }
-
-                setPageComplete(validatePage());
+                resolveSkeletonArtifact();
             }
         });
     }
@@ -250,10 +228,15 @@ public class NewProjectWizardSecondPage extends WizardPage {
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
+        this.visible = visible;
         if (!initialized) {
             setDefaultValues();
             initialized = true;
         }
+    }
+
+    boolean isVisible() {
+        return visible;
     }
 
     void setDefaultValues() {
@@ -268,13 +251,10 @@ public class NewProjectWizardSecondPage extends WizardPage {
         useLatestVersionField.setEnabled(false);
         useLatestVersionField.setSelection(true);
 
-        setPageComplete(validatePage());
+        resolveSkeletonArtifact();
     }
 
     private boolean validateToResolveSkeletonArtifact() {
-        if (skeletonArtifact != null) {
-            return false;
-        }
         if (getSkeletonGroupId().length() == 0) {
             return false;
         }
@@ -288,28 +268,20 @@ public class NewProjectWizardSecondPage extends WizardPage {
         return true;
     }
 
-    private void resetSkeletonArtifact() {
+    private void resolveSkeletonArtifact() {
         skeletonArtifact = null;
-        resolveSkeletonArtifactButton.setEnabled(validateToResolveSkeletonArtifact());
-    }
+        setPageComplete(false);
 
-    private Artifact resolveSkeletonArtifact() {
-        Activator activator = Activator.getDefault();
-        String version;
-        if (specifySkeletonIdField.getSelection() && !useLatestVersionField.getSelection()) {
-            version = getSkeletonVersion();
-        } else {
-            version = activator.getArtifactLatestVersion(getSkeletonGroupId(), getSkeletonArtifactId());
-            if (version == null) {
-                return null;
-            }
+        if (!validateToResolveSkeletonArtifact()) {
+            return;
         }
-        try {
-            return activator.resolveArtifact(getSkeletonGroupId(), getSkeletonArtifactId(), version,
-                    new NullProgressMonitor());
-        } catch (ArtifactNotFoundException ignore) {
-            return null;
+
+        if (skeletonArtifactResolver != null) {
+            skeletonArtifactResolver.cancel();
         }
+        skeletonArtifactResolver = new SkeletonArtifactResolver(this, getSkeletonGroupId(), getSkeletonArtifactId(),
+                getSkeletonVersion());
+        skeletonArtifactResolver.start();
     }
 
     private String getSkeletonGroupId() {
@@ -352,5 +324,9 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     public Artifact getSkeletonArtifact() {
         return skeletonArtifact;
+    }
+
+    public void setSkeletonArtifact(Artifact skeletonArtifact) {
+        this.skeletonArtifact = skeletonArtifact;
     }
 }

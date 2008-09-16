@@ -92,6 +92,10 @@ public class NewProjectWizardFirstPage extends WizardNewProjectCreationPage {
                 }
             }
         });
+
+        setPageComplete(false);
+        setErrorMessage(null);
+        setMessage(null);
     }
 
     void createProjectInformationControl(Composite parent) {
