@@ -13,7 +13,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Listener;
@@ -36,13 +35,13 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private SkeletonEntry[] entries;
 
-    private Label skeletonListLabel;
+    private Label templateListLabel;
 
-    private List skeletonListField;
+    private List templateListField;
 
-    private Text skeletonDescriptionText;
+    private Text templateDescriptionText;
 
-    private Button specifySkeletonIdField;
+    private Button chooseFromTemplatesField;
 
     private Label skeletonGroupIdLabel;
 
@@ -92,76 +91,69 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     void createSkeletonInformationControl(Composite parent) {
-        Group group = new Group(parent, SWT.NONE);
-        group.setLayout(new GridLayout());
-        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText(Messages.getString("NewProjectWizardSecondPage.4")); //$NON-NLS-1$
-
-        skeletonListLabel = new Label(group, SWT.NONE);
-        skeletonListLabel.setText(Messages.getString("NewProjectWizardSecondPage.5")); //$NON-NLS-1$
-
-        Composite composite = new Composite(group, SWT.NULL);
-        composite.setFont(group.getFont());
-        composite.setLayout(new GridLayout(2, true));
-        GridData data = new GridData(GridData.FILL_BOTH);
-        data.widthHint = 250;
-        data.heightHint = 150;
-        composite.setLayoutData(data);
-
-        skeletonListField = new List(composite, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-        skeletonListField.setFont(group.getFont());
-        skeletonListField.setLayoutData(data);
-        entries = Activator.getDefault().getSkeletonEntries();
-        for (SkeletonEntry entry : entries) {
-            skeletonListField.add(entry.getName());
-        }
-        skeletonListField.addSelectionListener(new SelectionAdapter() {
-            @Override
+        chooseFromTemplatesField = new Button(parent, SWT.CHECK | SWT.LEFT);
+        chooseFromTemplatesField.setLayoutData(new GridData());
+        chooseFromTemplatesField.setText(Messages.getString("NewProjectWizardSecondPage.6")); //$NON-NLS-1$
+        chooseFromTemplatesField.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
-                String description;
-                int selectionIndex = skeletonListField.getSelectionIndex();
-                if (selectionIndex != -1) {
-                    description = entries[selectionIndex].getDescription();
-                } else {
-                    description = ""; //$NON-NLS-1$
-                }
-                skeletonDescriptionText.setText(description);
-
-                resolveSkeletonArtifact();
-            }
-        });
-
-        skeletonDescriptionText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP);
-        skeletonDescriptionText.setLayoutData(data);
-
-        composite = new Composite(group, SWT.NULL);
-        composite.setFont(group.getFont());
-        composite.setLayout(new GridLayout(2, false));
-        composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        specifySkeletonIdField = new Button(composite, SWT.CHECK | SWT.LEFT);
-        data = new GridData();
-        data.horizontalSpan = 2;
-        specifySkeletonIdField.setLayoutData(data);
-        specifySkeletonIdField.setText(Messages.getString("NewProjectWizardSecondPage.6")); //$NON-NLS-1$
-        specifySkeletonIdField.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                boolean enabled = specifySkeletonIdField.getSelection();
-                skeletonListLabel.setEnabled(!enabled);
-                skeletonListField.setEnabled(!enabled);
-                skeletonDescriptionText.setEnabled(!enabled);
-                skeletonGroupIdLabel.setEnabled(enabled);
-                skeletonGroupIdField.setEnabled(enabled);
-                skeletonArtifactIdLabel.setEnabled(enabled);
-                skeletonArtifactIdField.setEnabled(enabled);
-                useLatestVersionField.setEnabled(enabled);
-                boolean versionEnabled = enabled && !useLatestVersionField.getSelection();
+                boolean enabled = chooseFromTemplatesField.getSelection();
+                templateListLabel.setEnabled(enabled);
+                templateListField.setEnabled(enabled);
+                templateDescriptionText.setEnabled(enabled);
+                skeletonGroupIdLabel.setEnabled(!enabled);
+                skeletonGroupIdField.setEnabled(!enabled);
+                skeletonArtifactIdLabel.setEnabled(!enabled);
+                skeletonArtifactIdField.setEnabled(!enabled);
+                useLatestVersionField.setEnabled(!enabled);
+                boolean versionEnabled = !enabled && !useLatestVersionField.getSelection();
                 skeletonVersionLabel.setEnabled(versionEnabled);
                 skeletonVersionField.setEnabled(versionEnabled);
 
                 resolveSkeletonArtifact();
             }
         });
+
+        templateListLabel = new Label(parent, SWT.NONE);
+        templateListLabel.setText(Messages.getString("NewProjectWizardSecondPage.5")); //$NON-NLS-1$
+
+        Composite composite = new Composite(parent, SWT.NULL);
+        composite.setFont(parent.getFont());
+        composite.setLayout(new GridLayout(2, true));
+        GridData data = new GridData(GridData.FILL_BOTH);
+        data.widthHint = 250;
+        data.heightHint = 150;
+        composite.setLayoutData(data);
+
+        templateListField = new List(composite, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        templateListField.setFont(parent.getFont());
+        templateListField.setLayoutData(data);
+        entries = Activator.getDefault().getSkeletonEntries();
+        for (SkeletonEntry entry : entries) {
+            templateListField.add(entry.getName());
+        }
+        templateListField.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String description;
+                int selectionIndex = templateListField.getSelectionIndex();
+                if (selectionIndex != -1) {
+                    description = entries[selectionIndex].getDescription();
+                } else {
+                    description = ""; //$NON-NLS-1$
+                }
+                templateDescriptionText.setText(description);
+
+                resolveSkeletonArtifact();
+            }
+        });
+
+        templateDescriptionText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP);
+        templateDescriptionText.setLayoutData(data);
+
+        composite = new Composite(parent, SWT.NULL);
+        composite.setFont(parent.getFont());
+        composite.setLayout(new GridLayout(2, false));
+        composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         skeletonGroupIdLabel = new Label(composite, SWT.NONE);
         skeletonGroupIdLabel.setText(Messages.getString("NewProjectWizardSecondPage.7")); //$NON-NLS-1$
@@ -239,8 +231,9 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     void setDefaultValues() {
-        skeletonListField.setSelection(0, 0);
-        skeletonDescriptionText.setText(entries[0].getDescription());
+        chooseFromTemplatesField.setSelection(true);
+        templateListField.setSelection(0, 0);
+        templateDescriptionText.setText(entries[0].getDescription());
         skeletonGroupIdLabel.setEnabled(false);
         skeletonGroupIdField.setEnabled(false);
         skeletonArtifactIdLabel.setEnabled(false);
@@ -260,7 +253,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         if (getSkeletonArtifactId().length() == 0) {
             return false;
         }
-        if (specifySkeletonIdField.getSelection() && !useLatestVersionField.getSelection()
+        if (!chooseFromTemplatesField.getSelection() && !useLatestVersionField.getSelection()
                 && skeletonVersionField.getText().length() == 0) {
             return false;
         }
@@ -271,28 +264,31 @@ public class NewProjectWizardSecondPage extends WizardPage {
         skeletonArtifact = null;
         setPageComplete(false);
 
+        if (skeletonArtifactResolver != null) {
+            skeletonArtifactResolver.cancel();
+        }
+
+        if (!validateToResolveSkeletonArtifact()) {
+            setMessage(null);
+            setErrorMessage(null);
+            return;
+        }
+
         if (isVisible()) {
             setMessage(Messages.getString("NewProjectWizardSecondPage.0"), IMessageProvider.INFORMATION); //$NON-NLS-1$
             setErrorMessage(null);
         }
 
-        if (!validateToResolveSkeletonArtifact()) {
-            return;
-        }
-
-        if (skeletonArtifactResolver != null) {
-            skeletonArtifactResolver.cancel();
-        }
         skeletonArtifactResolver = new SkeletonArtifactResolver(this, getSkeletonGroupId(), getSkeletonArtifactId(),
                 getSkeletonVersion());
         skeletonArtifactResolver.start();
     }
 
     private String getSkeletonGroupId() {
-        if (specifySkeletonIdField.getSelection()) {
+        if (!chooseFromTemplatesField.getSelection()) {
             return skeletonGroupIdField.getText();
         } else {
-            int index = skeletonListField.getSelectionIndex();
+            int index = templateListField.getSelectionIndex();
             if (index == -1) {
                 return ""; //$NON-NLS-1$
             } else {
@@ -302,10 +298,10 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     private String getSkeletonArtifactId() {
-        if (specifySkeletonIdField.getSelection()) {
+        if (!chooseFromTemplatesField.getSelection()) {
             return skeletonArtifactIdField.getText();
         } else {
-            int index = skeletonListField.getSelectionIndex();
+            int index = templateListField.getSelectionIndex();
             if (index == -1) {
                 return ""; //$NON-NLS-1$
             } else {
@@ -315,7 +311,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     private String getSkeletonVersion() {
-        if (specifySkeletonIdField.getSelection()) {
+        if (!chooseFromTemplatesField.getSelection()) {
             if (useLatestVersionField.getSelection()) {
                 return ""; //$NON-NLS-1$
             } else {
