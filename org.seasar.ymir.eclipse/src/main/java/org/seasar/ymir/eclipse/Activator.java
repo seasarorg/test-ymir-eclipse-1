@@ -82,7 +82,7 @@ public class Activator extends AbstractUIPlugin {
 
     private static final char PATH_DELIMITER_CHAR = '/';
 
-    private static final String PATHPREFIX_SRC_MAIN_WEBAPP_LIB = Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB + "/";
+    private static final String PATHPREFIX_SRC_MAIN_WEBAPP_LIB = Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB + "/"; //$NON-NLS-1$
 
     // The shared instance
     private static Activator plugin;
@@ -172,7 +172,7 @@ public class Activator extends AbstractUIPlugin {
         skeletonEntries = new SkeletonEntry[] { new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+S2Dao", //$NON-NLS-1$ //$NON-NLS-2$
                 Messages.getString("Activator.10")), //$NON-NLS-1$
                 new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+DBFlute", //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.getString("Activator.13"), new SkeletonFragment("ymir-fragment-dbflute")), }; //$NON-NLS-1$
+                        Messages.getString("Activator.13"), new SkeletonFragment("ymir-fragment-dbflute")), }; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public SkeletonEntry[] getSkeletonEntries() {
@@ -181,18 +181,18 @@ public class Activator extends AbstractUIPlugin {
 
     private void setUpDatabaseEntries() {
         databaseEntries = new DatabaseEntry[] {
-                new DatabaseEntry("H2 Database Engine", "org.h2.Driver", "jdbc:h2:file:%WEBAPP%/WEB-INF/h2/h2", "sa",
-                        "", new Dependency("com.h2database", "h2", "1.0.78", "runtime")),
-                new DatabaseEntry("MySQL Community Server", "com.mysql.jdbc.Driver",
-                        "jdbc:mysql://localhost:3306/[DBNAME]", "", "", new Dependency("mysql", "mysql-connector-java",
-                                "5.1.6", "runtime")),
-                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-3.0)", "org.postgresql.Driver",
-                        "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql",
-                                "8.3-603.jdbc3", "runtime")),
-                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-4.0)", "org.postgresql.Driver",
-                        "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql",
-                                "8.3-603.jdbc4", "runtime")),
-                new DatabaseEntry("Custom setting", "", "", "", "", null), };
+                new DatabaseEntry("H2 Database Engine", "org.h2.Driver", "jdbc:h2:file:%WEBAPP%/WEB-INF/h2/h2", "sa", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                        "", new Dependency("com.h2database", "h2", "1.0.78", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                new DatabaseEntry("MySQL Community Server", "com.mysql.jdbc.Driver", //$NON-NLS-1$ //$NON-NLS-2$
+                        "jdbc:mysql://localhost:3306/[DBNAME]", "", "", new Dependency("mysql", "mysql-connector-java", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                                "5.1.6", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
+                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-3.0)", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$
+                        "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                                "8.3-603.jdbc3", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
+                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-4.0)", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$
+                        "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                                "8.3-603.jdbc4", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
+                new DatabaseEntry(Messages.getString("Activator.50"), "", "", "", "", null), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 
     public DatabaseEntry[] getDatabaseEntries() {
@@ -425,17 +425,19 @@ public class Activator extends AbstractUIPlugin {
         monitor.beginTask("Merge properties", 1); //$NON-NLS-1$
         try {
             MapProperties prop = new MapProperties(new TreeMap<String, String>());
-            InputStream is = null;
-            try {
-                is = file.getContents();
-                prop.load(is);
-            } catch (IOException ex) {
-                throwCoreException("Can't load: " + file, ex); //$NON-NLS-1$
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ignore) {
+            if (file.exists()) {
+                InputStream is = null;
+                try {
+                    is = file.getContents();
+                    prop.load(is);
+                } catch (IOException ex) {
+                    throwCoreException("Can't load: " + file, ex); //$NON-NLS-1$
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException ignore) {
+                        }
                     }
                 }
             }
@@ -453,7 +455,7 @@ public class Activator extends AbstractUIPlugin {
             }
 
             ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-            file.setContents(bais, false, false, new SubProgressMonitor(monitor, 1));
+            writeFile(file, bais, new SubProgressMonitor(monitor, 1));
         } finally {
             monitor.done();
         }
@@ -483,7 +485,7 @@ public class Activator extends AbstractUIPlugin {
 
     public String getResourceAsString(Artifact artifact, String path, String encoding, IProgressMonitor monitor)
             throws CoreException {
-        monitor.beginTask("Get resource as string", 1);
+        monitor.beginTask(Messages.getString("Activator.55"), 1); //$NON-NLS-1$
 
         JarFile jarFile = null;
         InputStream is = null;
@@ -503,7 +505,7 @@ public class Activator extends AbstractUIPlugin {
             StreamUtils.copyStream(is, baos);
             return new String(baos.toByteArray(), encoding);
         } catch (IOException ex) {
-            throwCoreException("Can't read resource: artifact=" + artifact + ", path=" + path, ex);
+            throwCoreException("Can't read resource: artifact=" + artifact + ", path=" + path, ex); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         } finally {
             StreamUtils.close(is);
@@ -535,7 +537,7 @@ public class Activator extends AbstractUIPlugin {
 
     public MapProperties getPropertiesResource(Artifact artifact, String path, IProgressMonitor monitor)
             throws CoreException {
-        monitor.beginTask("Get properties resource", 1);
+        monitor.beginTask(Messages.getString("Activator.58"), 1); //$NON-NLS-1$
 
         JarFile jarFile = null;
         InputStream is = null;
@@ -556,7 +558,7 @@ public class Activator extends AbstractUIPlugin {
             prop.load(is);
             return prop;
         } catch (IOException ex) {
-            throwCoreException("Can't read resource: artifact=" + artifact + ", path=" + path, ex);
+            throwCoreException("Can't read resource: artifact=" + artifact + ", path=" + path, ex); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         } finally {
             StreamUtils.close(is);

@@ -202,7 +202,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                     dependencies = (Dependencies) mapper.toBean(parser.parse(new StringReader(text)).getRootElement(),
                             Dependencies.class);
                 } catch (Throwable t) {
-                    throwCoreException("Can't read " + Globals.VILI_DEPENDENCIES_XML + " in " + skeletonArtifacts[i], t);
+                    throwCoreException("Can't read " + Globals.VILI_DEPENDENCIES_XML + " in " + skeletonArtifacts[i], t); //$NON-NLS-1$ //$NON-NLS-2$
                     return null;
                 }
                 for (Dependency dep : dependencies.getDependencies()) {
@@ -401,7 +401,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     }
 
     private IPath[] copyDependencies(IProject project, Dependency[] dependencies, IProgressMonitor monitor) {
-        monitor.beginTask("Copy dependencies", dependencies.length);
+        monitor.beginTask(Messages.getString("NewProjectWizard.1"), dependencies.length); //$NON-NLS-1$
         try {
             if (Activator.getDefault().libsAreManagedAutomatically()) {
                 return new IPath[0];
