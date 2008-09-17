@@ -13,7 +13,7 @@ import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 import junit.framework.TestCase;
 
-public class DependencyTest extends TestCase {
+public class DependenciesTest extends TestCase {
     private XOMapper mapper = XOMapperFactory.newInstance().setBeanAccessorFactory(new BeanAccessorFactory() {
         public BeanAccessor newInstance() {
             return new AnnotationBeanAccessor() {
@@ -26,24 +26,25 @@ public class DependencyTest extends TestCase {
     }).setStrict(true);
 
     public void testToBean() throws Exception {
-        Dependency actual = (Dependency) mapper.toBean(XMLParserFactory.newInstance().parse(
+        Dependencies actual = (Dependencies) mapper.toBean(XMLParserFactory.newInstance().parse(
                 new InputStreamReader(getClass().getClassLoader().getResourceAsStream(
-                        getClass().getName().replace('.', '/').concat("_dependency1.xml")), "UTF-8")).getRootElement(),
-                Dependency.class);
-        assertEquals("com.h2database", actual.getGroupId());
-        assertEquals("h2", actual.getArtifactId());
-        assertEquals("1.0.78", actual.getVersion());
-        assertEquals("runtime", actual.getScope());
+                        getClass().getName().replace('.', '/').concat("_dependencies1.xml")), "UTF-8"))
+                .getRootElement(), Dependencies.class);
+        assertEquals(2, actual.getDependencies().length);
+        int idx = 0;
+        Dependency dependency = actual.getDependencies()[idx++];
+        assertEquals("com.h2database", dependency.getGroupId());
+        assertEquals("h2", dependency.getArtifactId());
+        assertEquals("1.0.78", dependency.getVersion());
+        assertEquals("runtime", dependency.getScope());
+        dependency = actual.getDependencies()[idx++];
+        assertEquals("log4j", dependency.getGroupId());
+        assertEquals("log4j", dependency.getArtifactId());
+        assertEquals("1.2.11", dependency.getVersion());
+        assertNull(dependency.getScope());
 
         StringWriter sw = new StringWriter();
         mapper.toXML(actual, sw);
         System.out.println(sw.toString());
-    }
-
-    public void testEquals() throws Exception {
-        Dependency dependency1 = new Dependency("g", "a", "1.0", "runtime");
-        Dependency dependency2 = new Dependency("g", "a", "1.1", "compile");
-        assertEquals(dependency1, dependency2);
-        assertEquals(dependency1.hashCode(), dependency2.hashCode());
     }
 }

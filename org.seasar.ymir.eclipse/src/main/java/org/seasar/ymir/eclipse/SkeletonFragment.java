@@ -21,6 +21,11 @@ public class SkeletonFragment implements MavenArtifact {
         this.version = version;
     }
 
+    @Override
+    public String toString() {
+        return groupId + ":" + artifactId + "-" + version;
+    }
+
     public String getGroupId() {
         return groupId;
     }

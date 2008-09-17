@@ -92,7 +92,7 @@ public class SkeletonArtifactResolver implements Runnable {
             version = artifact.getVersion();
         }
         try {
-            return activator.resolveArtifact(artifact.getGroupId(), artifact.getArtifactId(), version,
+            return activator.resolveArtifact(artifact.getGroupId(), artifact.getArtifactId(), version, false,
                     new NullProgressMonitor());
         } catch (ArtifactNotFoundException ignore) {
             return null;

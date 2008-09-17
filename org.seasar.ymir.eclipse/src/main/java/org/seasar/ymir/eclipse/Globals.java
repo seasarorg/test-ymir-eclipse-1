@@ -35,7 +35,9 @@ public interface Globals {
 
     String NATURE_ID_WEBLAUNCHER = BUNDLENAME_WEBLAUNCHER + ".nature";
 
-    String VILI_DEPENDENCIES_XML = "vili-dependencies.xml";
+    String PREFIX_VILI = "vili-";
 
-    String VILI_APP_PROPRERTIES = "vili-app.properties";
+    String VILI_DEPENDENCIES_XML = PREFIX_VILI + "dependencies.xml";
+
+    String VILI_APP_PROPRERTIES = PREFIX_VILI + "app.properties";
 }

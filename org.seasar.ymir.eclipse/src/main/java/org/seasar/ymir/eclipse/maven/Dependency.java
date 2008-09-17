@@ -25,6 +25,47 @@ public class Dependency {
         this.scope = scope;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || obj.getClass() != getClass()) {
+            return false;
+        }
+        Dependency o = (Dependency) obj;
+        if (!equals(o.groupId, groupId)) {
+            return false;
+        }
+        if (!equals(o.artifactId, artifactId)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean equals(Object o1, Object o2) {
+        if (o1 == null) {
+            return o2 == null;
+        } else {
+            return o1.equals(o2);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 0;
+        if (groupId != null) {
+            h += groupId.hashCode();
+        }
+        if (artifactId != null) {
+            h += artifactId.hashCode();
+        }
+        return h;
+    }
+
+    @Override
+    public String toString() {
+        return groupId + ":" + artifactId + "-" + version + ", scope=" + scope;
+    }
+
     public String getGroupId() {
         return groupId;
     }

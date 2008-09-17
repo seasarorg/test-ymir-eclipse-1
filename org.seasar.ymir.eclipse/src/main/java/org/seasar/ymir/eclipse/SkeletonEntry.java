@@ -34,6 +34,11 @@ public class SkeletonEntry implements MavenArtifact {
         this.fragments = fragments;
     }
 
+    @Override
+    public String toString() {
+        return name + "(" + groupId + ":" + artifactId + "-" + version + ")";
+    }
+
     public String getGroupId() {
         return groupId;
     }

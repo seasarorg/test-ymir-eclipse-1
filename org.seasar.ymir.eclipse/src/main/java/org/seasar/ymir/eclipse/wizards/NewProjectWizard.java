@@ -2,20 +2,26 @@ package org.seasar.ymir.eclipse.wizards;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import net.skirnir.xom.ValidationException;
+import net.skirnir.xom.XMLParser;
+import net.skirnir.xom.XOMapper;
 
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
@@ -25,6 +31,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -49,13 +56,10 @@ import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.maven.Dependencies;
 import org.seasar.ymir.eclipse.maven.Dependency;
+import org.seasar.ymir.eclipse.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
-
-import net.skirnir.xom.ValidationException;
-import net.skirnir.xom.XMLParser;
-import net.skirnir.xom.XOMapper;
 
 /**
  * This is a sample new wizard. Its role is to create a new file 
@@ -140,33 +144,28 @@ public class NewProjectWizard extends Wizard implements INewWizard {
      * using wizard as execution context.
      */
     public boolean performFinish() {
-        final IProject project = firstPage.getProjectHandle();
-        final IPath locationPath = firstPage.getLocationPath();
-        final IPath jreContainerPath = firstPage.getJREContainerPath();
-        final Artifact[] skeletonArtifacts = secondPage.getSkeletonArtifacts();
-        final Dependency[] dependencies;
         try {
-            // TODO 重複dependencyははいじょするようにする。
-            dependencies = createDependencies();
-        } catch (CoreException ex) {
-            MessageDialog.openError(getShell(), "Error", ex.getMessage()); //$NON-NLS-1$
-            return false;
-        }
-        final Map<String, Object> parameterMap = createParameterMap(dependencies);
-        final MapProperties applicationProperties = createApplicationProperties();
-        IRunnableWithProgress op = new IRunnableWithProgress() {
-            public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                try {
-                    createProject(project, locationPath, jreContainerPath, skeletonArtifacts, parameterMap,
-                            dependencies, applicationProperties, monitor);
-                } catch (CoreException e) {
-                    throw new InvocationTargetException(e);
-                } finally {
-                    monitor.done();
+            final IProject project = firstPage.getProjectHandle();
+            final IPath locationPath = firstPage.getLocationPath();
+            final IPath jreContainerPath = firstPage.getJREContainerPath();
+            final Artifact[] skeletonArtifacts = secondPage.getSkeletonArtifacts();
+            final Dependency[] dependencies = createDependencies(thirdPage.getDatabaseEntry().getDependency(),
+                    skeletonArtifacts);
+            final Map<String, Object> parameterMap = createParameterMap(dependencies);
+            final MapProperties applicationProperties = createApplicationProperties();
+            IRunnableWithProgress op = new IRunnableWithProgress() {
+                public void run(IProgressMonitor monitor) throws InvocationTargetException {
+                    try {
+                        createProject(project, locationPath, jreContainerPath, skeletonArtifacts, parameterMap,
+                                dependencies, applicationProperties, monitor);
+                    } catch (CoreException e) {
+                        throw new InvocationTargetException(e);
+                    } finally {
+                        monitor.done();
+                    }
                 }
-            }
-        };
-        try {
+            };
+
             getContainer().run(true, false, op);
         } catch (InterruptedException e) {
             return false;
@@ -174,40 +173,67 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             Throwable realException = e.getTargetException();
             MessageDialog.openError(getShell(), "Error", realException.getMessage()); //$NON-NLS-1$
             return false;
+        } catch (CoreException ex) {
+            MessageDialog.openError(getShell(), "Error", ex.getMessage()); //$NON-NLS-1$
+            return false;
         }
         return true;
     }
 
-    private Dependency[] createDependencies() throws CoreException {
+    private Dependency[] createDependencies(Dependency databaseDependency, Artifact[] skeletonArtifacts)
+            throws CoreException {
         Activator activator = Activator.getDefault();
         XOMapper mapper = activator.getXOMapper();
         XMLParser parser = activator.getXMLParser();
 
-        List<Dependency> list = new ArrayList<Dependency>();
+        Map<Dependency, Dependency> map = new LinkedHashMap<Dependency, Dependency>();
 
-        Dependency dependency = thirdPage.getDatabaseEntry().getDependency();
-        if (dependency != null) {
-            list.add(dependency);
+        if (databaseDependency != null) {
+            add(map, databaseDependency);
         }
 
-        Artifact[] artifacts = secondPage.getSkeletonArtifacts();
-        for (int i = 1; i < artifacts.length; i++) {
-            URL url = activator.getResource(artifacts[i], Globals.VILI_DEPENDENCIES_XML);
-            if (url != null) {
+        // フラグメントだけを対象にするため1から始めている。
+        for (int i = 1; i < skeletonArtifacts.length; i++) {
+            String text = activator.getResourceAsString(skeletonArtifacts[i], Globals.VILI_DEPENDENCIES_XML,
+                    Globals.ENCODING, new NullProgressMonitor());
+            if (text != null) {
                 Dependencies dependencies;
                 try {
-                    dependencies = (Dependencies) mapper.toBean(parser.parse(
-                            new InputStreamReader(url.openStream(), Globals.ENCODING)).getRootElement(),
+                    dependencies = (Dependencies) mapper.toBean(parser.parse(new StringReader(text)).getRootElement(),
                             Dependencies.class);
                 } catch (Throwable t) {
-                    throwCoreException("Can't read " + Globals.VILI_DEPENDENCIES_XML + " in " + url, t);
+                    throwCoreException("Can't read " + Globals.VILI_DEPENDENCIES_XML + " in " + skeletonArtifacts[i], t);
                     return null;
                 }
-                list.addAll(Arrays.asList(dependencies.getDependencies()));
+                for (Dependency dep : dependencies.getDependencies()) {
+                    add(map, dep);
+                }
             }
         }
 
-        return null;
+        return map.values().toArray(new Dependency[0]);
+    }
+
+    private void add(Map<Dependency, Dependency> map, Dependency dep) {
+        Dependency d = map.get(dep);
+        if (d == null || ArtifactUtils.compareVersions(d.getVersion(), dep.getVersion()) < 0) {
+            map.put(dep, dep);
+        }
+    }
+
+    private MapProperties[] createAppPropertiesFragments() throws CoreException {
+        Activator activator = Activator.getDefault();
+        Artifact[] artifacts = secondPage.getSkeletonArtifacts();
+        List<MapProperties> list = new ArrayList<MapProperties>();
+        // フラグメントだけを対象にするため1から始めている。
+        for (int i = 1; i < artifacts.length; i++) {
+            MapProperties prop = activator.getPropertiesResource(artifacts[i], Globals.VILI_APP_PROPRERTIES,
+                    new NullProgressMonitor());
+            if (prop != null) {
+                list.add(prop);
+            }
+        }
+        return list.toArray(new MapProperties[0]);
     }
 
     private Map<String, Object> createParameterMap(Dependency[] dependencies) {
@@ -264,7 +290,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
     }
 
-    private MapProperties createApplicationProperties() {
+    private MapProperties createApplicationProperties() throws CoreException {
         MapProperties prop = new MapProperties(new TreeMap<String, String>());
         prop.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, firstPage.getRootPackageName());
         String value = fourthPage.getSuperclass();
@@ -291,15 +317,21 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             }
         }
 
+        MapProperties[] fragments = createAppPropertiesFragments();
+        for (MapProperties fragment : fragments) {
+            for (Enumeration<?> enm = fragment.propertyNames(); enm.hasMoreElements();) {
+                String name = (String) enm.nextElement();
+                prop.setProperty(name, fragment.getProperty(name));
+            }
+        }
+
         return prop;
     }
 
     private void createProject(IProject project, IPath locationPath, IPath jreContainerPath,
             Artifact[] skeletonArtifacts, Map<String, Object> parameterMap, Dependency[] dependencies,
             MapProperties applicationProperties, IProgressMonitor monitor) throws CoreException {
-        monitor
-                .beginTask(
-                        Messages.getString("NewProjectWizard.12"), 7 + skeletonArtifacts.length + dependencies.length); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 8 + skeletonArtifacts.length); //$NON-NLS-1$
         try {
             if (!project.exists()) {
                 IProjectDescription description = project.getWorkspace().newProjectDescription(project.getName());
@@ -333,18 +365,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 }
             }
 
-            List<IPath> dependencyPathList = new ArrayList<IPath>();
-            for (Dependency dependency : dependencies) {
-                IPath dependencyPath = copyDependency(project, dependency, new SubProgressMonitor(monitor, 1));
-                if (dependencyPath != null) {
-                    dependencyPathList.add(dependencyPath);
-                }
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
+            IPath[] dependencyPaths = copyDependencies(project, dependencies, new SubProgressMonitor(monitor, 1));
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
             }
 
-            setUpCompliance(project, (String) parameterMap.get(ParameterKeys.JRE_VERSION), new SubProgressMonitor(
+            setUpJRECompliance(project, (String) parameterMap.get(ParameterKeys.JRE_VERSION), new SubProgressMonitor(
                     monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
@@ -363,8 +389,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
             IJavaProject javaProject = JavaCore.create(project);
 
-            setUpClasspath(javaProject, jreContainerPath, dependencyPathList.toArray(new IPath[0]),
-                    new SubProgressMonitor(monitor, 1));
+            setUpClasspath(javaProject, jreContainerPath, dependencyPaths, new SubProgressMonitor(monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
@@ -375,26 +400,45 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
     }
 
+    private IPath[] copyDependencies(IProject project, Dependency[] dependencies, IProgressMonitor monitor) {
+        monitor.beginTask("Copy dependencies", dependencies.length);
+        try {
+            if (Activator.getDefault().libsAreManagedAutomatically()) {
+                return new IPath[0];
+            }
+
+            List<IPath> list = new ArrayList<IPath>();
+            for (Dependency dependency : dependencies) {
+                IPath dependencyPath = copyDependency(project, dependency, new SubProgressMonitor(monitor, 1));
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                if (dependencyPath != null) {
+                    list.add(dependencyPath);
+                }
+            }
+            return list.toArray(new IPath[0]);
+        } finally {
+            monitor.done();
+        }
+    }
+
     private IPath copyDependency(IProject project, Dependency dependency, IProgressMonitor monitor) {
         monitor.beginTask(Messages.getString("NewProjectWizard.1"), 2); //$NON-NLS-1$
         try {
             Activator activator = Activator.getDefault();
 
-            if (dependency == null || activator.libsAreManagedAutomatically()) {
-                return null;
-            }
-
             IPath path = null;
             try {
                 Artifact artifact = activator.resolveArtifact(dependency.getGroupId(), dependency.getArtifactId(),
-                        dependency.getVersion(), new SubProgressMonitor(monitor, 1));
+                        dependency.getVersion(), false, new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
 
-                URL url = activator.getArtifactResolver().getURL(artifact, "jar"); //$NON-NLS-1$
-                IFile file = project.getFile(Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB + "/" + artifact.getArtifactId() //$NON-NLS-1$
-                        + "-" + artifact.getVersion() + ".jar"); //$NON-NLS-1$ //$NON-NLS-2$
+                URL url = activator.getArtifactResolver().getURL(artifact);
+                IFile file = project.getFile(Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB
+                        + "/" + ArtifactUtils.getFileName(artifact)); //$NON-NLS-1$ 
                 InputStream is = null;
                 try {
                     activator.writeFile(file, url.openStream(), new SubProgressMonitor(monitor, 1));
@@ -415,7 +459,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
     }
 
-    private void setUpCompliance(IProject project, String jreVersion, IProgressMonitor monitor) throws CoreException {
+    private void setUpJRECompliance(IProject project, String jreVersion, IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("NewProjectWizard.25"), 1); //$NON-NLS-1$
         try {
             if (jreVersion.length() == 0) {
@@ -515,6 +559,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             IPath[] dependencyPaths, IProgressMonitor monitor) throws JavaModelException {
         monitor.beginTask(Messages.getString("NewProjectWizard.23"), 1); //$NON-NLS-1$
         try {
+            Set<String> existsSet = new HashSet<String>();
             List<IClasspathEntry> newEntryList = new ArrayList<IClasspathEntry>();
             for (IClasspathEntry entry : javaProject.getRawClasspath()) {
                 int kind = entry.getEntryKind();
@@ -523,14 +568,17 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                         && (Globals.CLASSPATH_CONTAINER_M2ECLIPSE.equals(path.toPortableString()) || PATH_JRE_CONTAINER
                                 .equals(path.segment(0)))) {
                     continue;
+                } else if (kind == IClasspathEntry.CPE_LIBRARY) {
+                    existsSet.add(ArtifactUtils.getArtifactId(path.toPortableString()));
                 }
                 newEntryList.add(entry);
             }
             newEntryList.add(JavaCore.newContainerEntry(jreContainerPath));
 
             for (IPath dependencyPath : dependencyPaths) {
-                // TODO すでにあるやつは追加しないようにする
-                newEntryList.add(JavaCore.newLibraryEntry(dependencyPath, null, null));
+                if (!existsSet.contains(ArtifactUtils.getArtifactId(dependencyPath.toPortableString()))) {
+                    newEntryList.add(JavaCore.newLibraryEntry(dependencyPath, null, null));
+                }
             }
 
             javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]),
@@ -592,8 +640,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             }
 
             Activator.getDefault().mergeProperties(file, applicationProperties, new SubProgressMonitor(monitor, 1));
-            
-            // TODO fragmentのvili-app.propertiesもまーじするようにする
         } finally {
             monitor.done();
         }

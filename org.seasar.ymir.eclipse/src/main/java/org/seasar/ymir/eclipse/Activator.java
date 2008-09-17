@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -170,7 +171,7 @@ public class Activator extends AbstractUIPlugin {
     private void setUpSkeletonEntries() {
         skeletonEntries = new SkeletonEntry[] { new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+S2Dao", //$NON-NLS-1$ //$NON-NLS-2$
                 Messages.getString("Activator.10")), //$NON-NLS-1$
-                new SkeletonEntry("ymir-skeleton-dbflute", "Ymir+ZPT+DBFlute", //$NON-NLS-1$ //$NON-NLS-2$
+                new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+DBFlute", //$NON-NLS-1$ //$NON-NLS-2$
                         Messages.getString("Activator.13"), new SkeletonFragment("ymir-fragment-dbflute")), }; //$NON-NLS-1$
     }
 
@@ -213,19 +214,19 @@ public class Activator extends AbstractUIPlugin {
         return artifactResolver.getLatestVersion(groupId, artifactId);
     }
 
-    public Artifact resolveArtifact(String groupId, String artifactId, String version, IProgressMonitor monitor)
-            throws ArtifactNotFoundException {
+    public Artifact resolveArtifact(String groupId, String artifactId, String version, boolean recursive,
+            IProgressMonitor monitor) throws ArtifactNotFoundException {
         monitor.beginTask(Messages.getString("Activator.14"), 1); //$NON-NLS-1$
         try {
-            return resolveArtifact(groupId, artifactId, version);
+            return resolveArtifact(groupId, artifactId, version, recursive);
         } finally {
             monitor.done();
         }
     }
 
-    private Artifact resolveArtifact(String groupId, String artifactId, String version)
+    private Artifact resolveArtifact(String groupId, String artifactId, String version, boolean recursive)
             throws ArtifactNotFoundException {
-        Artifact artifact = artifactResolver.resolve(groupId, artifactId, version);
+        Artifact artifact = artifactResolver.resolve(groupId, artifactId, version, recursive);
         if (artifact == null) {
             throw new ArtifactNotFoundException();
         }
@@ -235,56 +236,40 @@ public class Activator extends AbstractUIPlugin {
     public void expandSkeleton(IProject project, Artifact skeletonArtifact, Map<String, Object> parameterMap,
             IProgressMonitor monitor) throws IOException, CoreException {
         monitor.beginTask(Messages.getString("Activator.15"), 1); //$NON-NLS-1$
-
-        URL artifactURL = artifactResolver.getURL(skeletonArtifact, "jar"); //$NON-NLS-1$
-        if (artifactURL == null) {
-            return;
-        }
-
-        File artifactFile = File.createTempFile("ymir", ".jar"); //$NON-NLS-1$ //$NON-NLS-2$
-        artifactFile.deleteOnExit();
-        InputStream is = null;
-        OutputStream os = null;
         try {
-            is = artifactURL.openStream();
-            os = new FileOutputStream(artifactFile);
-            StreamUtils.copyStream(is, os);
-        } finally {
-            StreamUtils.close(is);
-            StreamUtils.close(os);
-        }
-        final JarFile jarFile = new JarFile(artifactFile);
-        try {
-            Configuration cfg = new Configuration();
-            cfg.setEncoding(Locale.getDefault(), Globals.ENCODING);
-            cfg.setTemplateLoader(new TemplateLoader() {
-                public void closeTemplateSource(Object name) throws IOException {
-                }
+            final JarFile jarFile = getJarFile(skeletonArtifact);
+            try {
+                Configuration cfg = new Configuration();
+                cfg.setEncoding(Locale.getDefault(), Globals.ENCODING);
+                cfg.setTemplateLoader(new TemplateLoader() {
+                    public void closeTemplateSource(Object name) throws IOException {
+                    }
 
-                public Object findTemplateSource(String name) throws IOException {
-                    return jarFile.getEntry(name);
-                }
+                    public Object findTemplateSource(String name) throws IOException {
+                        return jarFile.getEntry(name);
+                    }
 
-                public long getLastModified(Object name) {
-                    return 0;
-                }
+                    public long getLastModified(Object name) {
+                        return 0;
+                    }
 
-                public Reader getReader(Object templateSource, String encoding) throws IOException {
-                    return new InputStreamReader(jarFile.getInputStream((JarEntry) templateSource), encoding);
-                }
-            });
-            cfg.setObjectWrapper(new DefaultObjectWrapper());
+                    public Reader getReader(Object templateSource, String encoding) throws IOException {
+                        return new InputStreamReader(jarFile.getInputStream((JarEntry) templateSource), encoding);
+                    }
+                });
+                cfg.setObjectWrapper(new DefaultObjectWrapper());
 
-            for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
-                JarEntry entry = enm.nextElement();
-                String name = entry.getName();
-                expand(project, name, cfg, parameterMap, jarFile, new NullProgressMonitor());
+                for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
+                    JarEntry entry = enm.nextElement();
+                    String name = entry.getName();
+                    expand(project, name, cfg, parameterMap, jarFile, new NullProgressMonitor());
+                }
+            } finally {
+                jarFile.close();
             }
         } finally {
-            jarFile.close();
+            monitor.done();
         }
-
-        monitor.done();
     }
 
     private void expand(IProject project, String path, Configuration cfg, Map<String, Object> parameterMap,
@@ -338,7 +323,6 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private boolean shouldIgnore(String path) {
-        // TODO vili-*.*は無視するようにする。
         if (path.startsWith(PATHPREFIX_META_INF)) {
             return true;
         }
@@ -348,6 +332,18 @@ public class Activator extends AbstractUIPlugin {
         if (path.startsWith(PATHPREFIX_SRC_MAIN_WEBAPP_LIB) && libsAreManagedAutomatically()) {
             return true;
         }
+
+        String name;
+        int slash = path.lastIndexOf('/');
+        if (slash < 0) {
+            name = path;
+        } else {
+            name = path.substring(slash + 1);
+        }
+        if (name.startsWith(Globals.PREFIX_VILI)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -485,8 +481,87 @@ public class Activator extends AbstractUIPlugin {
                 && Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null;
     }
 
-    public URL getResource(Artifact artifact, String path) {
-        return null;
+    public String getResourceAsString(Artifact artifact, String path, String encoding, IProgressMonitor monitor)
+            throws CoreException {
+        monitor.beginTask("Get resource as string", 1);
+
+        JarFile jarFile = null;
+        InputStream is = null;
+        try {
+            jarFile = getJarFile(artifact);
+            if (jarFile == null) {
+                return null;
+            }
+
+            ZipEntry entry = jarFile.getEntry(path);
+            if (entry == null) {
+                return null;
+            }
+
+            is = jarFile.getInputStream(entry);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            StreamUtils.copyStream(is, baos);
+            return new String(baos.toByteArray(), encoding);
+        } catch (IOException ex) {
+            throwCoreException("Can't read resource: artifact=" + artifact + ", path=" + path, ex);
+            return null;
+        } finally {
+            StreamUtils.close(is);
+            StreamUtils.close(jarFile);
+            monitor.done();
+        }
     }
 
+    private JarFile getJarFile(Artifact artifact) throws IOException {
+        URL artifactURL = artifactResolver.getURL(artifact);
+        if (artifactURL == null) {
+            return null;
+        }
+
+        File artifactFile = File.createTempFile("ymir", ".jar"); //$NON-NLS-1$ //$NON-NLS-2$
+        artifactFile.deleteOnExit();
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = artifactURL.openStream();
+            os = new FileOutputStream(artifactFile);
+            StreamUtils.copyStream(is, os);
+        } finally {
+            StreamUtils.close(is);
+            StreamUtils.close(os);
+        }
+        return new JarFile(artifactFile);
+    }
+
+    public MapProperties getPropertiesResource(Artifact artifact, String path, IProgressMonitor monitor)
+            throws CoreException {
+        monitor.beginTask("Get properties resource", 1);
+
+        JarFile jarFile = null;
+        InputStream is = null;
+        try {
+            jarFile = getJarFile(artifact);
+            if (jarFile == null) {
+                return null;
+            }
+
+            ZipEntry entry = jarFile.getEntry(path);
+            if (entry == null) {
+                return null;
+            }
+
+            is = jarFile.getInputStream(entry);
+
+            MapProperties prop = new MapProperties(new TreeMap<String, String>());
+            prop.load(is);
+            return prop;
+        } catch (IOException ex) {
+            throwCoreException("Can't read resource: artifact=" + artifact + ", path=" + path, ex);
+            return null;
+        } finally {
+            StreamUtils.close(is);
+            StreamUtils.close(jarFile);
+            monitor.done();
+        }
+    }
 }
