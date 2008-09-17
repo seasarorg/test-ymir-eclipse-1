@@ -241,18 +241,6 @@ public class JREsComboBlock {
         fillWithWorkspaceProfiles();
     }
 
-    private void restoreCombo(List<?> elements, Object element, Combo combo) {
-        int index = -1;
-        if (element != null) {
-            index = elements.indexOf(element);
-        }
-        if (index >= 0) {
-            combo.select(index);
-        } else {
-            combo.select(0);
-        }
-    }
-
     /**
      * Returns this block's control
      * 
@@ -604,17 +592,5 @@ public class JREsComboBlock {
 
     private void setStatus(IStatus status) {
         fStatus = status;
-    }
-
-    public IVMInstall getSelectedJRE() {
-        IVMInstall jre = getJRE();
-        if (jre != null) {
-            return jre;
-        }
-        IExecutionEnvironment environment = getEnvironment();
-        if (environment != null) {
-            return environment.getDefaultVM();
-        }
-        return JavaRuntime.getDefaultVMInstall();
     }
 }

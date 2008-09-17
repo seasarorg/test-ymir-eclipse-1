@@ -17,5 +17,6 @@ Bundle-ClassPath: .,
  lib/mvnhack-0.0.3.jar,
  lib/freemarker-2.3.9.jar,
  lib/xom-0.0.6.jar,
- lib/xom-tiger-0.0.6.jar
+ lib/xom-tiger-0.0.6.jar,
+ lib/kvasir-util-3.0.0-RC3.jar
 Bundle-Localization: plugin

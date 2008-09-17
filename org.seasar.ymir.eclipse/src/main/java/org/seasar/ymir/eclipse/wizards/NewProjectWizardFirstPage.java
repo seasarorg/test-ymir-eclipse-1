@@ -2,8 +2,8 @@ package org.seasar.ymir.eclipse.wizards;
 
 import java.io.File;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -267,8 +267,8 @@ public class NewProjectWizardFirstPage extends WizardNewProjectCreationPage {
         setPageComplete(validatePage());
     }
 
-    public IVMInstall getJRE() {
-        return jreBlock.getSelectedJRE();
+    public IPath getJREContainerPath() {
+        return jreBlock.getPath();
     }
 
     public String getRootPackageName() {

@@ -1,6 +1,7 @@
 package org.seasar.ymir.eclipse;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -24,14 +26,18 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.util.StreamUtils;
+import org.seasar.ymir.eclipse.Messages;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import freemarker.cache.TemplateLoader;
@@ -123,6 +129,10 @@ public class Activator extends AbstractUIPlugin {
      */
     public static ImageDescriptor getImageDescriptor(String path) {
         return imageDescriptorFromPlugin(PLUGIN_ID, path);
+    }
+
+    public static String getId() {
+        return "org.seasar.ymir.eclipse"; //$NON-NLS-1$
     }
 
     private void setUpSkeletonEntries() {
@@ -315,13 +325,15 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public void writeFile(IFile file, String body, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("Activator.21"), 2); //$NON-NLS-1$
-        InputStream is;
         try {
-            is = new ByteArrayInputStream(body.getBytes(Globals.ENCODING));
+            writeFile(file, new ByteArrayInputStream(body.getBytes(Globals.ENCODING)), monitor);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
         }
+    }
+
+    public void writeFile(IFile file, InputStream is, IProgressMonitor monitor) throws CoreException {
+        monitor.beginTask(Messages.getString("Activator.21"), 2); //$NON-NLS-1$
         if (file.exists()) {
             file.setContents(is, false, false, new SubProgressMonitor(monitor, 2));
         } else {
@@ -331,7 +343,66 @@ public class Activator extends AbstractUIPlugin {
         monitor.done();
     }
 
-    public static String getId() {
-        return "org.seasar.ymir.eclipse";
+    public void mergeProperties(IFile file, URL entry, IProgressMonitor monitor) throws CoreException {
+        MapProperties prop = new MapProperties(new TreeMap<String, String>());
+        InputStream is = null;
+        try {
+            is = entry.openStream();
+            prop.load(is);
+        } catch (IOException ex) {
+            throwCoreException("Can't load: " + entry, ex); //$NON-NLS-1$
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ignore) {
+                }
+            }
+        }
+
+        mergeProperties(file, prop, monitor);
+    }
+
+    public void mergeProperties(IFile file, MapProperties properties, IProgressMonitor monitor) throws CoreException {
+        monitor.beginTask("Merge properties", 1); //$NON-NLS-1$
+        try {
+            MapProperties prop = new MapProperties(new TreeMap<String, String>());
+            InputStream is = null;
+            try {
+                is = file.getContents();
+                prop.load(is);
+            } catch (IOException ex) {
+                throwCoreException("Can't load: " + file, ex); //$NON-NLS-1$
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ignore) {
+                    }
+                }
+            }
+
+            for (Enumeration<?> enm = properties.propertyNames(); enm.hasMoreElements();) {
+                String name = (String) enm.nextElement();
+                prop.setProperty(name, properties.getProperty(name));
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                prop.store(baos);
+            } catch (IOException ex) {
+                throwCoreException("Can't happen!", ex); //$NON-NLS-1$
+            }
+
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            file.setContents(bais, false, false, new SubProgressMonitor(monitor, 1));
+        } finally {
+            monitor.done();
+        }
+    }
+
+    private void throwCoreException(String message, Throwable cause) throws CoreException {
+        IStatus status = new Status(IStatus.ERROR, Activator.getId(), IStatus.OK, message, cause); //$NON-NLS-1$
+        throw new CoreException(status);
     }
 }
