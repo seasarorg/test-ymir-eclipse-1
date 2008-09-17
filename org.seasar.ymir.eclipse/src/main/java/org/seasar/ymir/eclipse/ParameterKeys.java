@@ -19,6 +19,8 @@ public interface ParameterKeys {
 
     String USE_DATABASE = "useDatabase";
 
+    String DATABASE_TYPE = "databaseType";
+
     String DATABASE_DRIVER_CLASS_NAME = "databaseDriverClassName";
 
     String DATABASE_URL = "databaseURL";

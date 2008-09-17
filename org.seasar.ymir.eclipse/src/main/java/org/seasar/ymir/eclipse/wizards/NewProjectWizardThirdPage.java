@@ -254,8 +254,8 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     public DatabaseEntry getDatabaseEntry() {
         int idx = databaseCombo.getSelectionIndex();
-        return new DatabaseEntry(entries[idx].getName(), getDatabaseDriverClassName(), getDatabaseURL(),
-                getDatabaseUser(), getDatabasePassword(), entries[idx].getDependency());
+        return new DatabaseEntry(entries[idx].getName(), entries[idx].getType(), getDatabaseDriverClassName(),
+                getDatabaseURL(), getDatabaseUser(), getDatabasePassword(), entries[idx].getDependency());
     }
 
     private String getDatabaseDriverClassName() {

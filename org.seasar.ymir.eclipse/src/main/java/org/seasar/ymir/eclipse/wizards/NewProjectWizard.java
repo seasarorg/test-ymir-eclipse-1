@@ -249,6 +249,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         map.put(ParameterKeys.VIEW_ENCODING, thirdPage.getViewEncoding());
         map.put(ParameterKeys.USE_DATABASE, thirdPage.isUseDatabase());
         DatabaseEntry entry = thirdPage.getDatabaseEntry();
+        map.put(ParameterKeys.DATABASE_TYPE, entry.getType());
         map.put(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, entry.getDriverClassName());
         map.put(ParameterKeys.DATABASE_URL, resolveDatabaseURL(entry.getURL()));
         map.put(ParameterKeys.DATABASE_URL_FOR_YMIR, resolveDatabaseURLForYmir(entry.getURL()));

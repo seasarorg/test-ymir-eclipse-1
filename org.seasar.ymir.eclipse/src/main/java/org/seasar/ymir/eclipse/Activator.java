@@ -14,13 +14,25 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
+
+import net.skirnir.xom.BeanAccessor;
+import net.skirnir.xom.BeanAccessorFactory;
+import net.skirnir.xom.XMLParser;
+import net.skirnir.xom.XMLParserFactory;
+import net.skirnir.xom.XOMapper;
+import net.skirnir.xom.XOMapperFactory;
+import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -29,7 +41,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -40,6 +51,7 @@ import org.osgi.framework.BundleContext;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.Dependency;
+import org.seasar.ymir.eclipse.util.AntPathPatterns;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -49,14 +61,6 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-
-import net.skirnir.xom.BeanAccessor;
-import net.skirnir.xom.BeanAccessorFactory;
-import net.skirnir.xom.XMLParser;
-import net.skirnir.xom.XMLParserFactory;
-import net.skirnir.xom.XOMapper;
-import net.skirnir.xom.XOMapperFactory;
-import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -70,19 +74,11 @@ public class Activator extends AbstractUIPlugin {
 
     private static final String PREFIX_ECLIPSE_SETTING = "."; //$NON-NLS-1$
 
-    private static final String SUFFIX_XML = ".xml"; //$NON-NLS-1$
-
-    private static final String SUFFIX_DICON = ".dicon"; //$NON-NLS-1$
-
-    private static final String SUFFIX_PROPERTIES = ".properties"; //$NON-NLS-1$
-
-    private static final String SUFFIX_PREFS = ".prefs"; //$NON-NLS-1$
-
-    private static final String SUFFIX_JAVA = ".java"; //$NON-NLS-1$
-
     private static final char PATH_DELIMITER_CHAR = '/';
 
     private static final String PATHPREFIX_SRC_MAIN_WEBAPP_LIB = Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB + "/"; //$NON-NLS-1$
+
+    private static final Set<String> TEMPLATE_EXT_SET;
 
     // The shared instance
     private static Activator plugin;
@@ -107,6 +103,12 @@ public class Activator extends AbstractUIPlugin {
     }).setStrict(false);
 
     private XMLParser parser = XMLParserFactory.newInstance();
+
+    static {
+        Set<String> set = new HashSet<String>();
+        set.addAll(Arrays.asList(".xml", ".dicon", ".properties", ".prefs", ".java"));
+        TEMPLATE_EXT_SET = Collections.unmodifiableSet(set);
+    }
 
     /**
      * The constructor
@@ -181,18 +183,19 @@ public class Activator extends AbstractUIPlugin {
 
     private void setUpDatabaseEntries() {
         databaseEntries = new DatabaseEntry[] {
-                new DatabaseEntry("H2 Database Engine", "org.h2.Driver", "jdbc:h2:file:%WEBAPP%/WEB-INF/h2/h2", "sa", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                new DatabaseEntry(
+                        "H2 Database Engine", "h2", "org.h2.Driver", "jdbc:h2:file:%WEBAPP%/WEB-INF/h2/h2", "sa", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                         "", new Dependency("com.h2database", "h2", "1.0.78", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                new DatabaseEntry("MySQL Community Server", "com.mysql.jdbc.Driver", //$NON-NLS-1$ //$NON-NLS-2$
+                new DatabaseEntry("MySQL Community Server", "mysql", "com.mysql.jdbc.Driver", //$NON-NLS-1$ //$NON-NLS-2$
                         "jdbc:mysql://localhost:3306/[DBNAME]", "", "", new Dependency("mysql", "mysql-connector-java", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                                 "5.1.6", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
-                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-3.0)", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$
+                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-3.0)", "postgresql", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$
                         "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                                 "8.3-603.jdbc3", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
-                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-4.0)", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$
+                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-4.0)", "postgresql", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$
                         "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                                 "8.3-603.jdbc4", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
-                new DatabaseEntry(Messages.getString("Activator.50"), "", "", "", "", null), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                new DatabaseEntry(Messages.getString("Activator.50"), "", "", "", "", "", null), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 
     public DatabaseEntry[] getDatabaseEntries() {
@@ -235,7 +238,7 @@ public class Activator extends AbstractUIPlugin {
 
     public void expandSkeleton(IProject project, Artifact skeletonArtifact, Map<String, Object> parameterMap,
             IProgressMonitor monitor) throws IOException, CoreException {
-        monitor.beginTask(Messages.getString("Activator.15"), 1); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("Activator.15"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
         try {
             final JarFile jarFile = getJarFile(skeletonArtifact);
             try {
@@ -259,10 +262,22 @@ public class Activator extends AbstractUIPlugin {
                 });
                 cfg.setObjectWrapper(new DefaultObjectWrapper());
 
+                AntPathPatterns includes = AntPathPatterns.EMPTY;
+                AntPathPatterns excludes = AntPathPatterns.EMPTY;
+                MapProperties viliBehavior = getPropertiesResource(jarFile, Globals.VILI_BEHAVIOR_PROPERTIES,
+                        new SubProgressMonitor(monitor, 1));
+                if (viliBehavior != null) {
+                    includes = AntPathPatterns
+                            .newInstance(viliBehavior.getProperty(ViliBehaviorKeys.TEMPLATE_INCLUDES));
+                    excludes = AntPathPatterns
+                            .newInstance(viliBehavior.getProperty(ViliBehaviorKeys.TEMPLATE_EXCLUDES));
+                }
+
                 for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
                     JarEntry entry = enm.nextElement();
                     String name = entry.getName();
-                    expand(project, name, cfg, parameterMap, jarFile, new NullProgressMonitor());
+                    expand(project, name, includes, excludes, cfg, parameterMap, jarFile, viliBehavior,
+                            new SubProgressMonitor(monitor, 1));
                 }
             } finally {
                 jarFile.close();
@@ -272,15 +287,16 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    private void expand(IProject project, String path, Configuration cfg, Map<String, Object> parameterMap,
-            JarFile jarFile, IProgressMonitor monitor) throws IOException, CoreException {
+    private void expand(IProject project, String path, AntPathPatterns includes, AntPathPatterns excludes,
+            Configuration cfg, Map<String, Object> parameterMap, JarFile jarFile, MapProperties viliBehavior,
+            IProgressMonitor monitor) throws IOException, CoreException {
         if (shouldIgnore(path)) {
             return;
         } else if (path.endsWith("/")) { //$NON-NLS-1$
             mkdirs(project.getFolder(resolvePath(path, cfg, parameterMap)), new SubProgressMonitor(monitor, 1));
         } else {
             InputStream in;
-            if (shouldEvaluateAsTemplate(path)) {
+            if (shouldEvaluateAsTemplate(path, includes, excludes)) {
                 byte[] evaluated;
                 try {
                     StringWriter sw = new StringWriter();
@@ -347,7 +363,14 @@ public class Activator extends AbstractUIPlugin {
         return false;
     }
 
-    private boolean shouldEvaluateAsTemplate(String path) {
+    private boolean shouldEvaluateAsTemplate(String path, AntPathPatterns includes, AntPathPatterns excludes) {
+        if (excludes.matches(path)) {
+            return false;
+        }
+        if (includes.matches(path)) {
+            return true;
+        }
+
         String name;
         int slash = path.lastIndexOf(PATH_DELIMITER_CHAR);
         if (slash < 0) {
@@ -355,8 +378,15 @@ public class Activator extends AbstractUIPlugin {
         } else {
             name = path.substring(slash + 1);
         }
-        return name.startsWith(PREFIX_ECLIPSE_SETTING) || name.endsWith(SUFFIX_XML) || name.endsWith(SUFFIX_DICON)
-                || name.endsWith(SUFFIX_PROPERTIES) || name.endsWith(SUFFIX_PREFS) || name.endsWith(SUFFIX_JAVA);
+        int dot = path.lastIndexOf('.');
+        String ext;
+        if (dot < 0) {
+            ext = "";
+        } else {
+            ext = path.substring(dot);
+        }
+
+        return name.startsWith(PREFIX_ECLIPSE_SETTING) || TEMPLATE_EXT_SET.contains(ext);
     }
 
     private void mkdirs(IResource container, IProgressMonitor monitor) throws CoreException {
@@ -540,13 +570,28 @@ public class Activator extends AbstractUIPlugin {
         monitor.beginTask(Messages.getString("Activator.58"), 1); //$NON-NLS-1$
 
         JarFile jarFile = null;
-        InputStream is = null;
         try {
             jarFile = getJarFile(artifact);
             if (jarFile == null) {
                 return null;
             }
 
+            return getPropertiesResource(jarFile, path, new SubProgressMonitor(monitor, 1));
+        } catch (IOException ex) {
+            throwCoreException("Can't read resource: artifact=" + artifact + ", path=" + path, ex); //$NON-NLS-1$ //$NON-NLS-2$
+            return null;
+        } finally {
+            StreamUtils.close(jarFile);
+            monitor.done();
+        }
+    }
+
+    public MapProperties getPropertiesResource(JarFile jarFile, String path, IProgressMonitor monitor)
+            throws CoreException {
+        monitor.beginTask(Messages.getString("Activator.58"), 1); //$NON-NLS-1$
+
+        InputStream is = null;
+        try {
             ZipEntry entry = jarFile.getEntry(path);
             if (entry == null) {
                 return null;
@@ -558,11 +603,10 @@ public class Activator extends AbstractUIPlugin {
             prop.load(is);
             return prop;
         } catch (IOException ex) {
-            throwCoreException("Can't read resource: artifact=" + artifact + ", path=" + path, ex); //$NON-NLS-1$ //$NON-NLS-2$
+            throwCoreException("Can't read resource: jarFile=" + jarFile.getName() + ", path=" + path, ex); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         } finally {
             StreamUtils.close(is);
-            StreamUtils.close(jarFile);
             monitor.done();
         }
     }
