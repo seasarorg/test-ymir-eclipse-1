@@ -1,6 +1,8 @@
 package org.seasar.ymir.eclipse.wizards;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -41,10 +43,15 @@ import org.eclipse.ui.IWorkbenchWizard;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
+import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
+import org.seasar.ymir.eclipse.maven.Dependency;
+import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
+
+import net.skirnir.xom.ValidationException;
 
 /**
  * This is a sample new wizard. Its role is to create a new file 
@@ -94,7 +101,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         Map<String, String> map = new HashMap<String, String>();
         map.put("J2SE-1.3", "1.3"); //$NON-NLS-1$ //$NON-NLS-2$
         map.put("J2SE-1.4", "1.4"); //$NON-NLS-1$ //$NON-NLS-2$
-        map.put(Messages.getString("NewProjectWizard.2"), "1.5"); //$NON-NLS-1$ //$NON-NLS-2$
+        map.put("J2SE-1.5", "1.5"); //$NON-NLS-1$ //$NON-NLS-2$
         map.put("JavaSE-1.6", "1.6"); //$NON-NLS-1$ //$NON-NLS-2$
         JRE_VERSION_MAP = Collections.unmodifiableMap(map);
     }
@@ -134,11 +141,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         final IPath jreContainerPath = firstPage.getJREContainerPath();
         final Artifact skeletonArtifact = secondPage.getSkeletonArtifact();
         final Map<String, Object> parameterMap = createParameterMap();
+        final Dependency dependency = thirdPage.getDatabaseEntry().getDependency();
         final MapProperties applicationProperties = createApplicationProperties();
         IRunnableWithProgress op = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException {
                 try {
-                    createProject(project, locationPath, jreContainerPath, skeletonArtifact, parameterMap,
+                    createProject(project, locationPath, jreContainerPath, skeletonArtifact, parameterMap, dependency,
                             applicationProperties, monitor);
                 } catch (CoreException e) {
                     throw new InvocationTargetException(e);
@@ -171,13 +179,30 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         map.put(ParameterKeys.JRE_VERSION, getJREVersion(firstPage.getJREContainerPath()));
         map.put(ParameterKeys.VIEW_ENCODING, thirdPage.getViewEncoding());
         map.put(ParameterKeys.USE_DATABASE, thirdPage.isUseDatabase());
-        map.put(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, thirdPage.getDatabaseDriverClassName());
-        map.put(ParameterKeys.DATABASE_URL, resolveDatabaseURL(thirdPage.getDatabaseURL()));
-        map.put(ParameterKeys.DATABASE_URL_FOR_YMIR, resolveDatabaseURLForYmir(thirdPage.getDatabaseURL()));
-        map.put(ParameterKeys.DATABASE_USER, thirdPage.getDatabaseUser());
-        map.put(ParameterKeys.DATABASE_PASSWORD, thirdPage.getDatabasePassword());
+        DatabaseEntry entry = thirdPage.getDatabaseEntry();
+        map.put(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, entry.getDriverClassName());
+        map.put(ParameterKeys.DATABASE_URL, resolveDatabaseURL(entry.getURL()));
+        map.put(ParameterKeys.DATABASE_URL_FOR_YMIR, resolveDatabaseURLForYmir(entry.getURL()));
+        map.put(ParameterKeys.DATABASE_USER, entry.getUser());
+        map.put(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
+        map.put(ParameterKeys.DEPENDENCIES, getDependenciesString(entry.getDependency()));
 
         return map;
+    }
+
+    private String getDependenciesString(Dependency dependency) {
+        if (dependency == null) {
+            return ""; //$NON-NLS-1$
+        }
+        StringWriter sw = new StringWriter();
+        try {
+            Activator.getDefault().getXOMapper().toXML(dependency, sw);
+        } catch (ValidationException ex) {
+            throw new RuntimeException("May logic error", ex); //$NON-NLS-1$
+        } catch (IOException ex) {
+            throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
+        }
+        return sw.toString();
     }
 
     private String resolveDatabaseURL(String databaseURL) {
@@ -225,9 +250,9 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     }
 
     private void createProject(IProject project, IPath locationPath, IPath jreContainerPath, Artifact skeletonArtifact,
-            Map<String, Object> parameterMap, MapProperties applicationProperties, IProgressMonitor monitor)
-            throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 8); //$NON-NLS-1$
+            Map<String, Object> parameterMap, Dependency dependency, MapProperties applicationProperties,
+            IProgressMonitor monitor) throws CoreException {
+        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 9); //$NON-NLS-1$
         try {
             if (!project.exists()) {
                 IProjectDescription description = project.getWorkspace().newProjectDescription(project.getName());
@@ -259,6 +284,11 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 throw new OperationCanceledException();
             }
 
+            IPath dependencyPath = copyDependency(project, dependency, new SubProgressMonitor(monitor, 1));
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
+
             setUpCompliance(project, (String) parameterMap.get(ParameterKeys.JRE_VERSION), new SubProgressMonitor(
                     monitor, 1));
             if (monitor.isCanceled()) {
@@ -276,14 +306,54 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 throw new OperationCanceledException();
             }
 
-            setUpProjectDescription(project, new SubProgressMonitor(monitor, 1));
+            IJavaProject javaProject = JavaCore.create(project);
+
+            setUpClasspath(javaProject, jreContainerPath, dependencyPath, new SubProgressMonitor(monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
 
-            IJavaProject javaProject = JavaCore.create(project);
+            setUpProjectDescription(project, new SubProgressMonitor(monitor, 1));
+        } finally {
+            monitor.done();
+        }
+    }
 
-            setUpClasspath(javaProject, jreContainerPath, new SubProgressMonitor(monitor, 1));
+    private IPath copyDependency(IProject project, Dependency dependency, IProgressMonitor monitor) {
+        monitor.beginTask(Messages.getString("NewProjectWizard.1"), 2); //$NON-NLS-1$
+        try {
+            Activator activator = Activator.getDefault();
+
+            if (dependency == null || activator.libsAreManagedAutomatically()) {
+                return null;
+            }
+
+            IPath path = null;
+            try {
+                Artifact artifact = activator.resolveArtifact(dependency.getGroupId(), dependency.getArtifactId(),
+                        dependency.getVersion(), new SubProgressMonitor(monitor, 1));
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
+                URL url = activator.getArtifactResolver().getURL(artifact, "jar"); //$NON-NLS-1$
+                IFile file = project.getFile(Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB + "/" + artifact.getArtifactId() //$NON-NLS-1$
+                        + "-" + artifact.getVersion() + ".jar"); //$NON-NLS-1$ //$NON-NLS-2$
+                InputStream is = null;
+                try {
+                    activator.writeFile(file, url.openStream(), new SubProgressMonitor(monitor, 1));
+                } finally {
+                    StreamUtils.close(is);
+                }
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
+                path = file.getFullPath();
+            } catch (Throwable ignore) {
+            }
+
+            return path;
         } finally {
             monitor.done();
         }
@@ -357,12 +427,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
     }
 
-    private void setUpClasspath(IJavaProject javaProject, IPath jreContainerPath, IProgressMonitor monitor)
-            throws CoreException {
+    private void setUpClasspath(IJavaProject javaProject, IPath jreContainerPath, IPath dependencyPath,
+            IProgressMonitor monitor) throws CoreException {
         if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
             setUpClasspathForM2Eclipse(javaProject, jreContainerPath, monitor);
         } else {
-            setUpClasspathForNonM2Eclipse(javaProject, jreContainerPath, monitor);
+            setUpClasspathForNonM2Eclipse(javaProject, jreContainerPath, dependencyPath, monitor);
         }
     }
 
@@ -385,24 +455,32 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]), new SubProgressMonitor(monitor, 1));
     }
 
-    private void setUpClasspathForNonM2Eclipse(IJavaProject javaProject, IPath jreContainerPath,
+    private void setUpClasspathForNonM2Eclipse(IJavaProject javaProject, IPath jreContainerPath, IPath dependencyPath,
             IProgressMonitor monitor) throws JavaModelException {
         monitor.beginTask(Messages.getString("NewProjectWizard.23"), 1); //$NON-NLS-1$
-
-        List<IClasspathEntry> newEntryList = new ArrayList<IClasspathEntry>();
-        for (IClasspathEntry entry : javaProject.getRawClasspath()) {
-            int kind = entry.getEntryKind();
-            IPath path = entry.getPath();
-            if (kind == IClasspathEntry.CPE_CONTAINER
-                    && (Globals.CLASSPATH_CONTAINER_M2ECLIPSE.equals(path.toPortableString()) || PATH_JRE_CONTAINER
-                            .equals(path.segment(0)))) {
-                continue;
+        try {
+            List<IClasspathEntry> newEntryList = new ArrayList<IClasspathEntry>();
+            for (IClasspathEntry entry : javaProject.getRawClasspath()) {
+                int kind = entry.getEntryKind();
+                IPath path = entry.getPath();
+                if (kind == IClasspathEntry.CPE_CONTAINER
+                        && (Globals.CLASSPATH_CONTAINER_M2ECLIPSE.equals(path.toPortableString()) || PATH_JRE_CONTAINER
+                                .equals(path.segment(0)))) {
+                    continue;
+                }
+                newEntryList.add(entry);
             }
-            newEntryList.add(entry);
-        }
-        newEntryList.add(JavaCore.newContainerEntry(jreContainerPath));
+            newEntryList.add(JavaCore.newContainerEntry(jreContainerPath));
 
-        javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]), new SubProgressMonitor(monitor, 1));
+            if (dependencyPath != null) {
+                newEntryList.add(JavaCore.newLibraryEntry(dependencyPath, null, null));
+            }
+
+            javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]),
+                    new SubProgressMonitor(monitor, 1));
+        } finally {
+            monitor.done();
+        }
     }
 
     private void setUpProjectDescription(IProject project, IProgressMonitor monitor) throws CoreException {

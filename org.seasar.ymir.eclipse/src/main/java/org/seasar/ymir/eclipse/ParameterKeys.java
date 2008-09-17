@@ -30,4 +30,6 @@ public interface ParameterKeys {
     String DATABASE_PASSWORD = "databasePassword";
 
     String JRE_VERSION = "JREVersion";
+
+    String DEPENDENCIES = "dependencies";
 }

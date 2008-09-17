@@ -3,15 +3,20 @@ package org.seasar.ymir.eclipse.wizards;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.seasar.ymir.eclipse.Activator;
+import org.seasar.ymir.eclipse.DatabaseEntry;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well
@@ -20,11 +25,15 @@ import org.eclipse.swt.widgets.Text;
  */
 
 public class NewProjectWizardThirdPage extends WizardPage {
+    private static final int DEFAULT_DATABASE_INDEX = 0;
+
     private Listener validationListener = new Listener() {
         public void handleEvent(Event event) {
             setPageComplete(validatePage());
         }
     };
+
+    private DatabaseEntry[] entries;
 
     private boolean initialized;
 
@@ -33,6 +42,10 @@ public class NewProjectWizardThirdPage extends WizardPage {
     private Button useDatabaseField;
 
     private Group databaseGroup;
+
+    private Label databaseLabel;
+
+    private Combo databaseCombo;
 
     private Label databaseDriverClassNameLabel;
 
@@ -122,14 +135,49 @@ public class NewProjectWizardThirdPage extends WizardPage {
         databaseGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         databaseGroup.setText(Messages.getString("NewProjectWizardThirdPage.6")); //$NON-NLS-1$
 
+        entries = Activator.getDefault().getDatabaseEntries();
+        String[] items = new String[entries.length];
+        for (int i = 0; i < entries.length; i++) {
+            items[i] = entries[i].getName();
+        }
+
+        databaseLabel = new Label(databaseGroup, SWT.NONE);
+        databaseLabel.setText(Messages.getString("NewProjectWizardThirdPage.0")); //$NON-NLS-1$
+
+        databaseCombo = new Combo(databaseGroup, SWT.READ_ONLY);
+        GridData data = new GridData(GridData.FILL_HORIZONTAL);
+        data.widthHint = 250;
+        databaseCombo.setLayoutData(data);
+        databaseCombo.setItems(items);
+        databaseCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                int idx = databaseCombo.getSelectionIndex();
+                databaseDriverClassNameField.setText(entries[idx].getDriverClassName());
+                databaseURLField.setText(entries[idx].getURL());
+                databaseUserField.setText(entries[idx].getUser());
+                databasePasswordField.setText(entries[idx].getPassword());
+
+                setPageComplete(validatePage());
+            }
+        });
+
         databaseDriverClassNameLabel = new Label(databaseGroup, SWT.NONE);
         databaseDriverClassNameLabel.setText(Messages.getString("NewProjectWizardThirdPage.7")); //$NON-NLS-1$
 
         databaseDriverClassNameField = new Text(databaseGroup, SWT.BORDER);
-        GridData data = new GridData(GridData.FILL_HORIZONTAL);
+        data = new GridData(GridData.FILL_HORIZONTAL);
         data.widthHint = 250;
         databaseDriverClassNameField.setLayoutData(data);
         databaseDriverClassNameField.addListener(SWT.Modify, validationListener);
+        databaseDriverClassNameField.addListener(SWT.Modify, new Listener() {
+            public void handleEvent(Event e) {
+                if (!databaseDriverClassNameField.getText().equals(
+                        entries[databaseCombo.getSelectionIndex()].getDriverClassName())) {
+                    databaseCombo.setText(databaseCombo.getItem(entries.length - 1));
+                }
+            }
+        });
 
         databaseURLLabel = new Label(databaseGroup, SWT.NONE);
         databaseURLLabel.setText(Messages.getString("NewProjectWizardThirdPage.8")); //$NON-NLS-1$
@@ -187,10 +235,11 @@ public class NewProjectWizardThirdPage extends WizardPage {
     void setDefaultValues() {
         viewEncodingField.setText("UTF-8"); //$NON-NLS-1$
         useDatabaseField.setSelection(true);
-        databaseDriverClassNameField.setText("org.h2.Driver"); //$NON-NLS-1$
-        databaseURLField.setText("jdbc:h2:file:%WEBAPP%/WEB-INF/h2/h2"); //$NON-NLS-1$
-        databaseUserField.setText("sa"); //$NON-NLS-1$
-        databasePasswordField.setText(""); //$NON-NLS-1$
+        databaseCombo.setText(databaseCombo.getItem(DEFAULT_DATABASE_INDEX));
+        databaseDriverClassNameField.setText(entries[DEFAULT_DATABASE_INDEX].getDriverClassName());
+        databaseURLField.setText(entries[DEFAULT_DATABASE_INDEX].getURL());
+        databaseUserField.setText(entries[DEFAULT_DATABASE_INDEX].getUser());
+        databasePasswordField.setText(entries[DEFAULT_DATABASE_INDEX].getPassword());
 
         setPageComplete(validatePage());
     }
@@ -203,7 +252,13 @@ public class NewProjectWizardThirdPage extends WizardPage {
         return useDatabaseField.getSelection();
     }
 
-    public String getDatabaseDriverClassName() {
+    public DatabaseEntry getDatabaseEntry() {
+        int idx = databaseCombo.getSelectionIndex();
+        return new DatabaseEntry(entries[idx].getName(), getDatabaseDriverClassName(), getDatabaseURL(),
+                getDatabaseUser(), getDatabasePassword(), entries[idx].getDependency());
+    }
+
+    private String getDatabaseDriverClassName() {
         if (isUseDatabase()) {
             return databaseDriverClassNameField.getText();
         } else {
@@ -211,7 +266,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
     }
 
-    public String getDatabaseURL() {
+    private String getDatabaseURL() {
         if (isUseDatabase()) {
             return databaseURLField.getText();
         } else {
@@ -219,7 +274,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
     }
 
-    public String getDatabaseUser() {
+    private String getDatabaseUser() {
         if (isUseDatabase()) {
             return databaseUserField.getText();
         } else {
@@ -227,7 +282,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
     }
 
-    public String getDatabasePassword() {
+    private String getDatabasePassword() {
         if (isUseDatabase()) {
             return databasePasswordField.getText();
         } else {

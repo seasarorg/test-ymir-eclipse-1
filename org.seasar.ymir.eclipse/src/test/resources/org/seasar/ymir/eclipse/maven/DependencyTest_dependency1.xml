@@ -1,0 +1,6 @@
+<dependency>
+  <groupId>com.h2database</groupId>
+  <artifactId>h2</artifactId>
+  <version>1.0.78</version>
+  <scope>runtime</scope>
+</dependency>

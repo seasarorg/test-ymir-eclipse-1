@@ -1,5 +1,6 @@
 package org.seasar.ymir.eclipse;
 
+import java.beans.Introspector;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -28,6 +29,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -36,8 +38,15 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
+import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.eclipse.Messages;
+
+import net.skirnir.xom.BeanAccessor;
+import net.skirnir.xom.BeanAccessorFactory;
+import net.skirnir.xom.XOMapper;
+import net.skirnir.xom.XOMapperFactory;
+import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import freemarker.cache.TemplateLoader;
@@ -55,7 +64,7 @@ public class Activator extends AbstractUIPlugin {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.seasar.ymir.eclipse"; //$NON-NLS-1$
 
-    private static final String PATH_META_INF = "META-INF/"; //$NON-NLS-1$
+    private static final String PATHPREFIX_META_INF = "META-INF/"; //$NON-NLS-1$
 
     private static final String PREFIX_ECLIPSE_SETTING = "."; //$NON-NLS-1$
 
@@ -71,6 +80,8 @@ public class Activator extends AbstractUIPlugin {
 
     private static final char PATH_DELIMITER_CHAR = '/';
 
+    private static final String PATHPREFIX_SRC_MAIN_WEBAPP_LIB = Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB + "/";
+
     // The shared instance
     private static Activator plugin;
 
@@ -78,7 +89,20 @@ public class Activator extends AbstractUIPlugin {
 
     private SkeletonEntry[] skeletonEntries;
 
+    private DatabaseEntry[] databaseEntries;
+
     private Configuration cfg;
+
+    private XOMapper mapper = XOMapperFactory.newInstance().setBeanAccessorFactory(new BeanAccessorFactory() {
+        public BeanAccessor newInstance() {
+            return new AnnotationBeanAccessor() {
+                @Override
+                protected String toXMLName(String javaName) {
+                    return Introspector.decapitalize(javaName);
+                }
+            };
+        }
+    }).setStrict(false);
 
     /**
      * The constructor
@@ -97,6 +121,7 @@ public class Activator extends AbstractUIPlugin {
 
         artifactResolver = new ArtifactResolver();
         setUpSkeletonEntries();
+        setUpDatabaseEntries();
         setUpTemplateEngine();
     }
 
@@ -107,6 +132,9 @@ public class Activator extends AbstractUIPlugin {
      */
     public void stop(BundleContext context) throws Exception {
         artifactResolver = null;
+        mapper = null;
+        skeletonEntries = null;
+        databaseEntries = null;
         plugin = null;
         super.stop(context);
     }
@@ -144,6 +172,26 @@ public class Activator extends AbstractUIPlugin {
 
     public SkeletonEntry[] getSkeletonEntries() {
         return skeletonEntries;
+    }
+
+    private void setUpDatabaseEntries() {
+        databaseEntries = new DatabaseEntry[] {
+                new DatabaseEntry("H2 Database Engine", "org.h2.Driver", "jdbc:h2:file:%WEBAPP%/WEB-INF/h2/h2", "sa",
+                        "", new Dependency("com.h2database", "h2", "1.0.78", "runtime")),
+                new DatabaseEntry("MySQL Community Server", "com.mysql.jdbc.Driver",
+                        "jdbc:mysql://localhost:3306/[DBNAME]", "", "", new Dependency("mysql", "mysql-connector-java",
+                                "5.1.6", "runtime")),
+                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-3.0)", "org.postgresql.Driver",
+                        "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql",
+                                "8.3-603.jdbc3", "runtime")),
+                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-4.0)", "org.postgresql.Driver",
+                        "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql",
+                                "8.3-603.jdbc4", "runtime")),
+                new DatabaseEntry("Custom setting", "", "", "", "", null), };
+    }
+
+    public DatabaseEntry[] getDatabaseEntries() {
+        return databaseEntries;
     }
 
     private void setUpTemplateEngine() {
@@ -286,7 +334,16 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private boolean shouldIgnore(String path) {
-        return path.startsWith(PATH_META_INF);
+        if (path.startsWith(PATHPREFIX_META_INF)) {
+            return true;
+        }
+        if (path.equals(PATHPREFIX_SRC_MAIN_WEBAPP_LIB)) {
+            return false;
+        }
+        if (path.startsWith(PATHPREFIX_SRC_MAIN_WEBAPP_LIB) && libsAreManagedAutomatically()) {
+            return true;
+        }
+        return false;
     }
 
     private boolean shouldEvaluateAsTemplate(String path) {
@@ -405,4 +462,18 @@ public class Activator extends AbstractUIPlugin {
         IStatus status = new Status(IStatus.ERROR, Activator.getId(), IStatus.OK, message, cause); //$NON-NLS-1$
         throw new CoreException(status);
     }
+
+    public XOMapper getXOMapper() {
+        return mapper;
+    }
+
+    public ArtifactResolver getArtifactResolver() {
+        return artifactResolver;
+    }
+
+    public boolean libsAreManagedAutomatically() {
+        return Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null
+                && Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null;
+    }
+
 }

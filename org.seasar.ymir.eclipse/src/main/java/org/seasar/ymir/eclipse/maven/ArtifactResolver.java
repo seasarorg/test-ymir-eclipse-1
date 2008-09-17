@@ -1,6 +1,5 @@
 package org.seasar.ymir.eclipse.maven;
 
-import java.beans.Introspector;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,15 +8,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Properties;
 
-import net.skirnir.xom.BeanAccessor;
-import net.skirnir.xom.BeanAccessorFactory;
-import net.skirnir.xom.IllegalSyntaxException;
-import net.skirnir.xom.ValidationException;
-import net.skirnir.xom.XMLParserFactory;
-import net.skirnir.xom.XOMapper;
-import net.skirnir.xom.XOMapperFactory;
-import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
-
+import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedConfiguration;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedRemoteRepository;
 
@@ -29,6 +20,11 @@ import werkzeugkasten.mvnhack.repository.Context;
 import werkzeugkasten.mvnhack.repository.Repository;
 import werkzeugkasten.mvnhack.repository.impl.DefaultContext;
 import werkzeugkasten.mvnhack.repository.impl.StAXArtifactBuilder;
+
+import net.skirnir.xom.IllegalSyntaxException;
+import net.skirnir.xom.ValidationException;
+import net.skirnir.xom.XMLParserFactory;
+import net.skirnir.xom.XOMapper;
 
 public class ArtifactResolver {
     private Configuration configuration;
@@ -46,16 +42,7 @@ public class ArtifactResolver {
         configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2-snapshot", builder));
         context = new DefaultContext(configuration);
 
-        mapper = XOMapperFactory.newInstance().setBeanAccessorFactory(new BeanAccessorFactory() {
-            public BeanAccessor newInstance() {
-                return new AnnotationBeanAccessor() {
-                    @Override
-                    protected String toXMLName(String javaName) {
-                        return Introspector.decapitalize(javaName);
-                    }
-                };
-            }
-        }).setStrict(false);
+        mapper = Activator.getDefault().getXOMapper();
     }
 
     public Artifact resolve(String groupId, String artifactId, String version) {
