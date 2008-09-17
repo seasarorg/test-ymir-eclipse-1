@@ -57,7 +57,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private Button useLatestVersionField;
 
-    private volatile Artifact skeletonArtifact;
+    private volatile Artifact[] skeletonArtifacts;
 
     private SkeletonArtifactResolver skeletonArtifactResolver;
 
@@ -210,7 +210,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     boolean validatePage() {
-        if (skeletonArtifact == null) {
+        if (skeletonArtifacts == null) {
             return false;
         }
         return true;
@@ -261,7 +261,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     private void resolveSkeletonArtifact() {
-        skeletonArtifact = null;
+        skeletonArtifacts = null;
         setPageComplete(false);
 
         if (skeletonArtifactResolver != null) {
@@ -279,9 +279,28 @@ public class NewProjectWizardSecondPage extends WizardPage {
             setErrorMessage(null);
         }
 
-        skeletonArtifactResolver = new SkeletonArtifactResolver(this, getSkeletonGroupId(), getSkeletonArtifactId(),
-                getSkeletonVersion());
-        skeletonArtifactResolver.start();
+        SkeletonEntry entry = getSkeletonEntry();
+        if (entry != null) {
+            skeletonArtifactResolver = new SkeletonArtifactResolver(this, entry);
+            skeletonArtifactResolver.start();
+        }
+    }
+
+    private SkeletonEntry getSkeletonEntry() {
+        if (!chooseFromTemplatesField.getSelection()) {
+            String version = getSkeletonVersion();
+            if (version.length() == 0) {
+                version = null;
+            }
+            return new SkeletonEntry(getSkeletonGroupId(), getSkeletonArtifactId(), version);
+        } else {
+            int index = templateListField.getSelectionIndex();
+            if (index == -1) {
+                return null;
+            } else {
+                return entries[index];
+            }
+        }
     }
 
     private String getSkeletonGroupId() {
@@ -322,11 +341,11 @@ public class NewProjectWizardSecondPage extends WizardPage {
         }
     }
 
-    public Artifact getSkeletonArtifact() {
-        return skeletonArtifact;
+    public Artifact[] getSkeletonArtifacts() {
+        return skeletonArtifacts;
     }
 
-    public void setSkeletonArtifact(Artifact skeletonArtifact) {
-        this.skeletonArtifact = skeletonArtifact;
+    void setSkeletonArtifacts(Artifact[] skeletonArtifacts) {
+        this.skeletonArtifacts = skeletonArtifacts;
     }
 }

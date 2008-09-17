@@ -1,29 +1,29 @@
 package org.seasar.ymir.eclipse.wizards;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ArtifactNotFoundException;
+import org.seasar.ymir.eclipse.MavenArtifact;
+import org.seasar.ymir.eclipse.SkeletonEntry;
+import org.seasar.ymir.eclipse.SkeletonFragment;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class SkeletonArtifactResolver implements Runnable {
     private NewProjectWizardSecondPage page;
 
-    private String groupId;
-
-    private String artifactId;
-
-    private String version;
+    private SkeletonEntry entry;
 
     private Thread thread;
 
     private volatile boolean cancelled;
 
-    public SkeletonArtifactResolver(NewProjectWizardSecondPage page, String groupId, String artifactId, String version) {
+    public SkeletonArtifactResolver(NewProjectWizardSecondPage page, SkeletonEntry entry) {
         this.page = page;
-        this.groupId = groupId;
-        this.artifactId = artifactId;
-        this.version = version;
+        this.entry = entry;
     }
 
     public void start() {
@@ -38,14 +38,35 @@ public class SkeletonArtifactResolver implements Runnable {
     public void run() {
         page.getShell().getDisplay().asyncExec(new Runnable() {
             public void run() {
-                Artifact artifact = resolveSkeletonArtifact();
-                if (cancelled) {
-                    return;
-                }
+                List<Artifact> list = new ArrayList<Artifact>();
+                boolean failed = false;
+                do {
+                    Artifact artifact = resolveArtifact(entry);
+                    if (cancelled) {
+                        return;
+                    }
+                    if (artifact == null) {
+                        failed = true;
+                        break;
+                    }
+                    list.add(artifact);
+
+                    for (SkeletonFragment fragment : entry.getFragments()) {
+                        artifact = resolveArtifact(fragment);
+                        if (cancelled) {
+                            return;
+                        }
+                        if (artifact == null) {
+                            failed = true;
+                            break;
+                        }
+                        list.add(artifact);
+                    }
+                } while (false);
 
                 String errorMessage;
-                if (artifact != null) {
-                    page.setSkeletonArtifact(artifact);
+                if (!failed) {
+                    page.setSkeletonArtifacts(list.toArray(new Artifact[0]));
                     page.setPageComplete(page.validatePage());
                     errorMessage = null;
                 } else {
@@ -59,19 +80,20 @@ public class SkeletonArtifactResolver implements Runnable {
         });
     }
 
-    private Artifact resolveSkeletonArtifact() {
+    private Artifact resolveArtifact(MavenArtifact artifact) {
         Activator activator = Activator.getDefault();
-        String v;
-        if (version.length() == 0) {
-            v = activator.getArtifactLatestVersion(groupId, artifactId);
-            if (v == null) {
+        String version;
+        if (artifact.getVersion() == null) {
+            version = activator.getArtifactLatestVersion(artifact.getGroupId(), artifact.getArtifactId());
+            if (version == null) {
                 return null;
             }
         } else {
-            v = version;
+            version = artifact.getVersion();
         }
         try {
-            return activator.resolveArtifact(groupId, artifactId, v, new NullProgressMonitor());
+            return activator.resolveArtifact(artifact.getGroupId(), artifact.getArtifactId(), version,
+                    new NullProgressMonitor());
         } catch (ArtifactNotFoundException ignore) {
             return null;
         }

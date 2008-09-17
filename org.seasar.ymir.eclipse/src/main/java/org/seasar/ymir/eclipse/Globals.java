@@ -29,10 +29,13 @@ public interface Globals {
 
     String PATH_SRC_MAIN_RESOURCES = "src/main/resources";
 
-    String PATH_SRC_MAIN_WEBAPP_WEBINF_LIB = "src/main/webapp/WEB-INF/lib";
+    String PATH_SRC_MAIN_WEBAPP_WEBINF_LIB = "src/main/webapp/WEB-INF/lib" + "";
 
     String BUNDLENAME_WEBLAUNCHER = "werkzeugkasten.weblauncher";
 
     String NATURE_ID_WEBLAUNCHER = BUNDLENAME_WEBLAUNCHER + ".nature";
 
+    String VILI_DEPENDENCIES_XML = "vili-dependencies.xml";
+
+    String VILI_APP_PROPRERTIES = "vili-app.properties";
 }

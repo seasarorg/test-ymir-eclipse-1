@@ -40,13 +40,6 @@ import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.util.StreamUtils;
-import org.seasar.ymir.eclipse.Messages;
-
-import net.skirnir.xom.BeanAccessor;
-import net.skirnir.xom.BeanAccessorFactory;
-import net.skirnir.xom.XOMapper;
-import net.skirnir.xom.XOMapperFactory;
-import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import freemarker.cache.TemplateLoader;
@@ -55,6 +48,14 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+
+import net.skirnir.xom.BeanAccessor;
+import net.skirnir.xom.BeanAccessorFactory;
+import net.skirnir.xom.XMLParser;
+import net.skirnir.xom.XMLParserFactory;
+import net.skirnir.xom.XOMapper;
+import net.skirnir.xom.XOMapperFactory;
+import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -104,6 +105,8 @@ public class Activator extends AbstractUIPlugin {
         }
     }).setStrict(false);
 
+    private XMLParser parser = XMLParserFactory.newInstance();
+
     /**
      * The constructor
      */
@@ -133,6 +136,7 @@ public class Activator extends AbstractUIPlugin {
     public void stop(BundleContext context) throws Exception {
         artifactResolver = null;
         mapper = null;
+        parser = null;
         skeletonEntries = null;
         databaseEntries = null;
         plugin = null;
@@ -167,7 +171,7 @@ public class Activator extends AbstractUIPlugin {
         skeletonEntries = new SkeletonEntry[] { new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+S2Dao", //$NON-NLS-1$ //$NON-NLS-2$
                 Messages.getString("Activator.10")), //$NON-NLS-1$
                 new SkeletonEntry("ymir-skeleton-dbflute", "Ymir+ZPT+DBFlute", //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.getString("Activator.13")), }; //$NON-NLS-1$
+                        Messages.getString("Activator.13"), new SkeletonFragment("ymir-fragment-dbflute")), }; //$NON-NLS-1$
     }
 
     public SkeletonEntry[] getSkeletonEntries() {
@@ -228,11 +232,11 @@ public class Activator extends AbstractUIPlugin {
         return artifact;
     }
 
-    public void expandSkeleton(IProject project, Artifact artifact, Map<String, Object> parameterMap,
+    public void expandSkeleton(IProject project, Artifact skeletonArtifact, Map<String, Object> parameterMap,
             IProgressMonitor monitor) throws IOException, CoreException {
         monitor.beginTask(Messages.getString("Activator.15"), 1); //$NON-NLS-1$
 
-        URL artifactURL = artifactResolver.getURL(artifact, "jar"); //$NON-NLS-1$
+        URL artifactURL = artifactResolver.getURL(skeletonArtifact, "jar"); //$NON-NLS-1$
         if (artifactURL == null) {
             return;
         }
@@ -334,6 +338,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private boolean shouldIgnore(String path) {
+        // TODO vili-*.*は無視するようにする。
         if (path.startsWith(PATHPREFIX_META_INF)) {
             return true;
         }
@@ -467,6 +472,10 @@ public class Activator extends AbstractUIPlugin {
         return mapper;
     }
 
+    public XMLParser getXMLParser() {
+        return parser;
+    }
+
     public ArtifactResolver getArtifactResolver() {
         return artifactResolver;
     }
@@ -474,6 +483,10 @@ public class Activator extends AbstractUIPlugin {
     public boolean libsAreManagedAutomatically() {
         return Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null
                 && Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null;
+    }
+
+    public URL getResource(Artifact artifact, String path) {
+        return null;
     }
 
 }

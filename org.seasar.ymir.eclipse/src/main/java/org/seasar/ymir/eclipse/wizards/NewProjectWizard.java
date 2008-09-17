@@ -2,6 +2,7 @@ package org.seasar.ymir.eclipse.wizards;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -46,12 +47,15 @@ import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
+import org.seasar.ymir.eclipse.maven.Dependencies;
 import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 import net.skirnir.xom.ValidationException;
+import net.skirnir.xom.XMLParser;
+import net.skirnir.xom.XOMapper;
 
 /**
  * This is a sample new wizard. Its role is to create a new file 
@@ -139,15 +143,22 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         final IProject project = firstPage.getProjectHandle();
         final IPath locationPath = firstPage.getLocationPath();
         final IPath jreContainerPath = firstPage.getJREContainerPath();
-        final Artifact skeletonArtifact = secondPage.getSkeletonArtifact();
-        final Map<String, Object> parameterMap = createParameterMap();
-        final Dependency dependency = thirdPage.getDatabaseEntry().getDependency();
+        final Artifact[] skeletonArtifacts = secondPage.getSkeletonArtifacts();
+        final Dependency[] dependencies;
+        try {
+            // TODO 重複dependencyははいじょするようにする。
+            dependencies = createDependencies();
+        } catch (CoreException ex) {
+            MessageDialog.openError(getShell(), "Error", ex.getMessage()); //$NON-NLS-1$
+            return false;
+        }
+        final Map<String, Object> parameterMap = createParameterMap(dependencies);
         final MapProperties applicationProperties = createApplicationProperties();
         IRunnableWithProgress op = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException {
                 try {
-                    createProject(project, locationPath, jreContainerPath, skeletonArtifact, parameterMap, dependency,
-                            applicationProperties, monitor);
+                    createProject(project, locationPath, jreContainerPath, skeletonArtifacts, parameterMap,
+                            dependencies, applicationProperties, monitor);
                 } catch (CoreException e) {
                     throw new InvocationTargetException(e);
                 } finally {
@@ -167,7 +178,39 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         return true;
     }
 
-    private Map<String, Object> createParameterMap() {
+    private Dependency[] createDependencies() throws CoreException {
+        Activator activator = Activator.getDefault();
+        XOMapper mapper = activator.getXOMapper();
+        XMLParser parser = activator.getXMLParser();
+
+        List<Dependency> list = new ArrayList<Dependency>();
+
+        Dependency dependency = thirdPage.getDatabaseEntry().getDependency();
+        if (dependency != null) {
+            list.add(dependency);
+        }
+
+        Artifact[] artifacts = secondPage.getSkeletonArtifacts();
+        for (int i = 1; i < artifacts.length; i++) {
+            URL url = activator.getResource(artifacts[i], Globals.VILI_DEPENDENCIES_XML);
+            if (url != null) {
+                Dependencies dependencies;
+                try {
+                    dependencies = (Dependencies) mapper.toBean(parser.parse(
+                            new InputStreamReader(url.openStream(), Globals.ENCODING)).getRootElement(),
+                            Dependencies.class);
+                } catch (Throwable t) {
+                    throwCoreException("Can't read " + Globals.VILI_DEPENDENCIES_XML + " in " + url, t);
+                    return null;
+                }
+                list.addAll(Arrays.asList(dependencies.getDependencies()));
+            }
+        }
+
+        return null;
+    }
+
+    private Map<String, Object> createParameterMap(Dependency[] dependencies) {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(ParameterKeys.SLASH, PATH_DELIMITER);
         map.put(ParameterKeys.PROJECT_NAME, firstPage.getProjectName());
@@ -185,24 +228,26 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         map.put(ParameterKeys.DATABASE_URL_FOR_YMIR, resolveDatabaseURLForYmir(entry.getURL()));
         map.put(ParameterKeys.DATABASE_USER, entry.getUser());
         map.put(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
-        map.put(ParameterKeys.DEPENDENCIES, getDependenciesString(entry.getDependency()));
+        map.put(ParameterKeys.DEPENDENCIES, getDependenciesString(dependencies));
 
         return map;
     }
 
-    private String getDependenciesString(Dependency dependency) {
-        if (dependency == null) {
-            return ""; //$NON-NLS-1$
+    private String getDependenciesString(Dependency[] dependencies) {
+        XOMapper mapper = Activator.getDefault().getXOMapper();
+        StringBuilder sb = new StringBuilder();
+        for (Dependency dependency : dependencies) {
+            StringWriter sw = new StringWriter();
+            try {
+                mapper.toXML(dependency, sw);
+            } catch (ValidationException ex) {
+                throw new RuntimeException("May logic error", ex); //$NON-NLS-1$
+            } catch (IOException ex) {
+                throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
+            }
+            sb.append(sw.toString());
         }
-        StringWriter sw = new StringWriter();
-        try {
-            Activator.getDefault().getXOMapper().toXML(dependency, sw);
-        } catch (ValidationException ex) {
-            throw new RuntimeException("May logic error", ex); //$NON-NLS-1$
-        } catch (IOException ex) {
-            throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
-        }
-        return sw.toString();
+        return sb.toString();
     }
 
     private String resolveDatabaseURL(String databaseURL) {
@@ -249,10 +294,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         return prop;
     }
 
-    private void createProject(IProject project, IPath locationPath, IPath jreContainerPath, Artifact skeletonArtifact,
-            Map<String, Object> parameterMap, Dependency dependency, MapProperties applicationProperties,
-            IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 9); //$NON-NLS-1$
+    private void createProject(IProject project, IPath locationPath, IPath jreContainerPath,
+            Artifact[] skeletonArtifacts, Map<String, Object> parameterMap, Dependency[] dependencies,
+            MapProperties applicationProperties, IProgressMonitor monitor) throws CoreException {
+        monitor
+                .beginTask(
+                        Messages.getString("NewProjectWizard.12"), 7 + skeletonArtifacts.length + dependencies.length); //$NON-NLS-1$
         try {
             if (!project.exists()) {
                 IProjectDescription description = project.getWorkspace().newProjectDescription(project.getName());
@@ -273,20 +320,28 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 throw new OperationCanceledException();
             }
 
-            try {
-                Activator.getDefault().expandSkeleton(project, skeletonArtifact, parameterMap,
-                        new SubProgressMonitor(monitor, 1));
-            } catch (IOException ex) {
-                throwCoreException(Messages.getString("NewProjectWizard.13"), ex); //$NON-NLS-1$
-                return;
-            }
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
+            for (Artifact skeletonArtifact : skeletonArtifacts) {
+                try {
+                    Activator.getDefault().expandSkeleton(project, skeletonArtifact, parameterMap,
+                            new SubProgressMonitor(monitor, 1));
+                } catch (IOException ex) {
+                    throwCoreException(Messages.getString("NewProjectWizard.13"), ex); //$NON-NLS-1$
+                    return;
+                }
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
             }
 
-            IPath dependencyPath = copyDependency(project, dependency, new SubProgressMonitor(monitor, 1));
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
+            List<IPath> dependencyPathList = new ArrayList<IPath>();
+            for (Dependency dependency : dependencies) {
+                IPath dependencyPath = copyDependency(project, dependency, new SubProgressMonitor(monitor, 1));
+                if (dependencyPath != null) {
+                    dependencyPathList.add(dependencyPath);
+                }
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
             }
 
             setUpCompliance(project, (String) parameterMap.get(ParameterKeys.JRE_VERSION), new SubProgressMonitor(
@@ -308,7 +363,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
             IJavaProject javaProject = JavaCore.create(project);
 
-            setUpClasspath(javaProject, jreContainerPath, dependencyPath, new SubProgressMonitor(monitor, 1));
+            setUpClasspath(javaProject, jreContainerPath, dependencyPathList.toArray(new IPath[0]),
+                    new SubProgressMonitor(monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
@@ -427,12 +483,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
     }
 
-    private void setUpClasspath(IJavaProject javaProject, IPath jreContainerPath, IPath dependencyPath,
+    private void setUpClasspath(IJavaProject javaProject, IPath jreContainerPath, IPath[] dependencyPaths,
             IProgressMonitor monitor) throws CoreException {
         if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
             setUpClasspathForM2Eclipse(javaProject, jreContainerPath, monitor);
         } else {
-            setUpClasspathForNonM2Eclipse(javaProject, jreContainerPath, dependencyPath, monitor);
+            setUpClasspathForNonM2Eclipse(javaProject, jreContainerPath, dependencyPaths, monitor);
         }
     }
 
@@ -455,8 +511,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]), new SubProgressMonitor(monitor, 1));
     }
 
-    private void setUpClasspathForNonM2Eclipse(IJavaProject javaProject, IPath jreContainerPath, IPath dependencyPath,
-            IProgressMonitor monitor) throws JavaModelException {
+    private void setUpClasspathForNonM2Eclipse(IJavaProject javaProject, IPath jreContainerPath,
+            IPath[] dependencyPaths, IProgressMonitor monitor) throws JavaModelException {
         monitor.beginTask(Messages.getString("NewProjectWizard.23"), 1); //$NON-NLS-1$
         try {
             List<IClasspathEntry> newEntryList = new ArrayList<IClasspathEntry>();
@@ -472,7 +528,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             }
             newEntryList.add(JavaCore.newContainerEntry(jreContainerPath));
 
-            if (dependencyPath != null) {
+            for (IPath dependencyPath : dependencyPaths) {
+                // TODO すでにあるやつは追加しないようにする
                 newEntryList.add(JavaCore.newLibraryEntry(dependencyPath, null, null));
             }
 
@@ -535,6 +592,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             }
 
             Activator.getDefault().mergeProperties(file, applicationProperties, new SubProgressMonitor(monitor, 1));
+            
+            // TODO fragmentのvili-app.propertiesもまーじするようにする
         } finally {
             monitor.done();
         }
