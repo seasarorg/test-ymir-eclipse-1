@@ -87,6 +87,8 @@ public class Activator extends AbstractUIPlugin {
 
     private SkeletonEntry[] skeletonEntries;
 
+    private FragmentEntry[] fragmentEntries;
+
     private DatabaseEntry[] databaseEntries;
 
     private Configuration cfg;
@@ -127,6 +129,7 @@ public class Activator extends AbstractUIPlugin {
 
         artifactResolver = new ArtifactResolver();
         setUpSkeletonEntries();
+        setUpFragmentEntries();
         setUpDatabaseEntries();
         setUpTemplateEngine();
     }
@@ -141,6 +144,7 @@ public class Activator extends AbstractUIPlugin {
         mapper = null;
         parser = null;
         skeletonEntries = null;
+        fragmentEntries = null;
         databaseEntries = null;
         plugin = null;
         super.stop(context);
@@ -171,14 +175,29 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private void setUpSkeletonEntries() {
-        skeletonEntries = new SkeletonEntry[] { new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+S2Dao", //$NON-NLS-1$ //$NON-NLS-2$
-                Messages.getString("Activator.10")), //$NON-NLS-1$
-                new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+DBFlute", //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.getString("Activator.13"), new SkeletonFragment("ymir-fragment-dbflute")), }; //$NON-NLS-1$ //$NON-NLS-2$
+        skeletonEntries = new SkeletonEntry[] {
+                new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+S2Dao", //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.getString("Activator.10")), //$NON-NLS-1$
+                new SkeletonEntry(
+                        "ymir-skeleton-generic", "Ymir+ZPT+DBFlute", //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.getString("Activator.13"), new FragmentEntry("ymir-fragment-dbflute", "DBFlute連携", "DBFluteを使ってデータベースにアクセスする機能を追加します。")), }; //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    private void setUpFragmentEntries() {
+        fragmentEntries = new FragmentEntry[] {
+                new FragmentEntry("ymir-fragment-dbflute", "DBFlute連携", "DBFluteを使ってデータベースにアクセスする機能を追加します。"),
+                new FragmentEntry("ymir-fragment-json", "JSON連携", "JSONリクエストを受け取ったりJSONレスポンスを返したりする機能を追加します。"),
+                new FragmentEntry("ymir-fragment-amf", "AMF",
+                        "AMFプロトコルで通信する機能を追加します。FlexからPageオブジェクトのメソッドを呼び出すことができるようになります。"),
+                new FragmentEntry("ymir-fragment-utility", "ユーティリティ", "アプリケーションを効率良く開発するために利用できるユーティリティクラスを追加します。"), };
     }
 
     public SkeletonEntry[] getSkeletonEntries() {
         return skeletonEntries;
+    }
+
+    public FragmentEntry[] getFragmentEntries() {
+        return fragmentEntries;
     }
 
     private void setUpDatabaseEntries() {

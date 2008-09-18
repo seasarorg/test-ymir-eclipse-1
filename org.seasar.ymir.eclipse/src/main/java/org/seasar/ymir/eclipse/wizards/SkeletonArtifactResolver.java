@@ -8,7 +8,7 @@ import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ArtifactNotFoundException;
 import org.seasar.ymir.eclipse.MavenArtifact;
 import org.seasar.ymir.eclipse.SkeletonEntry;
-import org.seasar.ymir.eclipse.SkeletonFragment;
+import org.seasar.ymir.eclipse.FragmentEntry;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
@@ -38,21 +38,21 @@ public class SkeletonArtifactResolver implements Runnable {
     public void run() {
         page.getShell().getDisplay().asyncExec(new Runnable() {
             public void run() {
-                List<Artifact> list = new ArrayList<Artifact>();
+                Artifact skeleton = null;
+                List<Artifact> fragmentList = new ArrayList<Artifact>();
                 boolean failed = false;
                 do {
-                    Artifact artifact = resolveArtifact(entry);
+                    skeleton = resolveArtifact(entry);
                     if (cancelled) {
                         return;
                     }
-                    if (artifact == null) {
+                    if (skeleton == null) {
                         failed = true;
                         break;
                     }
-                    list.add(artifact);
 
-                    for (SkeletonFragment fragment : entry.getFragments()) {
-                        artifact = resolveArtifact(fragment);
+                    for (FragmentEntry fragment : entry.getFragments()) {
+                        Artifact artifact = resolveArtifact(fragment);
                         if (cancelled) {
                             return;
                         }
@@ -60,13 +60,14 @@ public class SkeletonArtifactResolver implements Runnable {
                             failed = true;
                             break;
                         }
-                        list.add(artifact);
+                        fragmentList.add(artifact);
                     }
                 } while (false);
 
                 String errorMessage;
                 if (!failed) {
-                    page.setSkeletonArtifacts(list.toArray(new Artifact[0]));
+                    page.setSkeletonArtifact(skeleton);
+                    page.setFragmentArtifacts(fragmentList.toArray(new Artifact[0]));
                     page.setPageComplete(page.validatePage());
                     errorMessage = null;
                 } else {
@@ -82,14 +83,12 @@ public class SkeletonArtifactResolver implements Runnable {
 
     private Artifact resolveArtifact(MavenArtifact artifact) {
         Activator activator = Activator.getDefault();
-        String version;
-        if (artifact.getVersion() == null) {
+        String version = artifact.getVersion();
+        if (version == null) {
             version = activator.getArtifactLatestVersion(artifact.getGroupId(), artifact.getArtifactId());
             if (version == null) {
                 return null;
             }
-        } else {
-            version = artifact.getVersion();
         }
         try {
             return activator.resolveArtifact(artifact.getGroupId(), artifact.getArtifactId(), version, false,

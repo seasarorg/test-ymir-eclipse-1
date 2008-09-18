@@ -11,7 +11,7 @@ import java.util.Properties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedConfiguration;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedRemoteRepository;
-import org.seasar.ymir.eclipse.maven.impl.NonRecursiveContext;
+import org.seasar.ymir.eclipse.maven.impl.NonTransitiveContext;
 
 import werkzeugkasten.common.util.StreamUtil;
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -34,7 +34,7 @@ public class ArtifactResolver {
 
     private Context context;
 
-    private Context nonRecursiveContext;
+    private Context nonTransitiveContext;
 
     private XOMapper mapper;
 
@@ -44,16 +44,16 @@ public class ArtifactResolver {
         configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2", builder));
         configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2-snapshot", builder));
         context = new DefaultContext(configuration);
-        nonRecursiveContext = new NonRecursiveContext(configuration);
+        nonTransitiveContext = new NonTransitiveContext(configuration);
 
         mapper = Activator.getDefault().getXOMapper();
     }
 
-    public Artifact resolve(String groupId, String artifactId, String version, boolean recursive) {
-        if (recursive) {
+    public Artifact resolve(String groupId, String artifactId, String version, boolean transitive) {
+        if (transitive) {
             return context.resolve(groupId, artifactId, version);
         } else {
-            return nonRecursiveContext.resolve(groupId, artifactId, version);
+            return nonTransitiveContext.resolve(groupId, artifactId, version);
         }
     }
 

@@ -1,8 +1,6 @@
 package org.seasar.ymir.eclipse;
 
-public class SkeletonEntry implements MavenArtifact {
-    static final String DEFULAT_GROUPID = "org.seasar.ymir.skeleton";
-
+public class FragmentEntry implements MavenArtifact {
     private String groupId;
 
     private String artifactId;
@@ -13,24 +11,20 @@ public class SkeletonEntry implements MavenArtifact {
 
     private String description;
 
-    private FragmentEntry[] fragments;
-
-    public SkeletonEntry(String artifactId, String name, String description, FragmentEntry... fragments) {
-        this(DEFULAT_GROUPID, artifactId, null, name, description, fragments);
+    public FragmentEntry(String artifactId, String name, String description) {
+        this(SkeletonEntry.DEFULAT_GROUPID, artifactId, null, name, description);
     }
 
-    public SkeletonEntry(String groupId, String artifactId, String name, String description, FragmentEntry... fragments) {
-        this(groupId, artifactId, null, name, description, fragments);
+    public FragmentEntry(String groupId, String artifactId, String name, String description) {
+        this(groupId, artifactId, null, name, description);
     }
 
-    public SkeletonEntry(String groupId, String artifactId, String version, String name, String description,
-            FragmentEntry... fragments) {
+    public FragmentEntry(String groupId, String artifactId, String version, String name, String description) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
         this.name = name;
         this.description = description;
-        this.fragments = fragments;
     }
 
     @Override
@@ -56,9 +50,5 @@ public class SkeletonEntry implements MavenArtifact {
 
     public String getDescription() {
         return description;
-    }
-
-    public FragmentEntry[] getFragments() {
-        return fragments;
     }
 }

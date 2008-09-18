@@ -4,8 +4,8 @@ import werkzeugkasten.mvnhack.repository.Artifact;
 import werkzeugkasten.mvnhack.repository.Configuration;
 import werkzeugkasten.mvnhack.repository.impl.DefaultContext;
 
-public class NonRecursiveContext extends DefaultContext {
-    public NonRecursiveContext(Configuration configuration) {
+public class NonTransitiveContext extends DefaultContext {
+    public NonTransitiveContext(Configuration configuration) {
         super(configuration);
     }
 

@@ -89,4 +89,13 @@ public class ArtifactUtils {
             return name;
         }
     }
+
+    public static String getId(Artifact artifact) {
+        return artifact.getGroupId() + ":" + artifact.getArtifactId() + "-" + artifact.getVersion() + "."
+                + artifact.getType();
+    }
+
+    public static String getUniqueId(Artifact artifact) {
+        return artifact.getGroupId() + ":" + artifact.getArtifactId();
+    }
 }

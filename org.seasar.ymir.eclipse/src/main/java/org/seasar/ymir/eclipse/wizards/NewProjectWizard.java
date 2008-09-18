@@ -45,6 +45,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
@@ -136,6 +137,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         addPage(thirdPage);
         fourthPage = new NewProjectWizardFourthPage();
         addPage(fourthPage);
+    }
+
+    @Override
+    public void createPageControls(Composite pageContainer) {
+        getShell().setSize(600, getShell().getSize().y);
+        super.createPageControls(pageContainer);
     }
 
     /**
