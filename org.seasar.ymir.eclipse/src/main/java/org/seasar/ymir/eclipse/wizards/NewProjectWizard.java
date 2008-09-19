@@ -178,10 +178,18 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             return false;
         } catch (InvocationTargetException e) {
             Throwable realException = e.getTargetException();
-            MessageDialog.openError(getShell(), "Error", realException.getMessage()); //$NON-NLS-1$
+            String message = realException.getMessage();
+            if (message == null || message.length() == 0) {
+                message = realException.getClass().getName();
+            }
+            MessageDialog.openError(getShell(), "Error", message); //$NON-NLS-1$
             return false;
         } catch (CoreException ex) {
-            MessageDialog.openError(getShell(), "Error", ex.getMessage()); //$NON-NLS-1$
+            String message = ex.getMessage();
+            if (message == null || message.length() == 0) {
+                message = ex.getClass().getName();
+            }
+            MessageDialog.openError(getShell(), "Error", message); //$NON-NLS-1$
             return false;
         }
         return true;

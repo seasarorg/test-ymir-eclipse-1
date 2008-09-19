@@ -140,7 +140,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
 
         CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
-        skeletonTabItem.setText("スケルトン");
+        skeletonTabItem.setText(Messages.getString("NewProjectWizardSecondPage.11")); //$NON-NLS-1$
 
         Composite skeletonTabContent = new Composite(tabFolder, SWT.NULL);
         skeletonTabContent.setLayout(new GridLayout());
@@ -149,7 +149,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         createSkeletonSelectionControl(skeletonTabContent);
 
         CTabItem fragmentTabItem = new CTabItem(tabFolder, SWT.NONE);
-        fragmentTabItem.setText("オプション");
+        fragmentTabItem.setText(Messages.getString("NewProjectWizardSecondPage.12")); //$NON-NLS-1$
 
         Composite fragmentTabContent = new Composite(tabFolder, SWT.NULL);
         fragmentTabContent.setLayout(new GridLayout());
@@ -300,7 +300,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
                                 optionTemplateArtifacts[i] = resolveFragmentArtifact(optionTemplateEntries[i]);
                                 if (optionTemplateArtifacts[i] == null) {
                                     items[i].setChecked(false);
-                                    setErrorMessage("オプションアーカイブを取得できませんでした。");
+                                    setErrorMessage(Messages.getString("NewProjectWizardSecondPage.13")); //$NON-NLS-1$
                                 }
                             } else {
                                 optionTemplateArtifacts[i] = null;
@@ -336,7 +336,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         data = new GridData();
         data.horizontalSpan = 2;
         customOptionListLabel.setLayoutData(data);
-        customOptionListLabel.setText("追加するカスタムオプション");
+        customOptionListLabel.setText(Messages.getString("NewProjectWizardSecondPage.14")); //$NON-NLS-1$
 
         Composite leftComposite = new Composite(composite, SWT.NULL);
         leftComposite.setFont(composite.getFont());
@@ -406,7 +406,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         });
 
         addCustomOptionButton = new Button(leftComposite, SWT.PUSH);
-        addCustomOptionButton.setText("追加");
+        addCustomOptionButton.setText(Messages.getString("NewProjectWizardSecondPage.15")); //$NON-NLS-1$
         data = new GridData();
         data.horizontalSpan = 2;
         data.horizontalAlignment = SWT.RIGHT;
@@ -422,13 +422,13 @@ public class NewProjectWizardSecondPage extends WizardPage {
                 if (artifact != null) {
                     customOptionListModel.add(artifact);
                     customOptionListField.add(ArtifactUtils.getId(artifact));
-                    fragmentGroupIdField.setText("");
-                    fragmentArtifactIdField.setText("");
+                    fragmentGroupIdField.setText(""); //$NON-NLS-1$
+                    fragmentArtifactIdField.setText(""); //$NON-NLS-1$
                     if (!useLatestFragmentVersionField.getSelection()) {
-                        fragmentVersionField.setText("");
+                        fragmentVersionField.setText(""); //$NON-NLS-1$
                     }
                 } else {
-                    setErrorMessage("オプションアーカイブを取得できませんでした。パラメータを見直してみて下さい。");
+                    setErrorMessage(Messages.getString("NewProjectWizardSecondPage.19")); //$NON-NLS-1$
                 }
                 addCustomOptionButton.setEnabled(false);
             }
@@ -449,7 +449,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         leftButtonsComposite.setLayout(new FillLayout());
 
         removeCustomOptionButton = new Button(leftButtonsComposite, SWT.PUSH);
-        removeCustomOptionButton.setText("削除");
+        removeCustomOptionButton.setText(Messages.getString("NewProjectWizardSecondPage.20")); //$NON-NLS-1$
         removeCustomOptionButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -613,7 +613,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private Artifact doResolveFragmentArtifact(String groupId, String artifactId, String version,
             IProgressMonitor monitor) {
-        monitor.beginTask("Resolver fragment artifact", 2);
+        monitor.beginTask(Messages.getString("NewProjectWizardSecondPage.21"), 2); //$NON-NLS-1$
         try {
             ArtifactResolver artifactResolver = Activator.getDefault().getArtifactResolver();
             if (version == null) {

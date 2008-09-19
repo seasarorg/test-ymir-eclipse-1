@@ -14,25 +14,13 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
-
-import net.skirnir.xom.BeanAccessor;
-import net.skirnir.xom.BeanAccessorFactory;
-import net.skirnir.xom.XMLParser;
-import net.skirnir.xom.XMLParserFactory;
-import net.skirnir.xom.XOMapper;
-import net.skirnir.xom.XOMapperFactory;
-import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -51,7 +39,6 @@ import org.osgi.framework.BundleContext;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.Dependency;
-import org.seasar.ymir.eclipse.util.AntPathPatterns;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -62,6 +49,14 @@ import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
+import net.skirnir.xom.BeanAccessor;
+import net.skirnir.xom.BeanAccessorFactory;
+import net.skirnir.xom.XMLParser;
+import net.skirnir.xom.XMLParserFactory;
+import net.skirnir.xom.XOMapper;
+import net.skirnir.xom.XOMapperFactory;
+import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
+
 /**
  * The activator class controls the plug-in life cycle
  */
@@ -70,15 +65,7 @@ public class Activator extends AbstractUIPlugin {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.seasar.ymir.eclipse"; //$NON-NLS-1$
 
-    private static final String PATHPREFIX_META_INF = "META-INF/"; //$NON-NLS-1$
-
-    private static final String PREFIX_ECLIPSE_SETTING = "."; //$NON-NLS-1$
-
-    private static final char PATH_DELIMITER_CHAR = '/';
-
     private static final String PATHPREFIX_SRC_MAIN_WEBAPP_LIB = Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB + "/"; //$NON-NLS-1$
-
-    private static final Set<String> TEMPLATE_EXT_SET;
 
     // The shared instance
     private static Activator plugin;
@@ -106,11 +93,7 @@ public class Activator extends AbstractUIPlugin {
 
     private XMLParser parser = XMLParserFactory.newInstance();
 
-    static {
-        Set<String> set = new HashSet<String>();
-        set.addAll(Arrays.asList(".xml", ".dicon", ".properties", ".prefs", ".java"));
-        TEMPLATE_EXT_SET = Collections.unmodifiableSet(set);
-    }
+    private ViliBehavior viliBehavior;
 
     /**
      * The constructor
@@ -132,6 +115,21 @@ public class Activator extends AbstractUIPlugin {
         setUpFragmentEntries();
         setUpDatabaseEntries();
         setUpTemplateEngine();
+        readViliBehavior();
+    }
+
+    private void readViliBehavior() throws CoreException {
+        MapProperties prop = new MapProperties(new TreeMap<String, String>());
+        InputStream is = getClass().getResourceAsStream(Globals.VILI_BEHAVIOR_PROPERTIES);
+        try {
+            prop.load(is);
+        } catch (IOException ex) {
+            throwCoreException("Can't load " + Globals.VILI_BEHAVIOR_PROPERTIES, ex); //$NON-NLS-1$
+        } finally {
+            StreamUtils.close(is);
+        }
+
+        viliBehavior = new ViliBehavior(prop);
     }
 
     /*
@@ -146,6 +144,7 @@ public class Activator extends AbstractUIPlugin {
         skeletonEntries = null;
         fragmentEntries = null;
         databaseEntries = null;
+        viliBehavior = null;
         plugin = null;
         super.stop(context);
     }
@@ -171,25 +170,26 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public static String getId() {
-        return "org.seasar.ymir.eclipse"; //$NON-NLS-1$
+        return PLUGIN_ID;
     }
 
     private void setUpSkeletonEntries() {
-        skeletonEntries = new SkeletonEntry[] {
-                new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+S2Dao", //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.getString("Activator.10")), //$NON-NLS-1$
-                new SkeletonEntry(
-                        "ymir-skeleton-generic", "Ymir+ZPT+DBFlute", //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.getString("Activator.13"), new FragmentEntry("ymir-fragment-dbflute", "DBFlute連携", "DBFluteを使ってデータベースにアクセスする機能を追加します。")), }; //$NON-NLS-1$ //$NON-NLS-2$
+        skeletonEntries = new SkeletonEntry[] { new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+S2Dao", //$NON-NLS-1$ //$NON-NLS-2$
+                Messages.getString("Activator.10")), //$NON-NLS-1$
+                new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+DBFlute", //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.getString("Activator.13"), new FragmentEntry("ymir-fragment-dbflute", "", "")), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 
     private void setUpFragmentEntries() {
         fragmentEntries = new FragmentEntry[] {
-                new FragmentEntry("ymir-fragment-dbflute", "DBFlute連携", "DBFluteを使ってデータベースにアクセスする機能を追加します。"),
-                new FragmentEntry("ymir-fragment-json", "JSON連携", "JSONリクエストを受け取ったりJSONレスポンスを返したりする機能を追加します。"),
-                new FragmentEntry("ymir-fragment-amf", "AMF",
-                        "AMFプロトコルで通信する機能を追加します。FlexからPageオブジェクトのメソッドを呼び出すことができるようになります。"),
-                new FragmentEntry("ymir-fragment-utility", "ユーティリティ", "アプリケーションを効率良く開発するために利用できるユーティリティクラスを追加します。"), };
+                new FragmentEntry(
+                        "ymir-fragment-utility", Messages.getString("Activator.63"), Messages.getString("Activator.64")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                new FragmentEntry(
+                        "ymir-fragment-dbflute", Messages.getString("Activator.4"), Messages.getString("Activator.3")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                new FragmentEntry(
+                        "ymir-fragment-json", Messages.getString("Activator.1"), Messages.getString("Activator.0")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                new FragmentEntry("ymir-fragment-amf", Messages.getString("Activator.60"), //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.getString("Activator.61")), }; //$NON-NLS-1$
     }
 
     public SkeletonEntry[] getSkeletonEntries() {
@@ -203,18 +203,18 @@ public class Activator extends AbstractUIPlugin {
     private void setUpDatabaseEntries() {
         databaseEntries = new DatabaseEntry[] {
                 new DatabaseEntry(
-                        "H2 Database Engine", "h2", "org.h2.Driver", "jdbc:h2:file:%WEBAPP%/WEB-INF/h2/h2", "sa", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                        "H2 Database Engine", "h2", "org.h2.Driver", "jdbc:h2:file:%WEBAPP%/WEB-INF/h2/h2", "sa", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                         "", new Dependency("com.h2database", "h2", "1.0.78", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                new DatabaseEntry("MySQL Community Server", "mysql", "com.mysql.jdbc.Driver", //$NON-NLS-1$ //$NON-NLS-2$
+                new DatabaseEntry("MySQL Community Server", "mysql", "com.mysql.jdbc.Driver", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         "jdbc:mysql://localhost:3306/[DBNAME]", "", "", new Dependency("mysql", "mysql-connector-java", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                                 "5.1.6", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
-                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-3.0)", "postgresql", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$
+                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-3.0)", "postgresql", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                                 "8.3-603.jdbc3", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
-                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-4.0)", "postgresql", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$
+                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-4.0)", "postgresql", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                                 "8.3-603.jdbc4", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
-                new DatabaseEntry(Messages.getString("Activator.50"), "", "", "", "", "", null), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                new DatabaseEntry(Messages.getString("Activator.50"), "", "", "", "", "", null), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
     }
 
     public DatabaseEntry[] getDatabaseEntries() {
@@ -281,22 +281,13 @@ public class Activator extends AbstractUIPlugin {
                 });
                 cfg.setObjectWrapper(new DefaultObjectWrapper());
 
-                AntPathPatterns includes = AntPathPatterns.EMPTY;
-                AntPathPatterns excludes = AntPathPatterns.EMPTY;
-                MapProperties viliBehavior = getPropertiesResource(jarFile, Globals.VILI_BEHAVIOR_PROPERTIES,
-                        new SubProgressMonitor(monitor, 1));
-                if (viliBehavior != null) {
-                    includes = AntPathPatterns
-                            .newInstance(viliBehavior.getProperty(ViliBehaviorKeys.TEMPLATE_INCLUDES));
-                    excludes = AntPathPatterns
-                            .newInstance(viliBehavior.getProperty(ViliBehaviorKeys.TEMPLATE_EXCLUDES));
-                }
+                ViliBehavior localBehavior = new ViliBehavior(getPropertiesResource(jarFile,
+                        Globals.VILI_BEHAVIOR_PROPERTIES, new SubProgressMonitor(monitor, 1)));
 
                 for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
                     JarEntry entry = enm.nextElement();
                     String name = entry.getName();
-                    expand(project, name, includes, excludes, cfg, parameterMap, jarFile, viliBehavior,
-                            new SubProgressMonitor(monitor, 1));
+                    expand(project, name, cfg, parameterMap, jarFile, localBehavior, new SubProgressMonitor(monitor, 1));
                 }
             } finally {
                 jarFile.close();
@@ -306,16 +297,15 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    private void expand(IProject project, String path, AntPathPatterns includes, AntPathPatterns excludes,
-            Configuration cfg, Map<String, Object> parameterMap, JarFile jarFile, MapProperties viliBehavior,
-            IProgressMonitor monitor) throws IOException, CoreException {
-        if (shouldIgnore(path)) {
+    private void expand(IProject project, String path, Configuration cfg, Map<String, Object> parameterMap,
+            JarFile jarFile, ViliBehavior localBehavior, IProgressMonitor monitor) throws IOException, CoreException {
+        if (shouldIgnore(path, localBehavior)) {
             return;
         } else if (path.endsWith("/")) { //$NON-NLS-1$
             mkdirs(project.getFolder(resolvePath(path, cfg, parameterMap)), new SubProgressMonitor(monitor, 1));
         } else {
             InputStream in;
-            if (shouldEvaluateAsTemplate(path, includes, excludes)) {
+            if (shouldEvaluateAsTemplate(path, localBehavior)) {
                 byte[] evaluated;
                 try {
                     StringWriter sw = new StringWriter();
@@ -357,8 +347,11 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    private boolean shouldIgnore(String path) {
-        if (path.startsWith(PATHPREFIX_META_INF)) {
+    private boolean shouldIgnore(String path, ViliBehavior localBehavior) {
+        if (localBehavior.getExpansionExcludes().matches(path)) {
+            return true;
+        }
+        if (viliBehavior.getExpansionExcludes().matches(path)) {
             return true;
         }
         if (path.equals(PATHPREFIX_SRC_MAIN_WEBAPP_LIB)) {
@@ -368,44 +361,24 @@ public class Activator extends AbstractUIPlugin {
             return true;
         }
 
-        String name;
-        int slash = path.lastIndexOf('/');
-        if (slash < 0) {
-            name = path;
-        } else {
-            name = path.substring(slash + 1);
+        return false;
+    }
+
+    private boolean shouldEvaluateAsTemplate(String path, ViliBehavior localBehavior) {
+        if (localBehavior.getTemplateExcludes().matches(path)) {
+            return false;
         }
-        if (name.startsWith(Globals.PREFIX_VILI)) {
+        if (localBehavior.getTemplateIncludes().matches(path)) {
+            return true;
+        }
+        if (viliBehavior.getTemplateExcludes().matches(path)) {
+            return false;
+        }
+        if (viliBehavior.getTemplateIncludes().matches(path)) {
             return true;
         }
 
         return false;
-    }
-
-    private boolean shouldEvaluateAsTemplate(String path, AntPathPatterns includes, AntPathPatterns excludes) {
-        if (excludes.matches(path)) {
-            return false;
-        }
-        if (includes.matches(path)) {
-            return true;
-        }
-
-        String name;
-        int slash = path.lastIndexOf(PATH_DELIMITER_CHAR);
-        if (slash < 0) {
-            name = path;
-        } else {
-            name = path.substring(slash + 1);
-        }
-        int dot = path.lastIndexOf('.');
-        String ext;
-        if (dot < 0) {
-            ext = "";
-        } else {
-            ext = path.substring(dot);
-        }
-
-        return name.startsWith(PREFIX_ECLIPSE_SETTING) || TEMPLATE_EXT_SET.contains(ext);
     }
 
     private void mkdirs(IResource container, IProgressMonitor monitor) throws CoreException {

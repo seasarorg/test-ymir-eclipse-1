@@ -10,12 +10,12 @@ public class AntPathPatterns {
 
     private Pattern[] patterns;
 
-    public static AntPathPatterns newInstance(String patternStrings) {
-        if (patternStrings == null || patternStrings.trim().length() == 0) {
+    public static AntPathPatterns newInstance(String patternsString) {
+        if (patternsString == null || patternsString.trim().length() == 0) {
             return EMPTY;
         }
 
-        String[] tokens = PropertyUtils.toLines(patternStrings);
+        String[] tokens = PropertyUtils.toLines(patternsString);
         Pattern[] patterns = new Pattern[tokens.length];
         for (int i = 0; i < tokens.length; i++) {
             patterns[i] = Pattern.compile(AntUtils.buildRegexPatternStringFromPattern(tokens[i], '/'));

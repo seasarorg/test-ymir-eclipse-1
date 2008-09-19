@@ -28,4 +28,12 @@ public class AntPathPatternsTest extends TestCase {
         assertTrue(target.matches("a.java"));
         assertTrue(target.matches("a/a.java"));
     }
+
+    public void testMatches5() throws Exception {
+        AntPathPatterns target = AntPathPatterns.newInstance("**/.*");
+        assertTrue(target.matches(".rc"));
+        assertFalse(target.matches("rc"));
+        assertTrue(target.matches("a/.rc"));
+        assertFalse(target.matches("a/rc"));
+    }
 }
