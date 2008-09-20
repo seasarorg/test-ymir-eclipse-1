@@ -13,6 +13,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
@@ -148,6 +149,8 @@ public class NewProjectWizardThirdPage extends WizardPage {
         useDatabaseField.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 boolean enabled = useDatabaseField.getSelection();
+                databaseGroup.setEnabled(enabled);
+                databaseLabel.setEnabled(enabled);
                 databaseCombo.setEnabled(enabled);
                 databaseDriverClassNameLabel.setEnabled(enabled);
                 databaseDriverClassNameField.setEnabled(enabled);
@@ -174,6 +177,11 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
 
         databaseLabel = new Label(databaseGroup, SWT.NONE);
+        databaseLabel.addListener(SWT.Show, new Listener() {
+            public void handleEvent(Event event) {
+                System.out.println("");
+            }
+        });
         databaseLabel.setText(Messages.getString("NewProjectWizardThirdPage.0")); //$NON-NLS-1$
 
         databaseCombo = new Combo(databaseGroup, SWT.READ_ONLY);
@@ -239,6 +247,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     void createTabFolder() {
         tabFolder = new CTabFolder(tabFolderParent, SWT.NULL);
+        tabFolder.setLayout(new FillLayout());
         tabFolder.setSimple(false);
         tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
 
@@ -247,7 +256,6 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
         Composite genericTabContent = new Composite(tabFolder, SWT.NULL);
         genericTabContent.setLayout(new GridLayout());
-        genericTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
         genericTabItem.setControl(genericTabContent);
         createViewParametersControl(genericTabContent);
         createDatabaseParametersControl(genericTabContent);
@@ -256,12 +264,18 @@ public class NewProjectWizardThirdPage extends WizardPage {
             CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
             skeletonTabItem.setText("スケルトン固有");
 
-            skeletonTabContent = new Composite(tabFolder, SWT.NULL);
+            ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
+            scroll.setLayout(new FillLayout());
+            scroll.setExpandHorizontal(true);
+            scroll.setExpandVertical(true);
+            skeletonTabItem.setControl(scroll);
+
+            skeletonTabContent = new Composite(scroll, SWT.NULL);
             skeletonTabContent.setLayout(new GridLayout());
-            skeletonTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
-            skeletonTabItem.setControl(skeletonTabContent);
+            scroll.setContent(skeletonTabContent);
 
             createSkeletonParametersControl(skeletonTabContent);
+            scroll.setMinHeight(skeletonTabContent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
         }
 
         if (skeletonAndFragments[0].getBehavior().isYmirProject()) {
@@ -270,12 +284,18 @@ public class NewProjectWizardThirdPage extends WizardPage {
             CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
             ymirConfigurationTabItem.setText(ymirConfigurationBlock.getTabLabel());
 
-            ymirConfigurationTabContent = new Composite(tabFolder, SWT.NULL);
+            ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
+            scroll.setLayout(new FillLayout());
+            scroll.setExpandHorizontal(true); // ←君の意味を勘違いしていたせいで8時間を無駄にしたよ... orz 2008-09-20
+            scroll.setExpandVertical(true);
+            ymirConfigurationTabItem.setControl(scroll);
+
+            ymirConfigurationTabContent = new Composite(scroll, SWT.NONE);
             ymirConfigurationTabContent.setLayout(new GridLayout());
-            ymirConfigurationTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
-            ymirConfigurationTabItem.setControl(ymirConfigurationTabContent);
+            scroll.setContent(ymirConfigurationTabContent);
 
             ymirConfigurationBlock.createControl(ymirConfigurationTabContent);
+            scroll.setMinHeight(ymirConfigurationTabContent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
         }
 
         tabFolderParent.layout();

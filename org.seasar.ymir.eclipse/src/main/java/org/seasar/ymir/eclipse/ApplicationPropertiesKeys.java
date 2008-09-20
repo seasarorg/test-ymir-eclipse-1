@@ -3,11 +3,23 @@ package org.seasar.ymir.eclipse;
 public interface ApplicationPropertiesKeys {
     String ROOT_PACKAGE_NAME = "rootPackageName";
 
+    String BEANTABLE_ENABLED = "beantable.enable";
+
+    String SOURCECREATOR_ENABLE = "extension.sourceCreator.enable";
+
     String SUPERCLASS = "extension.sourceCreator.superclass";
 
     String USING_FREYJA_RENDER_CLASS = "extension.sourceCreator.useFreyjaRenderClasses";
 
-    String BEANTABLE_ENABLED = "beantable.enable";
+    String FIELDSPECIALPREFIX = "extension.sourceCreator.fieldSpecialPrefix";
+
+    String FIELDPREFIX = "extension.sourceCreator.fieldPrefix";
+
+    String FIELDSUFFIX = "extension.sourceCreator.fieldSuffix";
+
+    String ENABLEINPLACEEDITOR = "extension.sourceCreator.enableInplaceEditor";
+
+    String ENABLECONTROLPANEL = "extension.sourceCreator.enableControlPanel";
 
     String FORM_DTO_CREATION_FEATURE_ENABLED = "extension.sourceCreator.feature.createFormDto.enable";
 
