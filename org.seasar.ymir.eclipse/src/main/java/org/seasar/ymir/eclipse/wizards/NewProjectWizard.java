@@ -9,7 +9,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -241,21 +240,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
     }
 
-    private MapProperties[] createAppPropertiesFragments() throws CoreException {
-        Activator activator = Activator.getDefault();
-        ArtifactPair[] skeletonAndFragments = secondPage.getSkeletonAndFragments();
-        List<MapProperties> list = new ArrayList<MapProperties>();
-        // フラグメントだけを対象にするため1から始めている。
-        for (int i = 1; i < skeletonAndFragments.length; i++) {
-            MapProperties prop = activator.getPropertiesResource(skeletonAndFragments[i].getArtifact(),
-                    Globals.VILI_APP_PROPRERTIES, new NullProgressMonitor());
-            if (prop != null) {
-                list.add(prop);
-            }
-        }
-        return list.toArray(new MapProperties[0]);
-    }
-
     private Map<String, Object> createParameterMap(Dependency[] dependencies) {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(ParameterKeys.SLASH, PATH_DELIMITER);
@@ -337,14 +321,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             value = fourthPage.getResourceSynchronizerURL();
             if (value != null && value.length() > 0) {
                 prop.setProperty(ApplicationPropertiesKeys.RESOURCE_SYNCHRONIZER_URL, value);
-            }
-        }
-
-        MapProperties[] fragments = createAppPropertiesFragments();
-        for (MapProperties fragment : fragments) {
-            for (Enumeration<?> enm = fragment.propertyNames(); enm.hasMoreElements();) {
-                String name = (String) enm.nextElement();
-                prop.setProperty(name, fragment.getProperty(name));
             }
         }
 

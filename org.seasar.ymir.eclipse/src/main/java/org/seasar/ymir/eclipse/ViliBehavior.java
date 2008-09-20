@@ -16,11 +16,13 @@ import org.seasar.ymir.eclipse.util.StreamUtils;
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class ViliBehavior {
-    public static final String EXPANSION_EXCLUDES = "expansion.excludes";
+    private static final String EXPANSION_EXCLUDES = "expansion.excludes";
 
-    public static final String TEMPLATE_INCLUDES = "template.includes";
+    private static final String EXPANSION_MERGES = "expansion.merges";
 
-    public static final String TEMPLATE_EXCLUDES = "template.excludes";
+    private static final String TEMPLATE_INCLUDES = "template.includes";
+
+    private static final String TEMPLATE_EXCLUDES = "template.excludes";
 
     private static final String TEMPLATE_PARAMETERS = "template.parameters";
 
@@ -40,11 +42,15 @@ public class ViliBehavior {
 
     private static final String DESCRIPTION = "description";
 
+    private static final String HIDEYMIRCONFIGURATIONTAB = "hideYmirConfigurationTab";
+
     private Artifact artifact;
 
     private Properties properties;
 
     private AntPathPatterns expansionExcludes;
+
+    private AntPathPatterns expansionMerges;
 
     private AntPathPatterns templateIncludes;
 
@@ -115,6 +121,7 @@ public class ViliBehavior {
 
     private void initialize(Properties properties) {
         expansionExcludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDES));
+        expansionMerges = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_MERGES));
         templateIncludes = AntPathPatterns.newInstance(properties.getProperty(TEMPLATE_INCLUDES));
         templateExcludes = AntPathPatterns.newInstance(properties.getProperty(TEMPLATE_EXCLUDES));
         templateParameters = PropertyUtils.toLines(properties.getProperty(TEMPLATE_PARAMETERS));
@@ -122,6 +129,10 @@ public class ViliBehavior {
 
     public AntPathPatterns getExpansionExcludes() {
         return expansionExcludes;
+    }
+
+    public AntPathPatterns getExpansionMerges() {
+        return expansionMerges;
     }
 
     public AntPathPatterns getTemplateIncludes() {

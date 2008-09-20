@@ -39,8 +39,6 @@ public interface Globals {
 
     String VILI_DEPENDENCIES_XML = PREFIX_VILI + "dependencies.xml";
 
-    String VILI_APP_PROPRERTIES = PREFIX_VILI + "app.properties";
-
     String VILI_BEHAVIOR_PROPERTIES = PREFIX_VILI + "behavior.properties";
 
     String HEAD_VILI_BEHAVIOR_PROPERTIES = PREFIX_VILI + "behavior_";

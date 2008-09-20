@@ -67,6 +67,10 @@ public class Activator extends AbstractUIPlugin {
 
     private static final String PATHPREFIX_SRC_MAIN_WEBAPP_LIB = Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB + "/"; //$NON-NLS-1$
 
+    private static final String EXTENSION_PROPERTIES = "properties";
+
+    private static final String EXTENSION_XPROPERTIES = "xproperties";
+
     // The shared instance
     private static Activator plugin;
 
@@ -317,6 +321,9 @@ public class Activator extends AbstractUIPlugin {
                 String resolvedPath = resolvePath(path, cfg, parameterMap);
                 IFile outputFile = project.getFile(resolvedPath);
                 if (outputFile.exists()) {
+                    if (shouldMerge(path, behavior)) {
+                        in = mergeFile(outputFile, in);
+                    }
                     outputFile.setContents(in, false, false, new SubProgressMonitor(monitor, 1));
                 } else {
                     mkdirs(outputFile.getParent(), new SubProgressMonitor(monitor, 1));
@@ -326,6 +333,69 @@ public class Activator extends AbstractUIPlugin {
                 StreamUtils.close(in);
             }
         }
+    }
+
+    private InputStream mergeFile(IFile file, InputStream in) throws CoreException {
+        String extension = file.getLocation().getFileExtension();
+        if (EXTENSION_PROPERTIES.equals(extension)) {
+            return mergeFileAsProperties(file, in, false);
+        } else if (EXTENSION_XPROPERTIES.equals(extension)) {
+            return mergeFileAsProperties(file, in, true);
+        } else {
+            // TODO 警告などを出すようにする？
+            return in;
+        }
+    }
+
+    private InputStream mergeFileAsProperties(IFile file, InputStream in, boolean xproeprties) throws CoreException {
+        String encoding = xproeprties ? "UTF-8" : "ISO-8859-1";
+
+        MapProperties prop = new MapProperties(new TreeMap<String, String>());
+        InputStream is = file.getContents();
+        try {
+            prop.load(is, encoding);
+        } catch (IOException ex) {
+            throwCoreException("Can't load " + file, ex);
+            return null;
+        } finally {
+            StreamUtils.close(is);
+        }
+
+        MapProperties fragment = new MapProperties(new TreeMap<String, String>());
+        try {
+            fragment.load(in, encoding);
+        } catch (IOException ex) {
+            throwCoreException("Can't load fragment for " + file, ex);
+            return null;
+        } finally {
+            StreamUtils.close(in);
+        }
+
+        for (Enumeration<?> enm = fragment.propertyNames(); enm.hasMoreElements();) {
+            String name = (String) enm.nextElement();
+            prop.setProperty(name, fragment.getProperty(name));
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            prop.store(baos, encoding);
+        } catch (IOException ex) {
+            throwCoreException("Can't store " + file, ex);
+            return null;
+        }
+
+        return new ByteArrayInputStream(baos.toByteArray());
+    }
+
+    private boolean shouldMerge(String path, ViliBehavior behavior) {
+        if (behavior.getExpansionMerges().matches(path)) {
+            return true;
+        }
+        if (systemBehavior.getExpansionMerges().matches(path)) {
+            return true;
+        }
+
+        return false;
     }
 
     private String resolvePath(String path, Configuration cfg, Map<String, Object> parameterMap) throws IOException {
@@ -340,8 +410,8 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    private boolean shouldIgnore(String path, ViliBehavior localBehavior) {
-        if (localBehavior.getExpansionExcludes().matches(path)) {
+    private boolean shouldIgnore(String path, ViliBehavior behavior) {
+        if (behavior.getExpansionExcludes().matches(path)) {
             return true;
         }
         if (systemBehavior.getExpansionExcludes().matches(path)) {
