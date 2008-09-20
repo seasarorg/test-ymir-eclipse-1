@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.ymir.eclipse.Activator;
+import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.FragmentEntry;
 import org.seasar.ymir.eclipse.SkeletonEntry;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
@@ -76,7 +77,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private Button useLatestSkeletonVersionField;
 
-    private volatile Artifact skeletonArtifact;
+    private volatile ArtifactPair skeleton;
 
     private SkeletonArtifactResolver skeletonArtifactResolver;
 
@@ -102,9 +103,9 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private List customOptionListField;
 
-    private java.util.List<Artifact> customOptionListModel;
+    private java.util.List<ArtifactPair> customOptionListModel;
 
-    private volatile Artifact[] optionTemplateArtifacts;
+    private volatile ArtifactPair[] optionTemplateArtifacts;
 
     /**
      * Constructor for SampleNewWizardPage.
@@ -297,7 +298,8 @@ public class NewProjectWizardSecondPage extends WizardPage {
                     for (int i = 0; i < items.length; i++) {
                         if (items[i] == e.item) {
                             if (items[i].getChecked()) {
-                                optionTemplateArtifacts[i] = resolveFragmentArtifact(optionTemplateEntries[i]);
+                                optionTemplateArtifacts[i] = ArtifactPair
+                                        .newInstance(resolveFragmentArtifact(optionTemplateEntries[i]));
                                 if (optionTemplateArtifacts[i] == null) {
                                     items[i].setChecked(false);
                                     setErrorMessage(Messages.getString("NewProjectWizardSecondPage.13")); //$NON-NLS-1$
@@ -323,7 +325,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         new TableColumn(optionTemplateTable, SWT.LEFT).setWidth(120);
 
         optionTemplateEntries = Activator.getDefault().getFragmentEntries();
-        optionTemplateArtifacts = new Artifact[optionTemplateEntries.length];
+        optionTemplateArtifacts = new ArtifactPair[optionTemplateEntries.length];
         for (FragmentEntry fragment : optionTemplateEntries) {
             new TableItem(optionTemplateTable, SWT.NONE).setText(new String[] { fragment.getName() });
         }
@@ -420,7 +422,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
                         .getText(), useLatestFragmentVersionField.getSelection() ? null : fragmentVersionField
                         .getText());
                 if (artifact != null) {
-                    customOptionListModel.add(artifact);
+                    customOptionListModel.add(ArtifactPair.newInstance(artifact));
                     customOptionListField.add(ArtifactUtils.getId(artifact));
                     fragmentGroupIdField.setText(""); //$NON-NLS-1$
                     fragmentArtifactIdField.setText(""); //$NON-NLS-1$
@@ -434,7 +436,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
             }
         });
 
-        customOptionListModel = new ArrayList<Artifact>();
+        customOptionListModel = new ArrayList<ArtifactPair>();
         customOptionListField = new List(rightComposite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         customOptionListField.setLayoutData(new GridData(GridData.FILL_BOTH));
         customOptionListField.addSelectionListener(new SelectionAdapter() {
@@ -455,7 +457,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 setErrorMessage(null);
 
-                java.util.List<Artifact> list = new ArrayList<Artifact>();
+                java.util.List<ArtifactPair> list = new ArrayList<ArtifactPair>();
                 int pre = 0;
                 int[] indices = customOptionListField.getSelectionIndices();
                 for (int idx : indices) {
@@ -485,7 +487,8 @@ public class NewProjectWizardSecondPage extends WizardPage {
         if (version != null && version.length() == 0) {
             return false;
         }
-        for (Artifact artifact : customOptionListModel) {
+        for (ArtifactPair pair : customOptionListModel) {
+            Artifact artifact = pair.getArtifact();
             if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
                 return false;
             }
@@ -494,7 +497,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     boolean validatePage() {
-        if (skeletonArtifact == null) {
+        if (skeleton == null) {
             return false;
         }
         return true;
@@ -553,7 +556,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     private void resolveSkeletonArtifact() {
-        clearSkeletonAndFragmentArtifacts();
+        clearSkeletonAndFragments();
         setPageComplete(false);
 
         if (skeletonArtifactResolver != null) {
@@ -578,13 +581,17 @@ public class NewProjectWizardSecondPage extends WizardPage {
         }
     }
 
-    private void clearSkeletonAndFragmentArtifacts() {
-        skeletonArtifact = null;
+    private void clearSkeletonAndFragments() {
+        skeleton = null;
         for (int i = 0; i < optionTemplateEntries.length; i++) {
             TableItem item = optionTemplateTable.getItem(i);
             item.setChecked(false);
             optionTemplateArtifacts[i] = null;
         }
+        customOptionListField.removeAll();
+        customOptionListModel.clear();
+
+        ((NewProjectWizard) getWizard()).notifySkeletonAndFragmentsCleared();
     }
 
     private Artifact resolveFragmentArtifact(FragmentEntry fragment) {
@@ -685,33 +692,41 @@ public class NewProjectWizardSecondPage extends WizardPage {
         }
     }
 
-    public Artifact[] getSkeletonArtifacts() {
-        Map<String, Artifact> map = new LinkedHashMap<String, Artifact>();
-        map.put(ArtifactUtils.getUniqueId(skeletonArtifact), skeletonArtifact);
-        for (Artifact fragmentArtifact : optionTemplateArtifacts) {
-            if (fragmentArtifact != null) {
-                map.put(ArtifactUtils.getUniqueId(fragmentArtifact), fragmentArtifact);
+    public ArtifactPair[] getSkeletonAndFragments() {
+        Map<String, ArtifactPair> map = new LinkedHashMap<String, ArtifactPair>();
+
+        map.put(ArtifactUtils.getUniqueId(skeleton.getArtifact()), skeleton);
+
+        for (ArtifactPair fragment : optionTemplateArtifacts) {
+            if (fragment != null) {
+                map.put(ArtifactUtils.getUniqueId(fragment.getArtifact()), fragment);
             }
         }
-        for (Artifact fragmentArtifact : customOptionListModel) {
-            map.put(ArtifactUtils.getUniqueId(fragmentArtifact), fragmentArtifact);
+        for (ArtifactPair fragment : customOptionListModel) {
+            map.put(ArtifactUtils.getUniqueId(fragment.getArtifact()), fragment);
         }
-        return map.values().toArray(new Artifact[0]);
+        return map.values().toArray(new ArtifactPair[0]);
     }
 
-    void setSkeletonArtifact(Artifact skeletonArtifact) {
-        this.skeletonArtifact = skeletonArtifact;
+    void setSkeleton(Artifact skeletonArtifact) {
+        this.skeleton = ArtifactPair.newInstance(skeletonArtifact);
     }
 
-    void setFragmentArtifacts(Artifact[] fragmentArtifacts) {
-        for (int i = 0; i < optionTemplateEntries.length; i++) {
-            for (int j = 0; j < fragmentArtifacts.length; j++) {
-                if (fragmentArtifacts[j].getGroupId().equals(optionTemplateEntries[i].getGroupId())
-                        && fragmentArtifacts[j].getArtifactId().equals(optionTemplateEntries[i].getArtifactId())) {
-                    optionTemplateTable.getItem(i).setChecked(true);
-                    optionTemplateArtifacts[i] = fragmentArtifacts[j];
+    void setFragments(Artifact[] fragments) {
+        for (Artifact fragment : fragments) {
+            boolean matched = false;
+            for (int j = 0; j < optionTemplateEntries.length; j++) {
+                if (fragment.getGroupId().equals(optionTemplateEntries[j].getGroupId())
+                        && fragment.getArtifactId().equals(optionTemplateEntries[j].getArtifactId())) {
+                    optionTemplateTable.getItem(j).setChecked(true);
+                    optionTemplateArtifacts[j] = ArtifactPair.newInstance(fragment);
+                    matched = true;
                     break;
                 }
+            }
+            if (!matched) {
+                customOptionListField.add(ArtifactUtils.getUniqueId(fragment));
+                customOptionListModel.add(ArtifactPair.newInstance(fragment));
             }
         }
     }

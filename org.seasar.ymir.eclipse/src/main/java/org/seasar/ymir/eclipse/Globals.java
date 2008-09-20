@@ -29,7 +29,7 @@ public interface Globals {
 
     String PATH_SRC_MAIN_RESOURCES = "src/main/resources";
 
-    String PATH_SRC_MAIN_WEBAPP_WEBINF_LIB = "src/main/webapp/WEB-INF/lib" + "";
+    String PATH_SRC_MAIN_WEBAPP_WEBINF_LIB = "src/main/webapp/WEB-INF/lib";
 
     String BUNDLENAME_WEBLAUNCHER = "werkzeugkasten.weblauncher";
 
@@ -42,4 +42,8 @@ public interface Globals {
     String VILI_APP_PROPRERTIES = PREFIX_VILI + "app.properties";
 
     String VILI_BEHAVIOR_PROPERTIES = PREFIX_VILI + "behavior.properties";
+
+    String HEAD_VILI_BEHAVIOR_PROPERTIES = PREFIX_VILI + "behavior_";
+
+    String TAIL_VILI_BEHAVIOR_PROPERTIES = ".properties";
 }

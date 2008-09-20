@@ -34,4 +34,8 @@ public interface ParameterKeys {
     String JRE_VERSION = "JREVersion";
 
     String DEPENDENCIES = "dependencies";
+
+    String USE_RESOURCE_SYNCHRONIZER = "useResourceSynchronizer";
+
+    String RESOURCE_SYNCHRONIZER_URL = "resourceSynchronizerURL";
 }

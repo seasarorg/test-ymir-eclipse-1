@@ -52,6 +52,7 @@ import org.eclipse.ui.IWorkbenchWizard;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
+import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
@@ -155,15 +156,16 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             final IProject project = firstPage.getProjectHandle();
             final IPath locationPath = firstPage.getLocationPath();
             final IPath jreContainerPath = firstPage.getJREContainerPath();
-            final Artifact[] skeletonArtifacts = secondPage.getSkeletonArtifacts();
+            final ArtifactPair[] skeletonAndFragments = secondPage.getSkeletonAndFragments();
+            thirdPage.populateSkeletonParameters();
             final Dependency[] dependencies = createDependencies(thirdPage.getDatabaseEntry().getDependency(),
-                    skeletonArtifacts);
+                    skeletonAndFragments);
             final Map<String, Object> parameterMap = createParameterMap(dependencies);
             final MapProperties applicationProperties = createApplicationProperties();
             IRunnableWithProgress op = new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
                     try {
-                        createProject(project, locationPath, jreContainerPath, skeletonArtifacts, parameterMap,
+                        createProject(project, locationPath, jreContainerPath, skeletonAndFragments, parameterMap,
                                 dependencies, applicationProperties, monitor);
                     } catch (CoreException e) {
                         throw new InvocationTargetException(e);
@@ -176,12 +178,13 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             getContainer().run(true, false, op);
         } catch (InterruptedException e) {
             return false;
-        } catch (InvocationTargetException e) {
-            Throwable realException = e.getTargetException();
+        } catch (InvocationTargetException ex) {
+            Throwable realException = ex.getTargetException();
             String message = realException.getMessage();
             if (message == null || message.length() == 0) {
                 message = realException.getClass().getName();
             }
+            ex.printStackTrace();
             MessageDialog.openError(getShell(), "Error", message); //$NON-NLS-1$
             return false;
         } catch (CoreException ex) {
@@ -189,13 +192,14 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             if (message == null || message.length() == 0) {
                 message = ex.getClass().getName();
             }
+            ex.printStackTrace();
             MessageDialog.openError(getShell(), "Error", message); //$NON-NLS-1$
             return false;
         }
         return true;
     }
 
-    private Dependency[] createDependencies(Dependency databaseDependency, Artifact[] skeletonArtifacts)
+    private Dependency[] createDependencies(Dependency databaseDependency, ArtifactPair[] skeletonAndFragments)
             throws CoreException {
         Activator activator = Activator.getDefault();
         XOMapper mapper = activator.getXOMapper();
@@ -208,16 +212,17 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
 
         // フラグメントだけを対象にするため1から始めている。
-        for (int i = 1; i < skeletonArtifacts.length; i++) {
-            String text = activator.getResourceAsString(skeletonArtifacts[i], Globals.VILI_DEPENDENCIES_XML,
-                    Globals.ENCODING, new NullProgressMonitor());
+        for (int i = 1; i < skeletonAndFragments.length; i++) {
+            String text = activator.getResourceAsString(skeletonAndFragments[i].getArtifact(),
+                    Globals.VILI_DEPENDENCIES_XML, Globals.ENCODING, new NullProgressMonitor());
             if (text != null) {
                 Dependencies dependencies;
                 try {
                     dependencies = (Dependencies) mapper.toBean(parser.parse(new StringReader(text)).getRootElement(),
                             Dependencies.class);
                 } catch (Throwable t) {
-                    throwCoreException("Can't read " + Globals.VILI_DEPENDENCIES_XML + " in " + skeletonArtifacts[i], t); //$NON-NLS-1$ //$NON-NLS-2$
+                    throwCoreException(
+                            "Can't read " + Globals.VILI_DEPENDENCIES_XML + " in " + skeletonAndFragments[i], t); //$NON-NLS-1$ //$NON-NLS-2$
                     return null;
                 }
                 for (Dependency dep : dependencies.getDependencies()) {
@@ -238,12 +243,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     private MapProperties[] createAppPropertiesFragments() throws CoreException {
         Activator activator = Activator.getDefault();
-        Artifact[] artifacts = secondPage.getSkeletonArtifacts();
+        ArtifactPair[] skeletonAndFragments = secondPage.getSkeletonAndFragments();
         List<MapProperties> list = new ArrayList<MapProperties>();
         // フラグメントだけを対象にするため1から始めている。
-        for (int i = 1; i < artifacts.length; i++) {
-            MapProperties prop = activator.getPropertiesResource(artifacts[i], Globals.VILI_APP_PROPRERTIES,
-                    new NullProgressMonitor());
+        for (int i = 1; i < skeletonAndFragments.length; i++) {
+            MapProperties prop = activator.getPropertiesResource(skeletonAndFragments[i].getArtifact(),
+                    Globals.VILI_APP_PROPRERTIES, new NullProgressMonitor());
             if (prop != null) {
                 list.add(prop);
             }
@@ -270,6 +275,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         map.put(ParameterKeys.DATABASE_URL_FOR_YMIR, resolveDatabaseURLForYmir(entry.getURL()));
         map.put(ParameterKeys.DATABASE_USER, entry.getUser());
         map.put(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
+        map.put(ParameterKeys.USE_RESOURCE_SYNCHRONIZER, fourthPage.isEclipseEnabled());
+        map.put(ParameterKeys.RESOURCE_SYNCHRONIZER_URL, fourthPage.getResourceSynchronizerURL());
         map.put(ParameterKeys.DEPENDENCIES, getDependenciesString(dependencies));
 
         return map;
@@ -345,9 +352,9 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     }
 
     private void createProject(IProject project, IPath locationPath, IPath jreContainerPath,
-            Artifact[] skeletonArtifacts, Map<String, Object> parameterMap, Dependency[] dependencies,
+            ArtifactPair[] skeletonAndFragments, Map<String, Object> parameterMap, Dependency[] dependencies,
             MapProperties applicationProperties, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 8 + skeletonArtifacts.length); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 8 + skeletonAndFragments.length); //$NON-NLS-1$
         try {
             if (!project.exists()) {
                 IProjectDescription description = project.getWorkspace().newProjectDescription(project.getName());
@@ -368,9 +375,9 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 throw new OperationCanceledException();
             }
 
-            for (Artifact skeletonArtifact : skeletonArtifacts) {
+            for (ArtifactPair pair : skeletonAndFragments) {
                 try {
-                    Activator.getDefault().expandSkeleton(project, skeletonArtifact, parameterMap,
+                    Activator.getDefault().expandSkeleton(project, pair, parameterMap,
                             new SubProgressMonitor(monitor, 1));
                 } catch (IOException ex) {
                     throwCoreException(Messages.getString("NewProjectWizard.13"), ex); //$NON-NLS-1$
@@ -698,5 +705,13 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     public String getRootPackageName() {
         return firstPage.getRootPackageName();
+    }
+
+    public void notifySkeletonAndFragmentsCleared() {
+        thirdPage.clearSkeletonParameters();
+    }
+
+    public ArtifactPair[] getSkeletonAndFragments() {
+        return secondPage.getSkeletonAndFragments();
     }
 }

@@ -20,7 +20,14 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
+
+import net.skirnir.xom.BeanAccessor;
+import net.skirnir.xom.BeanAccessorFactory;
+import net.skirnir.xom.XMLParser;
+import net.skirnir.xom.XMLParserFactory;
+import net.skirnir.xom.XOMapper;
+import net.skirnir.xom.XOMapperFactory;
+import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -39,6 +46,7 @@ import org.osgi.framework.BundleContext;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.Dependency;
+import org.seasar.ymir.eclipse.util.CascadeMap;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -48,14 +56,6 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-
-import net.skirnir.xom.BeanAccessor;
-import net.skirnir.xom.BeanAccessorFactory;
-import net.skirnir.xom.XMLParser;
-import net.skirnir.xom.XMLParserFactory;
-import net.skirnir.xom.XOMapper;
-import net.skirnir.xom.XOMapperFactory;
-import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -93,7 +93,7 @@ public class Activator extends AbstractUIPlugin {
 
     private XMLParser parser = XMLParserFactory.newInstance();
 
-    private ViliBehavior viliBehavior;
+    private ViliBehavior systemBehavior;
 
     /**
      * The constructor
@@ -115,21 +115,11 @@ public class Activator extends AbstractUIPlugin {
         setUpFragmentEntries();
         setUpDatabaseEntries();
         setUpTemplateEngine();
-        readViliBehavior();
+        readSystemBehavior();
     }
 
-    private void readViliBehavior() throws CoreException {
-        MapProperties prop = new MapProperties(new TreeMap<String, String>());
-        InputStream is = getClass().getResourceAsStream(Globals.VILI_BEHAVIOR_PROPERTIES);
-        try {
-            prop.load(is);
-        } catch (IOException ex) {
-            throwCoreException("Can't load " + Globals.VILI_BEHAVIOR_PROPERTIES, ex); //$NON-NLS-1$
-        } finally {
-            StreamUtils.close(is);
-        }
-
-        viliBehavior = new ViliBehavior(prop);
+    private void readSystemBehavior() throws IOException {
+        systemBehavior = new ViliBehavior(getClass().getResource(Globals.VILI_BEHAVIOR_PROPERTIES));
     }
 
     /*
@@ -144,7 +134,7 @@ public class Activator extends AbstractUIPlugin {
         skeletonEntries = null;
         fragmentEntries = null;
         databaseEntries = null;
-        viliBehavior = null;
+        systemBehavior = null;
         plugin = null;
         super.stop(context);
     }
@@ -255,11 +245,12 @@ public class Activator extends AbstractUIPlugin {
         return artifact;
     }
 
-    public void expandSkeleton(IProject project, Artifact skeletonArtifact, Map<String, Object> parameterMap,
+    @SuppressWarnings("unchecked")
+    public void expandSkeleton(IProject project, ArtifactPair pair, Map<String, Object> parameterMap,
             IProgressMonitor monitor) throws IOException, CoreException {
         monitor.beginTask(Messages.getString("Activator.15"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
         try {
-            final JarFile jarFile = getJarFile(skeletonArtifact);
+            final JarFile jarFile = getJarFile(pair.getArtifact());
             try {
                 Configuration cfg = new Configuration();
                 cfg.setEncoding(Locale.getDefault(), Globals.ENCODING);
@@ -268,7 +259,7 @@ public class Activator extends AbstractUIPlugin {
                     }
 
                     public Object findTemplateSource(String name) throws IOException {
-                        return jarFile.getEntry(name);
+                        return jarFile.getJarEntry(name);
                     }
 
                     public long getLastModified(Object name) {
@@ -281,13 +272,15 @@ public class Activator extends AbstractUIPlugin {
                 });
                 cfg.setObjectWrapper(new DefaultObjectWrapper());
 
-                ViliBehavior localBehavior = new ViliBehavior(getPropertiesResource(jarFile,
-                        Globals.VILI_BEHAVIOR_PROPERTIES, new SubProgressMonitor(monitor, 1)));
+                ViliBehavior behavior = pair.getBehavior();
+                Map<String, Object> actualParameterMap = new CascadeMap<String, Object>(pair.getParameterMap(),
+                        parameterMap);
 
                 for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
                     JarEntry entry = enm.nextElement();
                     String name = entry.getName();
-                    expand(project, name, cfg, parameterMap, jarFile, localBehavior, new SubProgressMonitor(monitor, 1));
+                    expand(project, name, cfg, actualParameterMap, jarFile, behavior,
+                            new SubProgressMonitor(monitor, 1));
                 }
             } finally {
                 jarFile.close();
@@ -298,14 +291,14 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private void expand(IProject project, String path, Configuration cfg, Map<String, Object> parameterMap,
-            JarFile jarFile, ViliBehavior localBehavior, IProgressMonitor monitor) throws IOException, CoreException {
-        if (shouldIgnore(path, localBehavior)) {
+            JarFile jarFile, ViliBehavior behavior, IProgressMonitor monitor) throws IOException, CoreException {
+        if (shouldIgnore(path, behavior)) {
             return;
         } else if (path.endsWith("/")) { //$NON-NLS-1$
             mkdirs(project.getFolder(resolvePath(path, cfg, parameterMap)), new SubProgressMonitor(monitor, 1));
         } else {
             InputStream in;
-            if (shouldEvaluateAsTemplate(path, localBehavior)) {
+            if (shouldEvaluateAsTemplate(path, behavior)) {
                 byte[] evaluated;
                 try {
                     StringWriter sw = new StringWriter();
@@ -318,7 +311,7 @@ public class Activator extends AbstractUIPlugin {
                 }
                 in = new ByteArrayInputStream(evaluated);
             } else {
-                in = jarFile.getInputStream(jarFile.getEntry(path));
+                in = jarFile.getInputStream(jarFile.getJarEntry(path));
             }
             try {
                 String resolvedPath = resolvePath(path, cfg, parameterMap);
@@ -351,7 +344,7 @@ public class Activator extends AbstractUIPlugin {
         if (localBehavior.getExpansionExcludes().matches(path)) {
             return true;
         }
-        if (viliBehavior.getExpansionExcludes().matches(path)) {
+        if (systemBehavior.getExpansionExcludes().matches(path)) {
             return true;
         }
         if (path.equals(PATHPREFIX_SRC_MAIN_WEBAPP_LIB)) {
@@ -364,17 +357,17 @@ public class Activator extends AbstractUIPlugin {
         return false;
     }
 
-    private boolean shouldEvaluateAsTemplate(String path, ViliBehavior localBehavior) {
-        if (localBehavior.getTemplateExcludes().matches(path)) {
+    private boolean shouldEvaluateAsTemplate(String path, ViliBehavior behavior) {
+        if (behavior.getTemplateExcludes().matches(path)) {
             return false;
         }
-        if (localBehavior.getTemplateIncludes().matches(path)) {
+        if (behavior.getTemplateIncludes().matches(path)) {
             return true;
         }
-        if (viliBehavior.getTemplateExcludes().matches(path)) {
+        if (systemBehavior.getTemplateExcludes().matches(path)) {
             return false;
         }
-        if (viliBehavior.getTemplateIncludes().matches(path)) {
+        if (systemBehavior.getTemplateIncludes().matches(path)) {
             return true;
         }
 
@@ -517,7 +510,7 @@ public class Activator extends AbstractUIPlugin {
                 return null;
             }
 
-            ZipEntry entry = jarFile.getEntry(path);
+            JarEntry entry = jarFile.getJarEntry(path);
             if (entry == null) {
                 return null;
             }
@@ -536,12 +529,8 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    private JarFile getJarFile(Artifact artifact) throws IOException {
+    public JarFile getJarFile(Artifact artifact) throws IOException {
         URL artifactURL = artifactResolver.getURL(artifact);
-        if (artifactURL == null) {
-            return null;
-        }
-
         File artifactFile = File.createTempFile("ymir", ".jar"); //$NON-NLS-1$ //$NON-NLS-2$
         artifactFile.deleteOnExit();
         InputStream is = null;
@@ -584,7 +573,7 @@ public class Activator extends AbstractUIPlugin {
 
         InputStream is = null;
         try {
-            ZipEntry entry = jarFile.getEntry(path);
+            JarEntry entry = jarFile.getJarEntry(path);
             if (entry == null) {
                 return null;
             }

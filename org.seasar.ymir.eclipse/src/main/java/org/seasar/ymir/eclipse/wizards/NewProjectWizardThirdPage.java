@@ -1,22 +1,34 @@
 package org.seasar.ymir.eclipse.wizards;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.ymir.eclipse.Activator;
+import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.DatabaseEntry;
+import org.seasar.ymir.eclipse.ViliBehavior;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well
@@ -63,6 +75,18 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     private Text databasePasswordField;
 
+    private CTabFolder tabFolder;
+
+    private Composite skeletonTabContent;
+
+    private boolean skeletonTabPrepared;
+
+    private ArtifactPair[] skeletonAndFragments;
+
+    private Map<String, ParameterModel>[] parameterModelMaps;
+
+    private ParameterModel[] requiredParameterModels = new ParameterModel[0];
+
     /**
      * Constructor for SampleNewWizardPage.
      * 
@@ -73,6 +97,10 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
         setTitle(Messages.getString("NewProjectWizardThirdPage.1")); //$NON-NLS-1$
         setDescription(Messages.getString("NewProjectWizardThirdPage.2")); //$NON-NLS-1$
+
+        // このページが表示されるまでスケルトンパラメータの取得を遅延させているため、
+        // このページに必ず遷移するようこうしている。
+        setPageComplete(false);
     }
 
     /**
@@ -81,18 +109,40 @@ public class NewProjectWizardThirdPage extends WizardPage {
     public void createControl(Composite parent) {
         Composite composite = new Composite(parent, SWT.NULL);
         composite.setFont(parent.getFont());
-        composite.setLayout(new GridLayout());
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        composite.setLayout(new FillLayout());
         setControl(composite);
 
-        createViewInformationControl(composite);
-        createDatabaseInformationControl(composite);
+        createTabFolder(composite);
 
         setErrorMessage(null);
         setMessage(null);
     }
 
-    void createViewInformationControl(Composite parent) {
+    void createTabFolder(Composite parent) {
+        tabFolder = new CTabFolder(parent, SWT.NULL);
+        tabFolder.setSimple(false);
+        tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
+
+        CTabItem genericTabItem = new CTabItem(tabFolder, SWT.NONE);
+        genericTabItem.setText("全般");
+
+        Composite genericTabContent = new Composite(tabFolder, SWT.NULL);
+        genericTabContent.setLayout(new GridLayout());
+        genericTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
+        genericTabItem.setControl(genericTabContent);
+        createViewParametersControl(genericTabContent);
+        createDatabaseParametersControl(genericTabContent);
+
+        CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
+        skeletonTabItem.setText("スケルトン固有");
+
+        skeletonTabContent = new Composite(tabFolder, SWT.NULL);
+        skeletonTabContent.setLayout(new GridLayout());
+        skeletonTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
+        skeletonTabItem.setControl(skeletonTabContent);
+    }
+
+    void createViewParametersControl(Composite parent) {
         Group group = new Group(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.numColumns = 2;
@@ -110,13 +160,14 @@ public class NewProjectWizardThirdPage extends WizardPage {
         viewEncodingField.addListener(SWT.Modify, validationListener);
     }
 
-    void createDatabaseInformationControl(Composite parent) {
+    void createDatabaseParametersControl(Composite parent) {
         useDatabaseField = new Button(parent, SWT.CHECK | SWT.LEFT);
         useDatabaseField.setText(Messages.getString("NewProjectWizardThirdPage.5")); //$NON-NLS-1$
         useDatabaseField.addListener(SWT.Selection, validationListener);
         useDatabaseField.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 boolean enabled = useDatabaseField.getSelection();
+                databaseCombo.setEnabled(enabled);
                 databaseDriverClassNameLabel.setEnabled(enabled);
                 databaseDriverClassNameField.setEnabled(enabled);
                 databaseURLLabel.setEnabled(enabled);
@@ -205,6 +256,79 @@ public class NewProjectWizardThirdPage extends WizardPage {
         databasePasswordField.setLayoutData(data);
     }
 
+    @SuppressWarnings("unchecked")
+    void createSkeletonParametersControl(Composite parent) {
+        skeletonAndFragments = ((NewProjectWizard) getWizard()).getSkeletonAndFragments();
+
+        java.util.List<ParameterModel> requiredList = new ArrayList<ParameterModel>();
+
+        int count = 0;
+        parameterModelMaps = new Map[skeletonAndFragments.length];
+        for (int i = 0; i < skeletonAndFragments.length; i++) {
+            Map<String, ParameterModel> modelMap = new HashMap<String, ParameterModel>();
+            parameterModelMaps[i] = modelMap;
+
+            ArtifactPair pair = skeletonAndFragments[i];
+            ViliBehavior behavior = pair.getBehavior();
+            String[] names = behavior.getTemplateParameters();
+            count += names.length;
+            if (names.length == 0) {
+                continue;
+            }
+
+            Group group = new Group(parent, SWT.NONE);
+            GridLayout layout = new GridLayout();
+            layout.numColumns = 2;
+            group.setLayout(layout);
+            group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            group.setText(behavior.getLabel());
+
+            for (int j = 0; j < names.length; j++) {
+                String name = names[j];
+                switch (behavior.getTemplateParameterType(name)) {
+                case TEXT:
+                    new Label(group, SWT.NONE).setText(behavior.getTemplateParameterLabel(name));
+                    Text text = new Text(group, SWT.BORDER);
+                    {
+                        ParameterModel model = new TextParameterModel(pair, text);
+                        modelMap.put(name, model);
+                        GridData data = new GridData(GridData.FILL_HORIZONTAL);
+                        data.widthHint = 250;
+                        text.setLayoutData(data);
+                        text.setText(behavior.getTemplateParameterDefault(name));
+                        if (behavior.isTemplateParameterRequired(name)) {
+                            requiredList.add(model);
+                            text.addListener(SWT.Modify, validationListener);
+                        }
+                    }
+                    break;
+
+                case CHECKBOX:
+                    Button button = new Button(group, SWT.CHECK);
+                    {
+                        ParameterModel model = new ButtonParameterModel(pair, button);
+                        modelMap.put(name, model);
+                        GridData data = new GridData();
+                        data.horizontalSpan = 2;
+                        button.setLayoutData(data);
+                        button.setSelection(PropertyUtils.valueOf(behavior.getTemplateParameterDefault(name), false));
+                        button.setText(behavior.getTemplateParameterLabel(name));
+                    }
+                    break;
+
+                default:
+                }
+            }
+        }
+        requiredParameterModels = requiredList.toArray(new ParameterModel[0]);
+
+        if (count == 0) {
+            new Label(parent, SWT.NONE).setText("設定可能なパラメータはありません。");
+        }
+
+        parent.layout();
+    }
+
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
@@ -214,7 +338,23 @@ public class NewProjectWizardThirdPage extends WizardPage {
                 setDefaultValues();
                 initialized = true;
             }
+            if (!skeletonTabPrepared) {
+                createSkeletonParametersControl(skeletonTabContent);
+                setPageComplete(validatePage());
+                skeletonTabPrepared = true;
+            }
         }
+    }
+
+    public void clearSkeletonParameters() {
+        for (Control child : skeletonTabContent.getChildren()) {
+            child.dispose();
+        }
+        parameterModelMaps = null;
+        requiredParameterModels = new ParameterModel[0];
+        skeletonAndFragments = null;
+        skeletonTabPrepared = false;
+        setPageComplete(false);
     }
 
     boolean validatePage() {
@@ -229,10 +369,18 @@ public class NewProjectWizardThirdPage extends WizardPage {
                 return false;
             }
         }
+
+        for (ParameterModel model : requiredParameterModels) {
+            if (!model.valueExists()) {
+                return false;
+            }
+        }
         return true;
     }
 
     void setDefaultValues() {
+        tabFolder.setSelection(0);
+
         viewEncodingField.setText("UTF-8"); //$NON-NLS-1$
         useDatabaseField.setSelection(true);
         databaseCombo.setText(databaseCombo.getItem(DEFAULT_DATABASE_INDEX));
@@ -240,8 +388,6 @@ public class NewProjectWizardThirdPage extends WizardPage {
         databaseURLField.setText(entries[DEFAULT_DATABASE_INDEX].getURL());
         databaseUserField.setText(entries[DEFAULT_DATABASE_INDEX].getUser());
         databasePasswordField.setText(entries[DEFAULT_DATABASE_INDEX].getPassword());
-
-        setPageComplete(validatePage());
     }
 
     public String getViewEncoding() {
@@ -287,6 +433,62 @@ public class NewProjectWizardThirdPage extends WizardPage {
             return databasePasswordField.getText();
         } else {
             return ""; //$NON-NLS-1$
+        }
+    }
+
+    public void populateSkeletonParameters() {
+        for (int i = 0; i < parameterModelMaps.length; i++) {
+            Map<String, ParameterModel> modelMap = parameterModelMaps[i];
+            Map<String, Object> parameterMap = new HashMap<String, Object>();
+            for (Iterator<Map.Entry<String, ParameterModel>> itr = modelMap.entrySet().iterator(); itr.hasNext();) {
+                Map.Entry<String, ParameterModel> entry = itr.next();
+                parameterMap.put(entry.getKey(), entry.getValue().getObject());
+            }
+            skeletonAndFragments[i].setParameterMap(parameterMap);
+        }
+    }
+
+    static interface ParameterModel {
+        boolean valueExists();
+
+        Object getObject();
+    }
+
+    static class TextParameterModel implements ParameterModel {
+        private ArtifactPair pair;
+
+        private Text text;
+
+        TextParameterModel(ArtifactPair pair, Text text) {
+            this.pair = pair;
+            this.text = text;
+        }
+
+        public boolean valueExists() {
+            return text.getText().length() > 0;
+        }
+
+        public Object getObject() {
+            return text.getText();
+        }
+    }
+
+    static class ButtonParameterModel implements ParameterModel {
+        private ArtifactPair pair;
+
+        private Button button;
+
+        ButtonParameterModel(ArtifactPair pair, Button button) {
+            this.pair = pair;
+            this.button = button;
+        }
+
+        public boolean valueExists() {
+            return true;
+        }
+
+        public Object getObject() {
+            return Boolean.valueOf(button.getSelection());
         }
     }
 }

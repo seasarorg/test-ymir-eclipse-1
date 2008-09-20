@@ -66,8 +66,8 @@ public class SkeletonArtifactResolver implements Runnable {
 
                 String errorMessage;
                 if (!failed) {
-                    page.setSkeletonArtifact(skeleton);
-                    page.setFragmentArtifacts(fragmentList.toArray(new Artifact[0]));
+                    page.setSkeleton(skeleton);
+                    page.setFragments(fragmentList.toArray(new Artifact[0]));
                     page.setPageComplete(page.validatePage());
                     errorMessage = null;
                 } else {
