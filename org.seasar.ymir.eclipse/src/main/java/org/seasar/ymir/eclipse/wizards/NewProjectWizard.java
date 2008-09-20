@@ -322,7 +322,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         String fieldSuffix = ymirConfig.getFieldSuffix();
         prop.setProperty(ApplicationPropertiesKeys.FIELDSUFFIX, fieldSuffix);
         prop.setProperty(ApplicationPropertiesKeys.FIELDSPECIALPREFIX, fieldPrefix.length() == 0
-                && fieldSuffix.length() == 0 ? "this." : "");
+                && fieldSuffix.length() == 0 ? "this." : ""); //$NON-NLS-1$ //$NON-NLS-2$
         prop.setProperty(ApplicationPropertiesKeys.ENABLEINPLACEEDITOR, String.valueOf(ymirConfig
                 .isInplaceEditorEnabled()));
         prop.setProperty(ApplicationPropertiesKeys.ENABLECONTROLPANEL, String.valueOf(ymirConfig

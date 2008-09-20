@@ -60,8 +60,6 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     private Button useDatabaseField;
 
-    private Group databaseGroup;
-
     private Label databaseLabel;
 
     private Combo databaseCombo;
@@ -149,7 +147,6 @@ public class NewProjectWizardThirdPage extends WizardPage {
         useDatabaseField.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 boolean enabled = useDatabaseField.getSelection();
-                databaseGroup.setEnabled(enabled);
                 databaseLabel.setEnabled(enabled);
                 databaseCombo.setEnabled(enabled);
                 databaseDriverClassNameLabel.setEnabled(enabled);
@@ -163,7 +160,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
             }
         });
 
-        databaseGroup = new Group(parent, SWT.NONE);
+        Group databaseGroup = new Group(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.numColumns = 2;
         databaseGroup.setLayout(layout);
@@ -177,11 +174,6 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
 
         databaseLabel = new Label(databaseGroup, SWT.NONE);
-        databaseLabel.addListener(SWT.Show, new Listener() {
-            public void handleEvent(Event event) {
-                System.out.println("");
-            }
-        });
         databaseLabel.setText(Messages.getString("NewProjectWizardThirdPage.0")); //$NON-NLS-1$
 
         databaseCombo = new Combo(databaseGroup, SWT.READ_ONLY);
@@ -252,7 +244,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
         tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
 
         CTabItem genericTabItem = new CTabItem(tabFolder, SWT.NONE);
-        genericTabItem.setText("全般");
+        genericTabItem.setText(Messages.getString("NewProjectWizardThirdPage.11")); //$NON-NLS-1$
 
         Composite genericTabContent = new Composite(tabFolder, SWT.NULL);
         genericTabContent.setLayout(new GridLayout());
@@ -262,7 +254,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
         if (skeletonParameterExists()) {
             CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
-            skeletonTabItem.setText("スケルトン固有");
+            skeletonTabItem.setText(Messages.getString("NewProjectWizardThirdPage.12")); //$NON-NLS-1$
 
             ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
             scroll.setLayout(new FillLayout());
@@ -311,7 +303,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
         return count > 0;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
     void createSkeletonParametersControl(Composite parent) {
         parameterModelMaps = new Map[skeletonAndFragments.length];
         java.util.List<ParameterModel> requiredList = new ArrayList<ParameterModel>();
@@ -338,6 +330,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
             for (int j = 0; j < names.length; j++) {
                 String name = names[j];
+                String description = behavior.getTemplateParameterDescription(name);
                 switch (behavior.getTemplateParameterType(name)) {
                 case TEXT:
                     new Label(group, SWT.NONE).setText(behavior.getTemplateParameterLabel(name));
@@ -349,6 +342,9 @@ public class NewProjectWizardThirdPage extends WizardPage {
                         data.widthHint = 250;
                         text.setLayoutData(data);
                         text.setText(behavior.getTemplateParameterDefault(name));
+                        if (description.length() > 0) {
+                            text.setToolTipText(description);
+                        }
                         if (behavior.isTemplateParameterRequired(name)) {
                             requiredList.add(model);
                             text.addListener(SWT.Modify, validationListener);
@@ -366,6 +362,9 @@ public class NewProjectWizardThirdPage extends WizardPage {
                         button.setLayoutData(data);
                         button.setSelection(PropertyUtils.valueOf(behavior.getTemplateParameterDefault(name), false));
                         button.setText(behavior.getTemplateParameterLabel(name));
+                        if (description.length() > 0) {
+                            button.setToolTipText(description);
+                        }
                     }
                     break;
 

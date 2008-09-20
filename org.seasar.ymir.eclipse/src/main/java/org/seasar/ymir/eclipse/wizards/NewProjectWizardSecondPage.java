@@ -103,6 +103,8 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private List customOptionListField;
 
+    private Text customOptionDescriptionText;
+
     private java.util.List<ArtifactPair> customOptionListModel;
 
     private volatile ArtifactPair[] optionTemplateArtifacts;
@@ -439,19 +441,35 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
         customOptionListModel = new ArrayList<ArtifactPair>();
         customOptionListField = new List(rightComposite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-        customOptionListField.setLayoutData(new GridData(GridData.FILL_BOTH));
+        data = new GridData(SWT.FILL, SWT.FILL, true, true);
+        data.heightHint = 80;
+        customOptionListField.setLayoutData(data);
         customOptionListField.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 removeCustomOptionButton.setEnabled(customOptionListField.getSelectionCount() > 0);
+
+                int idx = customOptionListField.getSelectionIndex();
+                if (idx >= 0) {
+                    customOptionDescriptionText.setText(customOptionListModel.get(idx).getBehavior().getDescription());
+                }
             }
         });
 
-        Composite leftButtonsComposite = new Composite(rightComposite, SWT.NULL);
-        leftButtonsComposite.setFont(rightComposite.getFont());
-        leftButtonsComposite.setLayout(new FillLayout());
+        Composite rightButtonsComposite = new Composite(rightComposite, SWT.NULL);
+        rightButtonsComposite.setFont(rightComposite.getFont());
+        data = new GridData();
+        data.verticalSpan = 2;
+        rightButtonsComposite.setLayoutData(data);
+        rightButtonsComposite.setLayout(new FillLayout());
 
-        removeCustomOptionButton = new Button(leftButtonsComposite, SWT.PUSH);
+        customOptionDescriptionText = new Text(rightComposite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP
+                | SWT.READ_ONLY);
+        data = new GridData(SWT.FILL, SWT.FILL, true, true);
+        data.heightHint = 80;
+        customOptionDescriptionText.setLayoutData(data);
+
+        removeCustomOptionButton = new Button(rightButtonsComposite, SWT.PUSH);
         removeCustomOptionButton.setText(Messages.getString("NewProjectWizardSecondPage.20")); //$NON-NLS-1$
         removeCustomOptionButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -591,6 +609,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
             optionTemplateArtifacts[i] = null;
         }
         customOptionListField.removeAll();
+        customOptionDescriptionText.setText(""); //$NON-NLS-1$
         customOptionListModel.clear();
 
         ((NewProjectWizard) getWizard()).notifySkeletonAndFragmentsCleared();

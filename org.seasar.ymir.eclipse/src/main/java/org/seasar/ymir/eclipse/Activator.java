@@ -67,9 +67,9 @@ public class Activator extends AbstractUIPlugin {
 
     private static final String PATHPREFIX_SRC_MAIN_WEBAPP_LIB = Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB + "/"; //$NON-NLS-1$
 
-    private static final String EXTENSION_PROPERTIES = "properties";
+    private static final String EXTENSION_PROPERTIES = "properties"; //$NON-NLS-1$
 
-    private static final String EXTENSION_XPROPERTIES = "xproperties";
+    private static final String EXTENSION_XPROPERTIES = "xproperties"; //$NON-NLS-1$
 
     // The shared instance
     private static Activator plugin;
@@ -249,7 +249,7 @@ public class Activator extends AbstractUIPlugin {
         return artifact;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
     public void expandSkeleton(IProject project, ArtifactPair pair, Map<String, Object> parameterMap,
             IProgressMonitor monitor) throws IOException, CoreException {
         monitor.beginTask(Messages.getString("Activator.15"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
@@ -348,14 +348,14 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private InputStream mergeFileAsProperties(IFile file, InputStream in, boolean xproeprties) throws CoreException {
-        String encoding = xproeprties ? "UTF-8" : "ISO-8859-1";
+        String encoding = xproeprties ? "UTF-8" : "ISO-8859-1"; //$NON-NLS-1$ //$NON-NLS-2$
 
         MapProperties prop = new MapProperties(new TreeMap<String, String>());
         InputStream is = file.getContents();
         try {
             prop.load(is, encoding);
         } catch (IOException ex) {
-            throwCoreException("Can't load " + file, ex);
+            throwCoreException("Can't load " + file, ex); //$NON-NLS-1$
             return null;
         } finally {
             StreamUtils.close(is);
@@ -365,7 +365,7 @@ public class Activator extends AbstractUIPlugin {
         try {
             fragment.load(in, encoding);
         } catch (IOException ex) {
-            throwCoreException("Can't load fragment for " + file, ex);
+            throwCoreException("Can't load fragment for " + file, ex); //$NON-NLS-1$
             return null;
         } finally {
             StreamUtils.close(in);
@@ -380,7 +380,7 @@ public class Activator extends AbstractUIPlugin {
         try {
             prop.store(baos, encoding);
         } catch (IOException ex) {
-            throwCoreException("Can't store " + file, ex);
+            throwCoreException("Can't store " + file, ex); //$NON-NLS-1$
             return null;
         }
 

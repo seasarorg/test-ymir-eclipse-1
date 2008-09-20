@@ -30,11 +30,7 @@ public class YmirConfigurationBlock {
 
     private NewProjectWizardThirdPage parentPage;
 
-    private Button beantableEnabledField;
-
     private Button autoGenerationEnabledField;
-
-    private Group autoGenerationParameterGroup;
 
     private Button specifySuperclassField;
 
@@ -62,13 +58,13 @@ public class YmirConfigurationBlock {
 
     private Button dxoCreationFeatureEnabledField;
 
-    private Group eclipseCooperationParameterGroup;
-
     private Button eclipseEnabledField;
 
     private Label resourceSynchronizerURLLabel;
 
     private Text resourceSynchronizerURLField;
+
+    private Button beantableEnabledField;
 
     public YmirConfigurationBlock(NewProjectWizardThirdPage parentPage) {
         this.parentPage = parentPage;
@@ -80,7 +76,7 @@ public class YmirConfigurationBlock {
 
     public void createControl(Composite parent) {
         autoGenerationEnabledField = new Button(parent, SWT.CHECK | SWT.LEFT);
-        autoGenerationEnabledField.setText("自動生成機能を有効にする");
+        autoGenerationEnabledField.setText(Messages.getString("YmirConfigurationBlock.0")); //$NON-NLS-1$
         autoGenerationEnabledField.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -106,15 +102,13 @@ public class YmirConfigurationBlock {
 
         createAutoGenerationParameterControl(parent);
         createEclipseCooperationParameterControl(parent);
-
-        beantableEnabledField = new Button(parent, SWT.CHECK | SWT.LEFT);
-        beantableEnabledField.setText(Messages.getString("YmirConfigurationComponent.8")); //$NON-NLS-1$
+        createMiscParameterControl(parent);
 
         setDefaultValues();
     }
 
     void createAutoGenerationParameterControl(Composite parent) {
-        autoGenerationParameterGroup = new Group(parent, SWT.NONE);
+        Group autoGenerationParameterGroup = new Group(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.numColumns = 2;
         autoGenerationParameterGroup.setLayout(layout);
@@ -150,7 +144,7 @@ public class YmirConfigurationBlock {
         usingFreyjaRenderClassField.setText(Messages.getString("YmirConfigurationComponent.7")); //$NON-NLS-1$
 
         fieldPrefixLabel = new Label(autoGenerationParameterGroup, SWT.NONE);
-        fieldPrefixLabel.setText("フィールド名のプレフィックスとサフィックス");
+        fieldPrefixLabel.setText(Messages.getString("YmirConfigurationBlock.1")); //$NON-NLS-1$
 
         Composite composite = new Composite(autoGenerationParameterGroup, SWT.NULL);
         composite.setLayout(new GridLayout(2, false));
@@ -169,13 +163,13 @@ public class YmirConfigurationBlock {
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         inplaceEditorEnabled.setLayoutData(data);
-        inplaceEditorEnabled.setText("ブラウザでダブルクリックした時にHTMLテンプレートのインプレースエディタを起動する");
+        inplaceEditorEnabled.setText(Messages.getString("YmirConfigurationBlock.2")); //$NON-NLS-1$
 
         controlPanelEnabled = new Button(autoGenerationParameterGroup, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         controlPanelEnabled.setLayoutData(data);
-        controlPanelEnabled.setText("ブラウザの上部にマウスカーソルを移動した時にコントロールパネルを表示する");
+        controlPanelEnabled.setText(Messages.getString("YmirConfigurationBlock.3")); //$NON-NLS-1$
 
         formDtoCreationFeatureEnabledField = new Button(autoGenerationParameterGroup, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -203,7 +197,7 @@ public class YmirConfigurationBlock {
     }
 
     void createEclipseCooperationParameterControl(Composite parent) {
-        eclipseCooperationParameterGroup = new Group(parent, SWT.NONE);
+        Group eclipseCooperationParameterGroup = new Group(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.numColumns = 2;
         eclipseCooperationParameterGroup.setLayout(layout);
@@ -231,6 +225,18 @@ public class YmirConfigurationBlock {
         data.widthHint = 250;
         resourceSynchronizerURLField.setLayoutData(data);
         resourceSynchronizerURLField.addModifyListener(validationListener);
+    }
+
+    void createMiscParameterControl(Composite parent) {
+        Group miscParameterGroup = new Group(parent, SWT.NONE);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 2;
+        miscParameterGroup.setLayout(layout);
+        miscParameterGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        miscParameterGroup.setText(Messages.getString("YmirConfigurationBlock.4")); //$NON-NLS-1$
+
+        beantableEnabledField = new Button(miscParameterGroup, SWT.CHECK | SWT.LEFT);
+        beantableEnabledField.setText(Messages.getString("YmirConfigurationComponent.8")); //$NON-NLS-1$
     }
 
     boolean validatePage() {
