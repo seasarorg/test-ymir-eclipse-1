@@ -93,7 +93,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     private ParameterModel[] requiredParameterModels = new ParameterModel[0];
 
-    private YmirConfigurationComponent ymirConfigurationComponent;
+    private YmirConfigurationBlock ymirConfigurationBlock;
 
     /**
      * Constructor for SampleNewWizardPage.
@@ -116,7 +116,6 @@ public class NewProjectWizardThirdPage extends WizardPage {
      */
     public void createControl(Composite parent) {
         tabFolderParent = new Composite(parent, SWT.NULL);
-        tabFolderParent.setFont(parent.getFont());
         tabFolderParent.setLayout(new FillLayout());
         setControl(tabFolderParent);
 
@@ -266,17 +265,17 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
 
         if (skeletonAndFragments[0].getBehavior().isYmirProject()) {
-            ymirConfigurationComponent = new YmirConfigurationComponent(this);
+            ymirConfigurationBlock = new YmirConfigurationBlock(this);
 
             CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
-            ymirConfigurationTabItem.setText(ymirConfigurationComponent.getTabLabel());
+            ymirConfigurationTabItem.setText(ymirConfigurationBlock.getTabLabel());
 
             ymirConfigurationTabContent = new Composite(tabFolder, SWT.NULL);
             ymirConfigurationTabContent.setLayout(new GridLayout());
             ymirConfigurationTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
             ymirConfigurationTabItem.setControl(ymirConfigurationTabContent);
 
-            ymirConfigurationComponent.createControl(ymirConfigurationTabContent);
+            ymirConfigurationBlock.createControl(ymirConfigurationTabContent);
         }
 
         tabFolderParent.layout();
@@ -338,7 +337,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
                     break;
 
                 case CHECKBOX:
-                    Button button = new Button(group, SWT.CHECK);
+                    Button button = new Button(group, SWT.CHECK | SWT.LEFT);
                     {
                         ParameterModel model = new ButtonParameterModel(pair, name, button);
                         modelMap.put(name, model);
@@ -388,7 +387,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
         requiredParameterModels = new ParameterModel[0];
 
         ymirConfigurationTabContent = null;
-        ymirConfigurationComponent = null;
+        ymirConfigurationBlock = null;
 
         setPageComplete(false);
     }
@@ -418,7 +417,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
             }
         }
 
-        if (ymirConfigurationComponent != null && !ymirConfigurationComponent.validatePage()) {
+        if (ymirConfigurationBlock != null && !ymirConfigurationBlock.validatePage()) {
             return false;
         }
 
@@ -500,8 +499,8 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
     }
 
-    public YmirConfigurationComponent getYmirConfigurationComponent() {
-        return ymirConfigurationComponent;
+    public YmirConfigurationBlock getYmirConfigurationBlock() {
+        return ymirConfigurationBlock;
     }
 
     static interface ParameterModel {

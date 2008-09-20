@@ -259,7 +259,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         map.put(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
         map.put(ParameterKeys.DEPENDENCIES, getDependenciesString(dependencies));
 
-        YmirConfigurationComponent ymirConfig = thirdPage.getYmirConfigurationComponent();
+        YmirConfigurationBlock ymirConfig = thirdPage.getYmirConfigurationBlock();
         if (ymirConfig != null) {
             map.put(ParameterKeys.USE_RESOURCE_SYNCHRONIZER, ymirConfig.isEclipseEnabled());
             map.put(ParameterKeys.RESOURCE_SYNCHRONIZER_URL, ymirConfig.getResourceSynchronizerURL());
@@ -300,7 +300,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     }
 
     private MapProperties createApplicationProperties() throws CoreException {
-        YmirConfigurationComponent ymirConfig = thirdPage.getYmirConfigurationComponent();
+        YmirConfigurationBlock ymirConfig = thirdPage.getYmirConfigurationBlock();
         if (ymirConfig == null) {
             return null;
         }
@@ -311,6 +311,18 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         if (value != null && value.length() > 0) {
             prop.setProperty(ApplicationPropertiesKeys.SUPERCLASS, value);
         }
+        prop.setProperty(ApplicationPropertiesKeys.SOURCECREATOR_ENABLE, String.valueOf(ymirConfig
+                .isAutoGenerationEnabled()));
+        String fieldPrefix = ymirConfig.getFieldPrefix();
+        prop.setProperty(ApplicationPropertiesKeys.FIELDPREFIX, fieldPrefix);
+        String fieldSuffix = ymirConfig.getFieldSuffix();
+        prop.setProperty(ApplicationPropertiesKeys.FIELDSUFFIX, fieldSuffix);
+        prop.setProperty(ApplicationPropertiesKeys.FIELDSPECIALPREFIX, fieldPrefix.length() == 0
+                && fieldSuffix.length() == 0 ? "this." : "");
+        prop.setProperty(ApplicationPropertiesKeys.ENABLEINPLACEEDITOR, String.valueOf(ymirConfig
+                .isInplaceEditorEnabled()));
+        prop.setProperty(ApplicationPropertiesKeys.ENABLECONTROLPANEL, String.valueOf(ymirConfig
+                .isControlPanelEnabled()));
         prop.setProperty(ApplicationPropertiesKeys.USING_FREYJA_RENDER_CLASS, String.valueOf(ymirConfig
                 .isUsingFreyjaRenderClass()));
         prop.setProperty(ApplicationPropertiesKeys.BEANTABLE_ENABLED, String.valueOf(ymirConfig.isBeantableEnabled()));
