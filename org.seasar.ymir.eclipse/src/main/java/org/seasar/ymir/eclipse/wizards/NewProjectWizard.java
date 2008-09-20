@@ -43,8 +43,9 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
@@ -138,9 +139,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     }
 
     @Override
-    public void createPageControls(Composite pageContainer) {
-        getShell().setSize(600, getShell().getSize().y);
-        super.createPageControls(pageContainer);
+    public void setContainer(IWizardContainer wizardContainer) {
+        super.setContainer(wizardContainer);
+        Shell shell = getShell();
+        if (shell != null) {
+            shell.setSize(600, shell.getSize().y);
+        }
     }
 
     /**
