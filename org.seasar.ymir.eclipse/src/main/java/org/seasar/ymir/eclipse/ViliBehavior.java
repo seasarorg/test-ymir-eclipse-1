@@ -42,7 +42,7 @@ public class ViliBehavior {
 
     private static final String DESCRIPTION = "description";
 
-    private static final String HIDEYMIRCONFIGURATIONTAB = "hideYmirConfigurationTab";
+    private static final String ISNONYMIRPROJECT = "isNonYmirProject";
 
     private Artifact artifact;
 
@@ -175,5 +175,9 @@ public class ViliBehavior {
 
     public String getDescription() {
         return properties.getProperty(DESCRIPTION, "");
+    }
+
+    public boolean isYmirProject() {
+        return !PropertyUtils.valueOf(properties.getProperty(ISNONYMIRPROJECT), false);
     }
 }

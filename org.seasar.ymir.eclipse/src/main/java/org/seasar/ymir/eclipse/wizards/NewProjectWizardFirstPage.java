@@ -1,6 +1,9 @@
 package org.seasar.ymir.eclipse.wizards;
 
+import static org.seasar.ymir.eclipse.wizards.NewProjectWizard.REQUIRED_TEMPLATE;
+
 import java.io.File;
+import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -231,18 +234,23 @@ public class NewProjectWizardFirstPage extends WizardNewProjectCreationPage {
         }
 
         if (getRootPackageName().length() == 0) {
+            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardFirstPage.4"))); //$NON-NLS-1$
             return false;
         }
         if (getProjectGroupId().length() == 0) {
+            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardFirstPage.5"))); //$NON-NLS-1$
             return false;
         }
         if (getProjectArtifactId().length() == 0) {
+            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardFirstPage.7"))); //$NON-NLS-1$
             return false;
         }
         if (getProjectVersion().length() == 0) {
+            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardFirstPage.9"))); //$NON-NLS-1$
             return false;
         }
 
+        setErrorMessage(null);
         return true;
     }
 

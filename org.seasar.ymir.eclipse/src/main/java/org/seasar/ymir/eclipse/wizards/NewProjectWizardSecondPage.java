@@ -422,8 +422,9 @@ public class NewProjectWizardSecondPage extends WizardPage {
                         .getText(), useLatestFragmentVersionField.getSelection() ? null : fragmentVersionField
                         .getText());
                 if (artifact != null) {
-                    customOptionListModel.add(ArtifactPair.newInstance(artifact));
-                    customOptionListField.add(ArtifactUtils.getId(artifact));
+                    ArtifactPair pair = ArtifactPair.newInstance(artifact);
+                    customOptionListModel.add(pair);
+                    customOptionListField.add(pair.getBehavior().getLabel());
                     fragmentGroupIdField.setText(""); //$NON-NLS-1$
                     fragmentArtifactIdField.setText(""); //$NON-NLS-1$
                     if (!useLatestFragmentVersionField.getSelection()) {
@@ -500,6 +501,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         if (skeleton == null) {
             return false;
         }
+        setErrorMessage(null);
         return true;
     }
 

@@ -2,10 +2,14 @@ package org.seasar.ymir.eclipse.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.jar.JarFile;
+
+import werkzeugkasten.common.util.StreamUtil;
 
 public class StreamUtils {
     private StreamUtils() {
@@ -47,6 +51,21 @@ public class StreamUtils {
                 jarFile.close();
             } catch (IOException ignore) {
             }
+        }
+    }
+
+    public static byte[] read(URL url) throws IOException {
+        if (url == null) {
+            return null;
+        }
+
+        InputStream is = url.openStream();
+        try {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            StreamUtil.copy(is, os);
+            return os.toByteArray();
+        } finally {
+            StreamUtils.close(is);
         }
     }
 }

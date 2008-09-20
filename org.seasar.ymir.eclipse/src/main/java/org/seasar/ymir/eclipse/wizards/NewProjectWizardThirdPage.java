@@ -1,5 +1,8 @@
 package org.seasar.ymir.eclipse.wizards;
 
+import static org.seasar.ymir.eclipse.wizards.NewProjectWizard.REQUIRED_TEMPLATE;
+
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,7 +21,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -49,6 +51,10 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     private boolean initialized;
 
+    private Composite tabFolderParent;
+
+    private CTabFolder tabFolder;
+
     private Text viewEncodingField;
 
     private Button useDatabaseField;
@@ -75,17 +81,19 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     private Text databasePasswordField;
 
-    private CTabFolder tabFolder;
-
     private Composite skeletonTabContent;
 
-    private boolean skeletonTabPrepared;
+    private Composite ymirConfigurationTabContent;
+
+    private boolean tabPrepared;
 
     private ArtifactPair[] skeletonAndFragments;
 
     private Map<String, ParameterModel>[] parameterModelMaps;
 
     private ParameterModel[] requiredParameterModels = new ParameterModel[0];
+
+    private YmirConfigurationComponent ymirConfigurationComponent;
 
     /**
      * Constructor for SampleNewWizardPage.
@@ -107,39 +115,13 @@ public class NewProjectWizardThirdPage extends WizardPage {
      * @see IDialogPage#createControl(Composite)
      */
     public void createControl(Composite parent) {
-        Composite composite = new Composite(parent, SWT.NULL);
-        composite.setFont(parent.getFont());
-        composite.setLayout(new FillLayout());
-        setControl(composite);
-
-        createTabFolder(composite);
+        tabFolderParent = new Composite(parent, SWT.NULL);
+        tabFolderParent.setFont(parent.getFont());
+        tabFolderParent.setLayout(new FillLayout());
+        setControl(tabFolderParent);
 
         setErrorMessage(null);
         setMessage(null);
-    }
-
-    void createTabFolder(Composite parent) {
-        tabFolder = new CTabFolder(parent, SWT.NULL);
-        tabFolder.setSimple(false);
-        tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
-
-        CTabItem genericTabItem = new CTabItem(tabFolder, SWT.NONE);
-        genericTabItem.setText("全般");
-
-        Composite genericTabContent = new Composite(tabFolder, SWT.NULL);
-        genericTabContent.setLayout(new GridLayout());
-        genericTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
-        genericTabItem.setControl(genericTabContent);
-        createViewParametersControl(genericTabContent);
-        createDatabaseParametersControl(genericTabContent);
-
-        CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
-        skeletonTabItem.setText("スケルトン固有");
-
-        skeletonTabContent = new Composite(tabFolder, SWT.NULL);
-        skeletonTabContent.setLayout(new GridLayout());
-        skeletonTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
-        skeletonTabItem.setControl(skeletonTabContent);
     }
 
     void createViewParametersControl(Composite parent) {
@@ -256,14 +238,66 @@ public class NewProjectWizardThirdPage extends WizardPage {
         databasePasswordField.setLayoutData(data);
     }
 
+    void createTabFolder() {
+        tabFolder = new CTabFolder(tabFolderParent, SWT.NULL);
+        tabFolder.setSimple(false);
+        tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
+
+        CTabItem genericTabItem = new CTabItem(tabFolder, SWT.NONE);
+        genericTabItem.setText("全般");
+
+        Composite genericTabContent = new Composite(tabFolder, SWT.NULL);
+        genericTabContent.setLayout(new GridLayout());
+        genericTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
+        genericTabItem.setControl(genericTabContent);
+        createViewParametersControl(genericTabContent);
+        createDatabaseParametersControl(genericTabContent);
+
+        if (skeletonParameterExists()) {
+            CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
+            skeletonTabItem.setText("スケルトン固有");
+
+            skeletonTabContent = new Composite(tabFolder, SWT.NULL);
+            skeletonTabContent.setLayout(new GridLayout());
+            skeletonTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
+            skeletonTabItem.setControl(skeletonTabContent);
+
+            createSkeletonParametersControl(skeletonTabContent);
+        }
+
+        if (skeletonAndFragments[0].getBehavior().isYmirProject()) {
+            ymirConfigurationComponent = new YmirConfigurationComponent(this);
+
+            CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
+            ymirConfigurationTabItem.setText(ymirConfigurationComponent.getTabLabel());
+
+            ymirConfigurationTabContent = new Composite(tabFolder, SWT.NULL);
+            ymirConfigurationTabContent.setLayout(new GridLayout());
+            ymirConfigurationTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
+            ymirConfigurationTabItem.setControl(ymirConfigurationTabContent);
+
+            ymirConfigurationComponent.createControl(ymirConfigurationTabContent);
+        }
+
+        tabFolderParent.layout();
+
+        setDefaultValues();
+    }
+
+    private boolean skeletonParameterExists() {
+        int count = 0;
+        for (ArtifactPair pair : skeletonAndFragments) {
+            count += pair.getBehavior().getTemplateParameters().length;
+        }
+        return count > 0;
+    }
+
     @SuppressWarnings("unchecked")
     void createSkeletonParametersControl(Composite parent) {
-        skeletonAndFragments = ((NewProjectWizard) getWizard()).getSkeletonAndFragments();
-
+        parameterModelMaps = new Map[skeletonAndFragments.length];
         java.util.List<ParameterModel> requiredList = new ArrayList<ParameterModel>();
 
         int count = 0;
-        parameterModelMaps = new Map[skeletonAndFragments.length];
         for (int i = 0; i < skeletonAndFragments.length; i++) {
             Map<String, ParameterModel> modelMap = new HashMap<String, ParameterModel>();
             parameterModelMaps[i] = modelMap;
@@ -290,7 +324,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
                     new Label(group, SWT.NONE).setText(behavior.getTemplateParameterLabel(name));
                     Text text = new Text(group, SWT.BORDER);
                     {
-                        ParameterModel model = new TextParameterModel(pair, text);
+                        ParameterModel model = new TextParameterModel(pair, name, text);
                         modelMap.put(name, model);
                         GridData data = new GridData(GridData.FILL_HORIZONTAL);
                         data.widthHint = 250;
@@ -306,7 +340,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
                 case CHECKBOX:
                     Button button = new Button(group, SWT.CHECK);
                     {
-                        ParameterModel model = new ButtonParameterModel(pair, button);
+                        ParameterModel model = new ButtonParameterModel(pair, name, button);
                         modelMap.put(name, model);
                         GridData data = new GridData();
                         data.horizontalSpan = 2;
@@ -321,60 +355,74 @@ public class NewProjectWizardThirdPage extends WizardPage {
             }
         }
         requiredParameterModels = requiredList.toArray(new ParameterModel[0]);
-
-        if (count == 0) {
-            new Label(parent, SWT.NONE).setText("設定可能なパラメータはありません。");
-        }
-
-        parent.layout();
     }
 
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         if (visible) {
-            viewEncodingField.setFocus();
-            if (!initialized) {
-                setDefaultValues();
-                initialized = true;
-            }
-            if (!skeletonTabPrepared) {
-                createSkeletonParametersControl(skeletonTabContent);
+            if (!tabPrepared) {
+                skeletonAndFragments = ((NewProjectWizard) getWizard()).getSkeletonAndFragments();
+                createTabFolder();
+                tabPrepared = true;
+
+                tabFolder.setSelection(0);
+                viewEncodingField.setFocus();
+
                 setPageComplete(validatePage());
-                skeletonTabPrepared = true;
             }
         }
     }
 
     public void clearSkeletonParameters() {
-        for (Control child : skeletonTabContent.getChildren()) {
-            child.dispose();
+        skeletonAndFragments = null;
+
+        if (tabFolder != null) {
+            tabFolder.dispose();
+            tabFolder = null;
         }
+        tabPrepared = false;
+
+        skeletonTabContent = null;
         parameterModelMaps = null;
         requiredParameterModels = new ParameterModel[0];
-        skeletonAndFragments = null;
-        skeletonTabPrepared = false;
+
+        ymirConfigurationTabContent = null;
+        ymirConfigurationComponent = null;
+
         setPageComplete(false);
     }
 
     boolean validatePage() {
         if (getViewEncoding().length() == 0) {
+            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardThirdPage.4"))); //$NON-NLS-1$
             return false;
         }
         if (isUseDatabase()) {
             if (getDatabaseDriverClassName().length() == 0) {
+                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages
+                        .getString("NewProjectWizardThirdPage.7"))); //$NON-NLS-1$
                 return false;
             }
             if (getDatabaseURL().length() == 0) {
+                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages
+                        .getString("NewProjectWizardThirdPage.8"))); //$NON-NLS-1$
                 return false;
             }
         }
 
         for (ParameterModel model : requiredParameterModels) {
             if (!model.valueExists()) {
+                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, model.getLabel()));
                 return false;
             }
         }
+
+        if (ymirConfigurationComponent != null && !ymirConfigurationComponent.validatePage()) {
+            return false;
+        }
+
+        setErrorMessage(null);
         return true;
     }
 
@@ -437,6 +485,10 @@ public class NewProjectWizardThirdPage extends WizardPage {
     }
 
     public void populateSkeletonParameters() {
+        if (parameterModelMaps == null) {
+            return;
+        }
+
         for (int i = 0; i < parameterModelMaps.length; i++) {
             Map<String, ParameterModel> modelMap = parameterModelMaps[i];
             Map<String, Object> parameterMap = new HashMap<String, Object>();
@@ -448,8 +500,14 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
     }
 
+    public YmirConfigurationComponent getYmirConfigurationComponent() {
+        return ymirConfigurationComponent;
+    }
+
     static interface ParameterModel {
         boolean valueExists();
+
+        String getLabel();
 
         Object getObject();
     }
@@ -457,15 +515,22 @@ public class NewProjectWizardThirdPage extends WizardPage {
     static class TextParameterModel implements ParameterModel {
         private ArtifactPair pair;
 
+        private String name;
+
         private Text text;
 
-        TextParameterModel(ArtifactPair pair, Text text) {
+        TextParameterModel(ArtifactPair pair, String name, Text text) {
             this.pair = pair;
+            this.name = name;
             this.text = text;
         }
 
         public boolean valueExists() {
             return text.getText().length() > 0;
+        }
+
+        public String getLabel() {
+            return pair.getBehavior().getTemplateParameterLabel(name);
         }
 
         public Object getObject() {
@@ -476,15 +541,22 @@ public class NewProjectWizardThirdPage extends WizardPage {
     static class ButtonParameterModel implements ParameterModel {
         private ArtifactPair pair;
 
+        private String name;
+
         private Button button;
 
-        ButtonParameterModel(ArtifactPair pair, Button button) {
+        ButtonParameterModel(ArtifactPair pair, String name, Button button) {
             this.pair = pair;
+            this.name = name;
             this.button = button;
         }
 
         public boolean valueExists() {
             return true;
+        }
+
+        public String getLabel() {
+            return pair.getBehavior().getTemplateParameterLabel(name);
         }
 
         public Object getObject() {

@@ -1,8 +1,10 @@
 package org.seasar.ymir.eclipse.wizards;
 
+import static org.seasar.ymir.eclipse.wizards.NewProjectWizard.REQUIRED_TEMPLATE;
+
+import java.text.MessageFormat;
+
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -17,22 +19,16 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.ymir.eclipse.Globals;
 
-/**
- * The "New" wizard page allows setting the container for the new file as well
- * as the file name. The page will only accept file name without the extension
- * OR with the extension that matches the expected one (mpe).
- */
-
-public class NewProjectWizardFourthPage extends WizardPage {
+public class YmirConfigurationComponent {
     private static final String PAGEBASE = ".ymir.PageBase"; //$NON-NLS-1$
 
     private ModifyListener validationListener = new ModifyListener() {
         public void modifyText(ModifyEvent e) {
-            setPageComplete(validatePage());
+            updatePageComplete();
         }
     };
 
-    private boolean initialized;
+    private NewProjectWizardThirdPage parentPage;
 
     private Button specifySuperclassField;
 
@@ -58,33 +54,19 @@ public class NewProjectWizardFourthPage extends WizardPage {
 
     private Text resourceSynchronizerURLField;
 
-    /**
-     * Constructor for SampleNewWizardPage.
-     * 
-     * @param pageName
-     */
-    public NewProjectWizardFourthPage() {
-        super("NewProjectWizardFourthPage"); //$NON-NLS-1$
-
-        setTitle(Messages.getString("NewProjectWizardFourthPage.2")); //$NON-NLS-1$
-        setDescription(Messages.getString("NewProjectWizardFourthPage.3")); //$NON-NLS-1$
+    public YmirConfigurationComponent(NewProjectWizardThirdPage parentPage) {
+        this.parentPage = parentPage;
     }
 
-    /**
-     * @see IDialogPage#createControl(Composite)
-     */
+    public void updatePageComplete() {
+        parentPage.setPageComplete(parentPage.validatePage());
+    }
+
     public void createControl(Composite parent) {
-        Composite composite = new Composite(parent, SWT.NULL);
-        composite.setFont(parent.getFont());
-        composite.setLayout(new GridLayout());
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        setControl(composite);
+        createAutoGenerationInformationControl(parent);
+        createEclipseCooperationInformationControl(parent);
 
-        createAutoGenerationInformationControl(composite);
-        createEclipseCooperationInformationControl(composite);
-
-        setErrorMessage(null);
-        setMessage(null);
+        setDefaultValues();
     }
 
     void createAutoGenerationInformationControl(Composite parent) {
@@ -93,13 +75,13 @@ public class NewProjectWizardFourthPage extends WizardPage {
         layout.numColumns = 2;
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText(Messages.getString("NewProjectWizardFourthPage.4")); //$NON-NLS-1$
+        group.setText(Messages.getString("YmirConfigurationComponent.4")); //$NON-NLS-1$
 
         specifySuperclassField = new Button(group, SWT.CHECK | SWT.LEFT);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         specifySuperclassField.setLayoutData(data);
-        specifySuperclassField.setText(Messages.getString("NewProjectWizardFourthPage.5")); //$NON-NLS-1$
+        specifySuperclassField.setText(Messages.getString("YmirConfigurationComponent.5")); //$NON-NLS-1$
         specifySuperclassField.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -110,7 +92,7 @@ public class NewProjectWizardFourthPage extends WizardPage {
         });
 
         superclassLabel = new Label(group, SWT.NONE);
-        superclassLabel.setText(Messages.getString("NewProjectWizardFourthPage.6")); //$NON-NLS-1$
+        superclassLabel.setText(Messages.getString("YmirConfigurationComponent.6")); //$NON-NLS-1$
 
         superclassField = new Text(group, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -121,37 +103,37 @@ public class NewProjectWizardFourthPage extends WizardPage {
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         usingFreyjaRenderClassField.setLayoutData(data);
-        usingFreyjaRenderClassField.setText(Messages.getString("NewProjectWizardFourthPage.7")); //$NON-NLS-1$
+        usingFreyjaRenderClassField.setText(Messages.getString("YmirConfigurationComponent.7")); //$NON-NLS-1$
 
         beantableEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         beantableEnabledField.setLayoutData(data);
-        beantableEnabledField.setText(Messages.getString("NewProjectWizardFourthPage.8")); //$NON-NLS-1$
+        beantableEnabledField.setText(Messages.getString("YmirConfigurationComponent.8")); //$NON-NLS-1$
 
         formDtoCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         formDtoCreationFeatureEnabledField.setLayoutData(data);
-        formDtoCreationFeatureEnabledField.setText(Messages.getString("NewProjectWizardFourthPage.9")); //$NON-NLS-1$
+        formDtoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationComponent.9")); //$NON-NLS-1$
 
         daoCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         daoCreationFeatureEnabledField.setLayoutData(data);
-        daoCreationFeatureEnabledField.setText(Messages.getString("NewProjectWizardFourthPage.10")); //$NON-NLS-1$
+        daoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationComponent.10")); //$NON-NLS-1$
 
         dxoCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         dxoCreationFeatureEnabledField.setLayoutData(data);
-        dxoCreationFeatureEnabledField.setText(Messages.getString("NewProjectWizardFourthPage.11")); //$NON-NLS-1$
+        dxoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationComponent.11")); //$NON-NLS-1$
 
         converterCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         converterCreationFeatureEnabledField.setLayoutData(data);
-        converterCreationFeatureEnabledField.setText(Messages.getString("NewProjectWizardFourthPage.12")); //$NON-NLS-1$
+        converterCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationComponent.12")); //$NON-NLS-1$
     }
 
     void createEclipseCooperationInformationControl(Composite parent) {
@@ -160,13 +142,13 @@ public class NewProjectWizardFourthPage extends WizardPage {
         layout.numColumns = 2;
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText(Messages.getString("NewProjectWizardFourthPage.13")); //$NON-NLS-1$
+        group.setText(Messages.getString("YmirConfigurationComponent.13")); //$NON-NLS-1$
 
         eclipseEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         eclipseEnabledField.setLayoutData(data);
-        eclipseEnabledField.setText(Messages.getString("NewProjectWizardFourthPage.14")); //$NON-NLS-1$
+        eclipseEnabledField.setText(Messages.getString("YmirConfigurationComponent.14")); //$NON-NLS-1$
         eclipseEnabledField.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
                 boolean enabled = eclipseEnabledField.getSelection();
@@ -176,7 +158,7 @@ public class NewProjectWizardFourthPage extends WizardPage {
         });
 
         resourceSynchronizerURLLabel = new Label(group, SWT.NONE);
-        resourceSynchronizerURLLabel.setText(Messages.getString("NewProjectWizardFourthPage.15")); //$NON-NLS-1$
+        resourceSynchronizerURLLabel.setText(Messages.getString("YmirConfigurationComponent.15")); //$NON-NLS-1$
 
         resourceSynchronizerURLField = new Text(group, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -185,20 +167,10 @@ public class NewProjectWizardFourthPage extends WizardPage {
         resourceSynchronizerURLField.addModifyListener(validationListener);
     }
 
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        if (visible) {
-            superclassField.setFocus();
-            if (!initialized) {
-                setDefaultValues();
-                initialized = true;
-            }
-        }
-    }
-
     boolean validatePage() {
         if (isEclipseEnabled() && getResourceSynchronizerURL().length() == 0) {
+            parentPage.setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages
+                    .getString("YmirConfigurationComponent.15"))); //$NON-NLS-1$
             return false;
         }
         return true;
@@ -217,11 +189,11 @@ public class NewProjectWizardFourthPage extends WizardPage {
         resourceSynchronizerURLField.setEnabled(eclipseEnabled);
         resourceSynchronizerURLField.setText("http://localhost:8386/"); //$NON-NLS-1$
 
-        setPageComplete(validatePage());
+        updatePageComplete();
     }
 
     private String getSuperclassDefaultValue() {
-        return ((NewProjectWizard) getWizard()).getRootPackageName() + PAGEBASE;
+        return ((NewProjectWizard) parentPage.getWizard()).getRootPackageName() + PAGEBASE;
     }
 
     public String getSuperclass() {
@@ -262,5 +234,9 @@ public class NewProjectWizardFourthPage extends WizardPage {
 
     public String getResourceSynchronizerURL() {
         return resourceSynchronizerURLField.getText();
+    }
+
+    public String getTabLabel() {
+        return Messages.getString("YmirConfigurationComponent.2"); //$NON-NLS-1$
     }
 }

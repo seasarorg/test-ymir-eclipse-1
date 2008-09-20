@@ -98,13 +98,13 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     private static final String BUNDLE_PATHPREFIX_JDT_CORE_PREFS = "/prefs/compliance/org.eclipse.jdt.core.prefs-"; //$NON-NLS-1$
 
+    static final String REQUIRED_TEMPLATE = Messages.getString("NewProjectWizard.2"); //$NON-NLS-1$
+
     private NewProjectWizardFirstPage firstPage;
 
     private NewProjectWizardSecondPage secondPage;
 
     private NewProjectWizardThirdPage thirdPage;
-
-    private NewProjectWizardFourthPage fourthPage;
 
     static {
         Map<String, String> map = new HashMap<String, String>();
@@ -135,8 +135,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         addPage(secondPage);
         thirdPage = new NewProjectWizardThirdPage();
         addPage(thirdPage);
-        fourthPage = new NewProjectWizardFourthPage();
-        addPage(fourthPage);
     }
 
     @Override
@@ -259,9 +257,13 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         map.put(ParameterKeys.DATABASE_URL_FOR_YMIR, resolveDatabaseURLForYmir(entry.getURL()));
         map.put(ParameterKeys.DATABASE_USER, entry.getUser());
         map.put(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
-        map.put(ParameterKeys.USE_RESOURCE_SYNCHRONIZER, fourthPage.isEclipseEnabled());
-        map.put(ParameterKeys.RESOURCE_SYNCHRONIZER_URL, fourthPage.getResourceSynchronizerURL());
         map.put(ParameterKeys.DEPENDENCIES, getDependenciesString(dependencies));
+
+        YmirConfigurationComponent ymirConfig = thirdPage.getYmirConfigurationComponent();
+        if (ymirConfig != null) {
+            map.put(ParameterKeys.USE_RESOURCE_SYNCHRONIZER, ymirConfig.isEclipseEnabled());
+            map.put(ParameterKeys.RESOURCE_SYNCHRONIZER_URL, ymirConfig.getResourceSynchronizerURL());
+        }
 
         return map;
     }
@@ -298,27 +300,32 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     }
 
     private MapProperties createApplicationProperties() throws CoreException {
+        YmirConfigurationComponent ymirConfig = thirdPage.getYmirConfigurationComponent();
+        if (ymirConfig == null) {
+            return null;
+        }
+
         MapProperties prop = new MapProperties(new TreeMap<String, String>());
         prop.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, firstPage.getRootPackageName());
-        String value = fourthPage.getSuperclass();
+        String value = ymirConfig.getSuperclass();
         if (value != null && value.length() > 0) {
             prop.setProperty(ApplicationPropertiesKeys.SUPERCLASS, value);
         }
-        prop.setProperty(ApplicationPropertiesKeys.USING_FREYJA_RENDER_CLASS, String.valueOf(fourthPage
+        prop.setProperty(ApplicationPropertiesKeys.USING_FREYJA_RENDER_CLASS, String.valueOf(ymirConfig
                 .isUsingFreyjaRenderClass()));
-        prop.setProperty(ApplicationPropertiesKeys.BEANTABLE_ENABLED, String.valueOf(fourthPage.isBeantableEnabled()));
-        prop.setProperty(ApplicationPropertiesKeys.FORM_DTO_CREATION_FEATURE_ENABLED, String.valueOf(fourthPage
+        prop.setProperty(ApplicationPropertiesKeys.BEANTABLE_ENABLED, String.valueOf(ymirConfig.isBeantableEnabled()));
+        prop.setProperty(ApplicationPropertiesKeys.FORM_DTO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
                 .isFormDtoCreationFeatureEnabled()));
-        prop.setProperty(ApplicationPropertiesKeys.CONVERTER_CREATION_FEATURE_ENABLED, String.valueOf(fourthPage
+        prop.setProperty(ApplicationPropertiesKeys.CONVERTER_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
                 .isConverterCreationFeatureEnabled()));
-        prop.setProperty(ApplicationPropertiesKeys.DAO_CREATION_FEATURE_ENABLED, String.valueOf(fourthPage
+        prop.setProperty(ApplicationPropertiesKeys.DAO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
                 .isDaoCreationFeatureEnabled()));
-        prop.setProperty(ApplicationPropertiesKeys.DXO_CREATION_FEATURE_ENABLED, String.valueOf(fourthPage
+        prop.setProperty(ApplicationPropertiesKeys.DXO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
                 .isDxoCreationFeatureEnabled()));
-        boolean eclipseEnabled = fourthPage.isEclipseEnabled();
+        boolean eclipseEnabled = ymirConfig.isEclipseEnabled();
         prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_ENABLED, String.valueOf(eclipseEnabled));
         if (eclipseEnabled) {
-            value = fourthPage.getResourceSynchronizerURL();
+            value = ymirConfig.getResourceSynchronizerURL();
             if (value != null && value.length() > 0) {
                 prop.setProperty(ApplicationPropertiesKeys.RESOURCE_SYNCHRONIZER_URL, value);
             }
@@ -633,12 +640,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("NewProjectWizard.20"), 1); //$NON-NLS-1$
         try {
-            IFile file = project.getFile(PATH_APP_PROPERTIES);
-            if (!file.exists()) {
+            if (applicationProperties == null) {
                 return;
             }
 
-            Activator.getDefault().mergeProperties(file, applicationProperties, new SubProgressMonitor(monitor, 1));
+            Activator.getDefault().mergeProperties(project.getFile(PATH_APP_PROPERTIES), applicationProperties,
+                    new SubProgressMonitor(monitor, 1));
         } finally {
             monitor.done();
         }

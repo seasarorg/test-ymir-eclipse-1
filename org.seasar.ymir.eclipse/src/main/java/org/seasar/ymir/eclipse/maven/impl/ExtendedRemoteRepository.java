@@ -1,8 +1,10 @@
 package org.seasar.ymir.eclipse.maven.impl;
 
+import java.io.IOException;
 import java.net.URL;
 
 import org.seasar.ymir.eclipse.maven.ExtendedRepository;
+import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.ArtifactBuilder;
 import werkzeugkasten.mvnhack.repository.impl.RemoteRepository;
@@ -14,11 +16,20 @@ public class ExtendedRemoteRepository extends RemoteRepository implements Extend
         super(url, builder);
     }
 
-    public URL getMetadataLocation(String groupId, String artifactId) {
+    public byte[] resolveMetadata(String groupId, String artifactId) {
+        URL location = getMetadataLocation(groupId, artifactId);
+        try {
+            return StreamUtils.read(location);
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+
+    protected URL getMetadataLocation(String groupId, String artifactId) {
         return toURL(toMetadataPath(groupId, artifactId));
     }
 
-    public String toMetadataPath(String groupId, String artifactId) {
+    protected String toMetadataPath(String groupId, String artifactId) {
         char ps = '/';
         StringBuilder sb = new StringBuilder();
         sb.append(groupId.replace('.', ps));

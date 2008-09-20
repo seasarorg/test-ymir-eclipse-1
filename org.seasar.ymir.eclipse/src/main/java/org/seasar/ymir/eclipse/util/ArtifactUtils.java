@@ -1,7 +1,17 @@
 package org.seasar.ymir.eclipse.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import net.skirnir.xom.IllegalSyntaxException;
+import net.skirnir.xom.ValidationException;
+import net.skirnir.xom.XMLParserFactory;
+
+import org.seasar.ymir.eclipse.Activator;
+import org.seasar.ymir.eclipse.maven.Metadata;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
@@ -96,6 +106,29 @@ public class ArtifactUtils {
     }
 
     public static String getUniqueId(Artifact artifact) {
-        return artifact.getGroupId() + ":" + artifact.getArtifactId();
+        return getUniqueId(artifact.getGroupId(), artifact.getArtifactId());
+    }
+
+    public static String getUniqueId(String groupId, String artifactId) {
+        return groupId + ":" + artifactId;
+    }
+
+    public static Metadata createMetadata(byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+
+        try {
+            return (Metadata) Activator.getDefault().getXOMapper().toBean(
+                    XMLParserFactory.newInstance().parse(
+                            new InputStreamReader(new ByteArrayInputStream(bytes), "UTF-8"))
+                            .getRootElement(), Metadata.class);
+        } catch (ValidationException ex) {
+            return null;
+        } catch (IllegalSyntaxException ex) {
+            return null;
+        } catch (IOException ex) {
+            return null;
+        }
     }
 }

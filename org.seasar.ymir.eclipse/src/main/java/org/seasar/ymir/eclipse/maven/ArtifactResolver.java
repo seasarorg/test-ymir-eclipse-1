@@ -8,8 +8,14 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Properties;
 
+import net.skirnir.xom.IllegalSyntaxException;
+import net.skirnir.xom.ValidationException;
+import net.skirnir.xom.XMLParserFactory;
+import net.skirnir.xom.XOMapper;
+
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedConfiguration;
+import org.seasar.ymir.eclipse.maven.impl.ExtendedContext;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedRemoteRepository;
 import org.seasar.ymir.eclipse.maven.impl.NonTransitiveContext;
 
@@ -17,24 +23,17 @@ import werkzeugkasten.common.util.StreamUtil;
 import werkzeugkasten.mvnhack.repository.Artifact;
 import werkzeugkasten.mvnhack.repository.ArtifactBuilder;
 import werkzeugkasten.mvnhack.repository.Configuration;
-import werkzeugkasten.mvnhack.repository.Context;
 import werkzeugkasten.mvnhack.repository.Repository;
-import werkzeugkasten.mvnhack.repository.impl.DefaultContext;
 import werkzeugkasten.mvnhack.repository.impl.StAXArtifactBuilder;
-
-import net.skirnir.xom.IllegalSyntaxException;
-import net.skirnir.xom.ValidationException;
-import net.skirnir.xom.XMLParserFactory;
-import net.skirnir.xom.XOMapper;
 
 public class ArtifactResolver {
     private Configuration configuration;
 
     private ArtifactBuilder builder;
 
-    private Context context;
+    private ExtendedContext context;
 
-    private Context nonTransitiveContext;
+    private ExtendedContext nonTransitiveContext;
 
     private XOMapper mapper;
 
@@ -43,7 +42,7 @@ public class ArtifactResolver {
         builder = new StAXArtifactBuilder();
         configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2", builder));
         configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2-snapshot", builder));
-        context = new DefaultContext(configuration);
+        context = new ExtendedContext(configuration);
         nonTransitiveContext = new NonTransitiveContext(configuration);
 
         mapper = Activator.getDefault().getXOMapper();
@@ -70,28 +69,11 @@ public class ArtifactResolver {
     }
 
     public String getLatestVersion(String groupId, String artifactId) {
-        String latestVersion = null;
-        long lastUpdatedTime = 0L;
-        for (Repository r : configuration.getRepositories()) {
-            if (r instanceof ExtendedRepository) {
-                URL url = ((ExtendedRepository) r).getMetadataLocation(groupId, artifactId);
-                Metadata metadata = readMetadata(url);
-                if (metadata != null) {
-                    if (latestVersion == null) {
-                        latestVersion = metadata.getVersion();
-                    } else {
-                        Versioning versioning = metadata.getVersioning();
-                        if (versioning != null) {
-                            Long lastUpdated = versioning.getLastUpdated();
-                            if (lastUpdated != null && lastUpdated.longValue() > lastUpdatedTime) {
-                                latestVersion = metadata.getVersion();
-                            }
-                        }
-                    }
-                }
-            }
+        Metadata metadata = context.resolveMetadata(groupId, artifactId);
+        if (metadata != null) {
+            return metadata.getVersion();
         }
-        return latestVersion;
+        return null;
     }
 
     Metadata readMetadata(URL url) {
