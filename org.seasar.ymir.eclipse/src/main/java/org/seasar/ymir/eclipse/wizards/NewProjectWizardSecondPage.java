@@ -427,6 +427,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
                     ArtifactPair pair = ArtifactPair.newInstance(artifact);
                     customOptionListModel.add(pair);
                     customOptionListField.add(pair.getBehavior().getLabel());
+                    customOptionDescriptionText.setText(pair.getBehavior().getDescription());
                     fragmentGroupIdField.setText(""); //$NON-NLS-1$
                     fragmentArtifactIdField.setText(""); //$NON-NLS-1$
                     if (!useLatestFragmentVersionField.getSelection()) {
