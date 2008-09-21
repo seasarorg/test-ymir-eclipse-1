@@ -34,12 +34,16 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -120,6 +124,20 @@ public class Activator extends AbstractUIPlugin {
         setUpDatabaseEntries();
         setUpTemplateEngine();
         readSystemBehavior();
+    }
+
+    @Override
+    protected void initializeImageRegistry(ImageRegistry reg) {
+        registerImage(reg, "icons/ymir.gif");
+    }
+
+    private void registerImage(ImageRegistry reg, String pathName) {
+        IPath path = new Path(pathName);
+        URL url = FileLocator.find(getBundle(), path, null);
+        if (url != null) {
+            ImageDescriptor desc = ImageDescriptor.createFromURL(url);
+            reg.put(pathName, desc);
+        }
     }
 
     private void readSystemBehavior() throws IOException {
@@ -249,7 +267,7 @@ public class Activator extends AbstractUIPlugin {
         return artifact;
     }
 
-    @SuppressWarnings("unchecked") //$NON-NLS-1$
+    @SuppressWarnings("unchecked")//$NON-NLS-1$
     public void expandSkeleton(IProject project, ArtifactPair pair, Map<String, Object> parameterMap,
             IProgressMonitor monitor) throws IOException, CoreException {
         monitor.beginTask(Messages.getString("Activator.15"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$

@@ -6,9 +6,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
-import net.skirnir.xom.XOMapper;
-
-import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedConfiguration;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedContext;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedRemoteRepository;
@@ -31,8 +28,6 @@ public class ArtifactResolver {
 
     private ExtendedContext nonTransitiveContext;
 
-    private XOMapper mapper;
-
     public ArtifactResolver() {
         configuration = new ExtendedConfiguration(new Properties());
         builder = new StAXArtifactBuilder();
@@ -40,8 +35,6 @@ public class ArtifactResolver {
         configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2-snapshot", builder));
         context = new ExtendedContext(configuration);
         nonTransitiveContext = new NonTransitiveContext(configuration);
-
-        mapper = Activator.getDefault().getXOMapper();
     }
 
     public Artifact resolve(String groupId, String artifactId, String version, boolean transitive) {

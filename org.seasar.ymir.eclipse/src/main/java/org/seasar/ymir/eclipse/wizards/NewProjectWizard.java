@@ -123,6 +123,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         super();
         setNeedsProgressMonitor(true);
         setWindowTitle(Messages.getString("NewProjectWizard.11")); //$NON-NLS-1$
+        setDefaultPageImageDescriptor(Activator.getDefault().getImageRegistry().getDescriptor("icons/ymir.gif"));
     }
 
     /**
