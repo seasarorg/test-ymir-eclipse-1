@@ -15,7 +15,7 @@ public class Metadata {
         return groupId;
     }
 
-    @Child
+    @Child(order = 1)
     public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
@@ -24,7 +24,7 @@ public class Metadata {
         return artifactId;
     }
 
-    @Child
+    @Child(order = 2)
     public void setArtifactId(String artifactId) {
         this.artifactId = artifactId;
     }
@@ -33,7 +33,7 @@ public class Metadata {
         return version;
     }
 
-    @Child
+    @Child(order = 3)
     public void setVersion(String version) {
         this.version = version;
     }
@@ -42,7 +42,7 @@ public class Metadata {
         return versioning;
     }
 
-    @Child
+    @Child(order = 4)
     public void setVersioning(Versioning versioning) {
         this.versioning = versioning;
     }

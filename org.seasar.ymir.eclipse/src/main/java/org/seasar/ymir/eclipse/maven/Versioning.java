@@ -11,7 +11,7 @@ public class Versioning {
         return versions;
     }
 
-    @Child
+    @Child(order = 1)
     public void setVersions(Versions versions) {
         this.versions = versions;
     }
@@ -20,7 +20,7 @@ public class Versioning {
         return lastUpdated;
     }
 
-    @Child
+    @Child(order = 2)
     public void setLastUpdated(Long lastUpdated) {
         this.lastUpdated = lastUpdated;
     }

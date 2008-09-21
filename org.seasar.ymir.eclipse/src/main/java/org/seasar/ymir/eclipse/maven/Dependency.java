@@ -70,7 +70,7 @@ public class Dependency {
         return groupId;
     }
 
-    @Child
+    @Child(order = 1)
     public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
@@ -79,7 +79,7 @@ public class Dependency {
         return artifactId;
     }
 
-    @Child
+    @Child(order = 2)
     public void setArtifactId(String artifactId) {
         this.artifactId = artifactId;
     }
@@ -88,7 +88,7 @@ public class Dependency {
         return version;
     }
 
-    @Child
+    @Child(order = 3)
     public void setVersion(String version) {
         this.version = version;
     }
@@ -97,7 +97,7 @@ public class Dependency {
         return scope;
     }
 
-    @Child
+    @Child(order = 4)
     public void setScope(String scope) {
         this.scope = scope;
     }
