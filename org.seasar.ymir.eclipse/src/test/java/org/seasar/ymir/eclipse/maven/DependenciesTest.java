@@ -45,6 +45,5 @@ public class DependenciesTest extends TestCase {
 
         StringWriter sw = new StringWriter();
         mapper.toXML(actual, sw);
-        System.out.println(sw.toString());
     }
 }

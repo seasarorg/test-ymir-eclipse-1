@@ -1,21 +1,13 @@
 package org.seasar.ymir.eclipse.maven.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 import org.seasar.ymir.eclipse.maven.ExtendedRepository;
 import org.seasar.ymir.eclipse.maven.Metadata;
 import org.seasar.ymir.eclipse.util.ArtifactUtils;
-import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import werkzeugkasten.mvnhack.repository.Configuration;
-import werkzeugkasten.mvnhack.repository.Destination;
 import werkzeugkasten.mvnhack.repository.Repository;
 import werkzeugkasten.mvnhack.repository.impl.DefaultContext;
-import werkzeugkasten.mvnhack.repository.impl.RemoteRepository;
 
 public class ExtendedContext extends DefaultContext {
     private static final String SUFFIX_SNAPSHOT = "-SNAPSHOT";
@@ -40,19 +32,20 @@ public class ExtendedContext extends DefaultContext {
             ExtendedRepository re = (ExtendedRepository) r;
             byte[] bytes = re.resolveMetadata(groupId, artifactId);
             if (bytes != null) {
-                if (re instanceof RemoteRepository) {
-                    for (Destination d : configuration.getDestinations()) {
-                        if (d instanceof ExtendedLocalRepository) {
-                            ExtendedLocalRepository local = (ExtendedLocalRepository) d;
-                            File file = local.getMetadataFile(groupId, artifactId);
-                            file.getParentFile().mkdirs();
-                            try {
-                                StreamUtils.copyStream(new ByteArrayInputStream(bytes), new FileOutputStream(file));
-                            } catch (IOException ignore) {
-                            }
-                        }
-                    }
-                }
+                // Mavenはリモートからメタデータをコピーしてきていないようなのでコメントアウト。
+                // if (re instanceof RemoteRepository) {
+                // for (Destination d : configuration.getDestinations()) {
+                // if (d instanceof ExtendedLocalRepository) {
+                // ExtendedLocalRepository local = (ExtendedLocalRepository) d;
+                // File file = local.getMetadataFile(groupId, artifactId);
+                // file.getParentFile().mkdirs();
+                // try {
+                // StreamUtils.copyStream(new ByteArrayInputStream(bytes), new FileOutputStream(file));
+                // } catch (IOException ignore) {
+                // }
+                // }
+                // }
+                // }
                 return ArtifactUtils.createMetadata(bytes);
             }
         }

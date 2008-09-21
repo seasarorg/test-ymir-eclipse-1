@@ -219,7 +219,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             if (text != null) {
                 Dependencies dependencies;
                 try {
-                    dependencies = (Dependencies) mapper.toBean(parser.parse(new StringReader(text)).getRootElement(),
+                    dependencies = mapper.toBean(parser.parse(new StringReader(text)).getRootElement(),
                             Dependencies.class);
                 } catch (Throwable t) {
                     throwCoreException(

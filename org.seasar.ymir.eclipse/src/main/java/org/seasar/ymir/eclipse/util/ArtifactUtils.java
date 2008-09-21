@@ -119,10 +119,10 @@ public class ArtifactUtils {
         }
 
         try {
-            return (Metadata) Activator.getDefault().getXOMapper().toBean(
+            return Activator.getDefault().getXOMapper().toBean(
                     XMLParserFactory.newInstance().parse(
-                            new InputStreamReader(new ByteArrayInputStream(bytes), "UTF-8"))
-                            .getRootElement(), Metadata.class);
+                            new InputStreamReader(new ByteArrayInputStream(bytes), "UTF-8")).getRootElement(),
+                    Metadata.class);
         } catch (ValidationException ex) {
             return null;
         } catch (IllegalSyntaxException ex) {

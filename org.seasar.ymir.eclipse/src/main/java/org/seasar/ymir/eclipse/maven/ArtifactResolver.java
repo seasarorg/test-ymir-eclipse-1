@@ -1,16 +1,11 @@
 package org.seasar.ymir.eclipse.maven;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Properties;
 
-import net.skirnir.xom.IllegalSyntaxException;
-import net.skirnir.xom.ValidationException;
-import net.skirnir.xom.XMLParserFactory;
 import net.skirnir.xom.XOMapper;
 
 import org.seasar.ymir.eclipse.Activator;
@@ -18,8 +13,9 @@ import org.seasar.ymir.eclipse.maven.impl.ExtendedConfiguration;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedContext;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedRemoteRepository;
 import org.seasar.ymir.eclipse.maven.impl.NonTransitiveContext;
+import org.seasar.ymir.eclipse.util.ArtifactUtils;
+import org.seasar.ymir.eclipse.util.StreamUtils;
 
-import werkzeugkasten.common.util.StreamUtil;
 import werkzeugkasten.mvnhack.repository.Artifact;
 import werkzeugkasten.mvnhack.repository.ArtifactBuilder;
 import werkzeugkasten.mvnhack.repository.Configuration;
@@ -87,24 +83,16 @@ public class ArtifactResolver {
         } catch (IOException ex) {
             return null;
         }
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            StreamUtil.copy(is, os);
-            return (Metadata) mapper.toBean(XMLParserFactory.newInstance().parse(
-                    new InputStreamReader(new ByteArrayInputStream(os.toByteArray()), "UTF-8")).getRootElement(),
-                    Metadata.class);
-        } catch (ValidationException ex) {
-            return null;
-        } catch (IllegalSyntaxException ex) {
-            return null;
+            StreamUtils.copyStream(is, os);
         } catch (IOException ex) {
             return null;
         } finally {
-            try {
-                is.close();
-            } catch (IOException ignore) {
-            }
+            StreamUtils.close(is);
         }
+        return ArtifactUtils.createMetadata(os.toByteArray());
     }
 
 }

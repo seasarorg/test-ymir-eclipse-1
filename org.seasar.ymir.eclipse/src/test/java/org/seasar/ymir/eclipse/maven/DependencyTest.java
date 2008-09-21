@@ -37,7 +37,6 @@ public class DependencyTest extends TestCase {
 
         StringWriter sw = new StringWriter();
         mapper.toXML(actual, sw);
-        System.out.println(sw.toString());
     }
 
     public void testEquals() throws Exception {
