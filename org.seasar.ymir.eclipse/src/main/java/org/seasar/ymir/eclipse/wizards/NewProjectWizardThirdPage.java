@@ -50,8 +50,6 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     private DatabaseEntry[] entries;
 
-    private boolean initialized;
-
     private Composite tabFolderParent;
 
     private CTabFolder tabFolder;
@@ -303,7 +301,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
         return count > 0;
     }
 
-    @SuppressWarnings("unchecked") //$NON-NLS-1$
+    @SuppressWarnings("unchecked")//$NON-NLS-1$
     void createSkeletonParametersControl(Composite parent) {
         parameterModelMaps = new Map[skeletonAndFragments.length];
         java.util.List<ParameterModel> requiredList = new ArrayList<ParameterModel>();
