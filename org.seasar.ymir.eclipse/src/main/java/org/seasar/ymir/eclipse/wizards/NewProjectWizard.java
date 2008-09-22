@@ -313,7 +313,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         MapProperties prop = new MapProperties(new TreeMap<String, String>());
         prop.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, firstPage.getRootPackageName());
         String value = ymirConfig.getSuperclass();
-        if (value != null && value.length() > 0) {
+        if (value.length() > 0) {
             prop.setProperty(ApplicationPropertiesKeys.SUPERCLASS, value);
         }
         prop.setProperty(ApplicationPropertiesKeys.SOURCECREATOR_ENABLE, String.valueOf(ymirConfig
@@ -343,7 +343,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_ENABLED, String.valueOf(eclipseEnabled));
         if (eclipseEnabled) {
             value = ymirConfig.getResourceSynchronizerURL();
-            if (value != null && value.length() > 0) {
+            if (value.length() > 0) {
                 prop.setProperty(ApplicationPropertiesKeys.RESOURCE_SYNCHRONIZER_URL, value);
             }
         }

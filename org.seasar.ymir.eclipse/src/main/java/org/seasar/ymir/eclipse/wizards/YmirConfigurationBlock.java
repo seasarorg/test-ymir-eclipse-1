@@ -332,7 +332,11 @@ public class YmirConfigurationBlock {
     }
 
     public String getResourceSynchronizerURL() {
-        return resourceSynchronizerURLField.getText();
+        if (isEclipseEnabled()) {
+            return resourceSynchronizerURLField.getText();
+        } else {
+            return "";
+        }
     }
 
     public String getTabLabel() {
