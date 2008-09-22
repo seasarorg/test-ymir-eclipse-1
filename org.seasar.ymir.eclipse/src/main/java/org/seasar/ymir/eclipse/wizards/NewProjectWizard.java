@@ -65,17 +65,6 @@ import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
-/**
- * This is a sample new wizard. Its role is to create a new file 
- * resource in the provided container. If the container resource
- * (a folder or a project) is selected in the workspace 
- * when the wizard is opened, it will accept it as the target
- * container. The wizard creates one file with the extension
- * "mpe". If a sample multi-page editor (also available
- * as a template) is registered for the same extension, it will
- * be able to open it.
- */
-
 public class NewProjectWizard extends Wizard implements INewWizard {
     private static final String PATH_APP_PROPERTIES = Globals.PATH_SRC_MAIN_RESOURCES + "/app.properties"; //$NON-NLS-1$
 
@@ -101,9 +90,9 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     static final String REQUIRED_TEMPLATE = Messages.getString("NewProjectWizard.2"); //$NON-NLS-1$
 
-    private NewProjectWizardSecondPage firstPage;
+    private NewProjectWizardFirstPage firstPage;
 
-    private NewProjectWizardFirstPage secondPage;
+    private NewProjectWizardSecondPage secondPage;
 
     private NewProjectWizardThirdPage thirdPage;
 
@@ -131,9 +120,9 @@ public class NewProjectWizard extends Wizard implements INewWizard {
      */
 
     public void addPages() {
-        firstPage = new NewProjectWizardSecondPage();
+        firstPage = new NewProjectWizardFirstPage();
         addPage(firstPage);
-        secondPage = new NewProjectWizardFirstPage();
+        secondPage = new NewProjectWizardSecondPage();
         addPage(secondPage);
         thirdPage = new NewProjectWizardThirdPage();
         addPage(thirdPage);
@@ -155,10 +144,10 @@ public class NewProjectWizard extends Wizard implements INewWizard {
      */
     public boolean performFinish() {
         try {
-            final IProject project = firstPage.getProjectHandle();
-            final IPath locationPath = firstPage.getLocationPath();
-            final IPath jreContainerPath = firstPage.getJREContainerPath();
-            final ArtifactPair[] skeletonAndFragments = secondPage.getSkeletonAndFragments();
+            final ArtifactPair[] skeletonAndFragments = firstPage.getSkeletonAndFragments();
+            final IProject project = secondPage.getProjectHandle();
+            final IPath locationPath = secondPage.getLocationPath();
+            final IPath jreContainerPath = secondPage.getJREContainerPath();
             thirdPage.populateSkeletonParameters();
             final Dependency[] dependencies = createDependencies(thirdPage.getDatabaseEntry().getDependency(),
                     skeletonAndFragments);
@@ -259,13 +248,13 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(ParameterKeys.SLASH, "/");
         map.put(ParameterKeys.DOLLAR, "$");
-        map.put(ParameterKeys.PROJECT_NAME, firstPage.getProjectName());
-        map.put(ParameterKeys.ROOT_PACKAGE_NAME, firstPage.getRootPackageName());
-        map.put(ParameterKeys.ROOT_PACKAGE_PATH, firstPage.getRootPackageName().replace('.', '/'));
-        map.put(ParameterKeys.GROUP_ID, firstPage.getProjectGroupId());
-        map.put(ParameterKeys.ARTIFACT_ID, firstPage.getProjectArtifactId());
-        map.put(ParameterKeys.VERSION, firstPage.getProjectVersion());
-        map.put(ParameterKeys.JRE_VERSION, getJREVersion(firstPage.getJREContainerPath()));
+        map.put(ParameterKeys.PROJECT_NAME, secondPage.getProjectName());
+        map.put(ParameterKeys.ROOT_PACKAGE_NAME, secondPage.getRootPackageName());
+        map.put(ParameterKeys.ROOT_PACKAGE_PATH, secondPage.getRootPackageName().replace('.', '/'));
+        map.put(ParameterKeys.GROUP_ID, secondPage.getProjectGroupId());
+        map.put(ParameterKeys.ARTIFACT_ID, secondPage.getProjectArtifactId());
+        map.put(ParameterKeys.VERSION, secondPage.getProjectVersion());
+        map.put(ParameterKeys.JRE_VERSION, getJREVersion(secondPage.getJREContainerPath()));
         map.put(ParameterKeys.VIEW_ENCODING, thirdPage.getViewEncoding());
         map.put(ParameterKeys.USE_DATABASE, thirdPage.isUseDatabase());
         DatabaseEntry entry = thirdPage.getDatabaseEntry();
@@ -324,7 +313,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
 
         MapProperties prop = new MapProperties(new TreeMap<String, String>());
-        prop.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, firstPage.getRootPackageName());
+        prop.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, secondPage.getRootPackageName());
         String value = ymirConfig.getSuperclass();
         if (value.length() > 0) {
             prop.setProperty(ApplicationPropertiesKeys.SUPERCLASS, value);
@@ -727,14 +716,15 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     }
 
     public String getRootPackageName() {
-        return firstPage.getRootPackageName();
+        return secondPage.getRootPackageName();
     }
 
     public void notifySkeletonAndFragmentsCleared() {
-        thirdPage.clearSkeletonParameters();
+        secondPage.notifySkeletonAndFragmentsCleared();
+        thirdPage.notifySkeletonAndFragmentsCleared();
     }
 
     public ArtifactPair[] getSkeletonAndFragments() {
-        return secondPage.getSkeletonAndFragments();
+        return firstPage.getSkeletonAndFragments();
     }
 }

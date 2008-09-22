@@ -405,7 +405,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
     }
 
-    public void clearSkeletonParameters() {
+    public void notifySkeletonAndFragmentsCleared() {
         skeletonAndFragments = null;
         behavior = null;
 

@@ -593,4 +593,12 @@ public class JREsComboBlock {
     private void setStatus(IStatus status) {
         fStatus = status;
     }
+
+    public void setEnabled(boolean enabled) {
+        fCombo.setEnabled(enabled);
+        fDefaultButton.setEnabled(enabled);
+        fSpecificButton.setEnabled(enabled);
+        fEnvironmentsButton.setEnabled(enabled);
+        fEnvironmentsCombo.setEnabled(enabled);
+    }
 }

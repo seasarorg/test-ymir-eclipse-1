@@ -41,7 +41,9 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
         }
     };
 
-    private boolean initialized;
+    private boolean conrtolsPrepared;
+
+    private boolean javaProject;
 
     private Text projectNameField;
 
@@ -50,6 +52,8 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
     private String initialLocationPath;
 
     private JREsComboBlock jreBlock;
+
+    private Label rootPackageNameLabel;
 
     private Text rootPackageNameField;
 
@@ -106,6 +110,8 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
             }
         });
 
+        setDefaultValues();
+
         setPageComplete(false);
         setErrorMessage(null);
         setMessage(null);
@@ -140,7 +146,7 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         group.setText(Messages.getString("NewProjectWizardSecondPage.3")); //$NON-NLS-1$
 
-        Label rootPackageNameLabel = new Label(group, SWT.NONE);
+        rootPackageNameLabel = new Label(group, SWT.NONE);
         rootPackageNameLabel.setText(Messages.getString("NewProjectWizardSecondPage.4")); //$NON-NLS-1$
 
         rootPackageNameField = new Text(group, SWT.BORDER);
@@ -173,6 +179,9 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
                 boolean enabled = !useRootPackageNameAsProjectGroupIdField.getSelection();
                 projectGroupIdLabel.setEnabled(enabled);
                 projectGroupIdField.setEnabled(enabled);
+                if (!enabled) {
+                    projectGroupIdField.setText(rootPackageNameField.getText());
+                }
             }
         });
 
@@ -193,6 +202,9 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
                 boolean enabled = !useProjectNameAsProjectArtifactIdField.getSelection();
                 projectArtifactIdLabel.setEnabled(enabled);
                 projectArtifactIdField.setEnabled(enabled);
+                if (!enabled) {
+                    projectArtifactIdField.setText(projectNameField.getText());
+                }
             }
         });
 
@@ -233,7 +245,7 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
             return false;
         }
 
-        if (getRootPackageName().length() == 0) {
+        if (javaProject && getRootPackageName().length() == 0) {
             setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardSecondPage.4"))); //$NON-NLS-1$
             return false;
         }
@@ -257,10 +269,34 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
-        if (!initialized) {
-            setDefaultValues();
-            initialized = true;
+        if (visible) {
+            if (!conrtolsPrepared) {
+                javaProject = ((NewProjectWizard) getWizard()).getSkeletonAndFragments()[0].getBehavior()
+                        .isJavaProject();
+                prepareForControls();
+
+                setPageComplete(validatePage());
+            }
         }
+    }
+
+    void prepareForControls() {
+        jreBlock.setEnabled(javaProject);
+        rootPackageNameLabel.setEnabled(javaProject);
+        rootPackageNameField.setEnabled(javaProject);
+        useRootPackageNameAsProjectGroupIdField.setEnabled(javaProject);
+        boolean groupIdEnabled = !javaProject || !useRootPackageNameAsProjectGroupIdField.getSelection();
+        projectGroupIdLabel.setEnabled(groupIdEnabled);
+        projectGroupIdField.setEnabled(groupIdEnabled);
+        if (!groupIdEnabled) {
+            projectGroupIdField.setText(rootPackageNameField.getText());
+        }
+    }
+
+    public void notifySkeletonAndFragmentsCleared() {
+        conrtolsPrepared = false;
+
+        setPageComplete(false);
     }
 
     void setDefaultValues() {
