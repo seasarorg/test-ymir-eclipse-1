@@ -101,7 +101,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     static final String REQUIRED_TEMPLATE = Messages.getString("NewProjectWizard.2"); //$NON-NLS-1$
 
-    private NewProjectWizardFirstPage firstPage;
+    private NewProjectWizardTempPage firstPage;
 
     private NewProjectWizardSecondPage secondPage;
 
@@ -131,7 +131,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
      */
 
     public void addPages() {
-        firstPage = new NewProjectWizardFirstPage();
+        firstPage = new NewProjectWizardTempPage();
         addPage(firstPage);
         secondPage = new NewProjectWizardSecondPage();
         addPage(secondPage);
