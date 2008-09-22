@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -56,6 +57,7 @@ import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
+import org.seasar.ymir.eclipse.ViliBehavior;
 import org.seasar.ymir.eclipse.maven.Dependencies;
 import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.util.ArtifactUtils;
@@ -86,8 +88,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     private static final String CREATESUPERCLASS_KEY_CLASSSHORTNAME = "classShortName"; //$NON-NLS-1$
 
     private static final String TEMPLATEPATH_SUPERCLASS = "templates/Superclass.java.ftl"; //$NON-NLS-1$
-
-    private static final String PATH_DELIMITER = "/"; //$NON-NLS-1$
 
     private static final String PATH_JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER"; //$NON-NLS-1$
 
@@ -123,7 +123,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         super();
         setNeedsProgressMonitor(true);
         setWindowTitle(Messages.getString("NewProjectWizard.11")); //$NON-NLS-1$
-        setDefaultPageImageDescriptor(Activator.getDefault().getImageRegistry().getDescriptor("icons/ymir.gif"));
+        setDefaultPageImageDescriptor(Activator.getDefault().getImageRegistry().getDescriptor(Globals.IMAGE_YMIR));
     }
 
     /**
@@ -182,19 +182,31 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             return false;
         } catch (InvocationTargetException ex) {
             Throwable realException = ex.getTargetException();
+
             String message = realException.getMessage();
             if (message == null || message.length() == 0) {
                 message = realException.getClass().getName();
             }
-            ex.printStackTrace();
+
+            ILog log = Activator.getDefault().getLog();
+            IStatus status;
+            if (realException instanceof CoreException) {
+                status = ((CoreException) realException).getStatus();
+            } else {
+                status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.OK, message, realException);
+            }
+            log.log(status);
+
             MessageDialog.openError(getShell(), "Error", message); //$NON-NLS-1$
             return false;
         } catch (CoreException ex) {
+            ILog log = Activator.getDefault().getLog();
+            log.log(ex.getStatus());
+
             String message = ex.getMessage();
             if (message == null || message.length() == 0) {
                 message = ex.getClass().getName();
             }
-            ex.printStackTrace();
             MessageDialog.openError(getShell(), "Error", message); //$NON-NLS-1$
             return false;
         }
@@ -245,7 +257,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     private Map<String, Object> createParameterMap(Dependency[] dependencies) {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put(ParameterKeys.SLASH, PATH_DELIMITER);
+        map.put(ParameterKeys.SLASH, "/");
+        map.put(ParameterKeys.DOLLAR, "$");
         map.put(ParameterKeys.PROJECT_NAME, firstPage.getProjectName());
         map.put(ParameterKeys.ROOT_PACKAGE_NAME, firstPage.getRootPackageName());
         map.put(ParameterKeys.ROOT_PACKAGE_PATH, firstPage.getRootPackageName().replace('.', '/'));
@@ -375,6 +388,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 throw new OperationCanceledException();
             }
 
+            ViliBehavior behavior = skeletonAndFragments[0].getBehavior();
+
             for (ArtifactPair pair : skeletonAndFragments) {
                 try {
                     Activator.getDefault().expandSkeleton(project, pair, parameterMap,
@@ -393,31 +408,43 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 throw new OperationCanceledException();
             }
 
-            setUpJRECompliance(project, (String) parameterMap.get(ParameterKeys.JRE_VERSION), new SubProgressMonitor(
-                    monitor, 1));
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
+            if (behavior.isJavaProject()) {
+                setUpJRECompliance(project, (String) parameterMap.get(ParameterKeys.JRE_VERSION),
+                        new SubProgressMonitor(monitor, 1));
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+            } else {
+                monitor.worked(1);
             }
 
-            updateApplicationProperties(project, applicationProperties, new SubProgressMonitor(monitor, 1));
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
+            if (applicationProperties != null) {
+                updateApplicationProperties(project, applicationProperties, new SubProgressMonitor(monitor, 1));
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
+                createSuperclass(project, applicationProperties.getProperty(ApplicationPropertiesKeys.SUPERCLASS),
+                        new SubProgressMonitor(monitor, 1));
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+            } else {
+                monitor.worked(2);
             }
 
-            createSuperclass(project, applicationProperties.getProperty(ApplicationPropertiesKeys.SUPERCLASS),
-                    new SubProgressMonitor(monitor, 1));
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
+            if (behavior.isJavaProject()) {
+                IJavaProject javaProject = JavaCore.create(project);
+
+                setUpClasspath(javaProject, jreContainerPath, dependencyPaths, new SubProgressMonitor(monitor, 1));
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
+                setUpProjectDescription(project, new SubProgressMonitor(monitor, 1));
+            } else {
+                monitor.worked(2);
             }
-
-            IJavaProject javaProject = JavaCore.create(project);
-
-            setUpClasspath(javaProject, jreContainerPath, dependencyPaths, new SubProgressMonitor(monitor, 1));
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-
-            setUpProjectDescription(project, new SubProgressMonitor(monitor, 1));
         } finally {
             monitor.done();
         }
@@ -657,10 +684,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("NewProjectWizard.20"), 1); //$NON-NLS-1$
         try {
-            if (applicationProperties == null) {
-                return;
-            }
-
             Activator.getDefault().mergeProperties(project.getFile(PATH_APP_PROPERTIES), applicationProperties,
                     new SubProgressMonitor(monitor, 1));
         } finally {
@@ -691,7 +714,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     }
 
     private void throwCoreException(String message, Throwable cause) throws CoreException {
-        IStatus status = new Status(IStatus.ERROR, "org.seasar.ymir.eclipse", IStatus.OK, message, cause); //$NON-NLS-1$
+        IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.OK, message, cause);
         throw new CoreException(status);
     }
 

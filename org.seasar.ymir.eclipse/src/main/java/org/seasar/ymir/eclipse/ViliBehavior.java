@@ -42,7 +42,11 @@ public class ViliBehavior {
 
     private static final String DESCRIPTION = "description";
 
+    private static final String TYPE = "type";
+
     private static final String ISNONYMIRPROJECT = "isNonYmirProject";
+
+    private static final String ISNONJAVAPROJECT = "isNonJavaProject";
 
     private Artifact artifact;
 
@@ -178,6 +182,14 @@ public class ViliBehavior {
     }
 
     public boolean isYmirProject() {
-        return !PropertyUtils.valueOf(properties.getProperty(ISNONYMIRPROJECT), false);
+        return !PropertyUtils.valueOf(properties.getProperty(ISNONYMIRPROJECT), false) && isJavaProject();
+    }
+
+    public boolean isJavaProject() {
+        return !PropertyUtils.valueOf(properties.getProperty(ISNONJAVAPROJECT), false);
+    }
+
+    public ArtifactType getArtifactType() {
+        return ArtifactType.enumOf(properties.getProperty(TYPE));
     }
 }

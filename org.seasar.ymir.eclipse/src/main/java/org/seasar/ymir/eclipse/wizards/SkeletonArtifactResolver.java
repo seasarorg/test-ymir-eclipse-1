@@ -6,6 +6,8 @@ import java.util.List;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ArtifactNotFoundException;
+import org.seasar.ymir.eclipse.ArtifactPair;
+import org.seasar.ymir.eclipse.ArtifactType;
 import org.seasar.ymir.eclipse.MavenArtifact;
 import org.seasar.ymir.eclipse.SkeletonEntry;
 import org.seasar.ymir.eclipse.FragmentEntry;
@@ -74,10 +76,15 @@ public class SkeletonArtifactResolver implements Runnable {
 
                 String errorMessage;
                 if (!failed) {
-                    page.setSkeleton(skeleton);
-                    page.setFragments(fragmentList.toArray(new Artifact[0]));
-                    page.setPageComplete(page.validatePage());
-                    errorMessage = null;
+                    ArtifactPair pair = ArtifactPair.newInstance(skeleton);
+                    if (pair.getBehavior().getArtifactType() == ArtifactType.SKELETON) {
+                        page.setSkeleton(pair);
+                        page.setFragments(fragmentList.toArray(new Artifact[0]));
+                        page.setPageComplete(page.validatePage());
+                        errorMessage = null;
+                    } else {
+                        errorMessage = Messages.getString(Messages.getString("SkeletonArtifactResolver.0")); //$NON-NLS-1$
+                    }
                 } else {
                     errorMessage = Messages.getString("SkeletonArtifactResolver.1"); //$NON-NLS-1$
                 }

@@ -44,4 +44,6 @@ public interface Globals {
     String HEAD_VILI_BEHAVIOR_PROPERTIES = PREFIX_VILI + "behavior_";
 
     String TAIL_VILI_BEHAVIOR_PROPERTIES = ".properties";
+
+    String IMAGE_YMIR = "icons/ymir.gif";
 }

@@ -128,7 +128,7 @@ public class Activator extends AbstractUIPlugin {
 
     @Override
     protected void initializeImageRegistry(ImageRegistry reg) {
-        registerImage(reg, "icons/ymir.gif");
+        registerImage(reg, Globals.IMAGE_YMIR);
     }
 
     private void registerImage(ImageRegistry reg, String pathName) {
@@ -186,10 +186,15 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private void setUpSkeletonEntries() {
-        skeletonEntries = new SkeletonEntry[] { new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+S2Dao", //$NON-NLS-1$ //$NON-NLS-2$
-                Messages.getString("Activator.10")), //$NON-NLS-1$
-                new SkeletonEntry("ymir-skeleton-generic", "Ymir+ZPT+DBFlute", //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.getString("Activator.13"), new FragmentEntry("ymir-fragment-dbflute", "", "")), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        skeletonEntries = new SkeletonEntry[] {
+                new SkeletonEntry("ymir-skeleton-generic", Messages.getString("Activator.65"), //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.getString("Activator.10")), //$NON-NLS-1$
+                new SkeletonEntry("ymir-skeleton-generic", Messages.getString("Activator.66"), //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.getString("Activator.13"), new FragmentEntry("ymir-fragment-dbflute", "", "")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                new SkeletonEntry(
+                        "ymir-skeleton-skeleton", Messages.getString("Activator.68"), Messages.getString("Activator.69")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                new SkeletonEntry(
+                        "ymir-skeleton-fragment", Messages.getString("Activator.71"), Messages.getString("Activator.72")), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     private void setUpFragmentEntries() {
@@ -235,6 +240,7 @@ public class Activator extends AbstractUIPlugin {
 
     private void setUpTemplateEngine() {
         cfg = new Configuration();
+        cfg.setLocalizedLookup(false);
         cfg.setEncoding(Locale.getDefault(), Globals.ENCODING);
         final Bundle bundle = getBundle();
         cfg.setTemplateLoader(new URLTemplateLoader() {
@@ -276,6 +282,7 @@ public class Activator extends AbstractUIPlugin {
             try {
                 Configuration cfg = new Configuration();
                 cfg.setEncoding(Locale.getDefault(), Globals.ENCODING);
+                cfg.setLocalizedLookup(false);
                 cfg.setTemplateLoader(new TemplateLoader() {
                     public void closeTemplateSource(Object name) throws IOException {
                     }
@@ -565,7 +572,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private void throwCoreException(String message, Throwable cause) throws CoreException {
-        IStatus status = new Status(IStatus.ERROR, Activator.getId(), IStatus.OK, message, cause); //$NON-NLS-1$
+        IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.OK, message, cause);
         throw new CoreException(status);
     }
 

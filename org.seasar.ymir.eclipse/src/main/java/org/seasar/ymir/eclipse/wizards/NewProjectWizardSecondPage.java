@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ArtifactPair;
+import org.seasar.ymir.eclipse.ArtifactType;
 import org.seasar.ymir.eclipse.FragmentEntry;
 import org.seasar.ymir.eclipse.SkeletonEntry;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
@@ -432,13 +433,17 @@ public class NewProjectWizardSecondPage extends WizardPage {
                                 : customFragmentVersionField.getText());
                 if (artifact != null) {
                     ArtifactPair pair = ArtifactPair.newInstance(artifact);
-                    customFragmentListModel.add(pair);
-                    customFragmentListField.add(pair.getBehavior().getLabel());
-                    customFragmentDescriptionText.setText(pair.getBehavior().getDescription());
-                    customFragmentGroupIdField.setText(""); //$NON-NLS-1$
-                    customFragmentArtifactIdField.setText(""); //$NON-NLS-1$
-                    if (!useLatestFragmentVersionField.getSelection()) {
-                        customFragmentVersionField.setText(""); //$NON-NLS-1$
+                    if (pair.getBehavior().getArtifactType() == ArtifactType.FRAGMENT) {
+                        customFragmentListModel.add(pair);
+                        customFragmentListField.add(pair.getBehavior().getLabel());
+                        customFragmentDescriptionText.setText(pair.getBehavior().getDescription());
+                        customFragmentGroupIdField.setText(""); //$NON-NLS-1$
+                        customFragmentArtifactIdField.setText(""); //$NON-NLS-1$
+                        if (!useLatestFragmentVersionField.getSelection()) {
+                            customFragmentVersionField.setText(""); //$NON-NLS-1$
+                        }
+                    } else {
+                        setErrorMessage(Messages.getString(Messages.getString("NewProjectWizardSecondPage.22"))); //$NON-NLS-1$
                     }
                 } else {
                     setErrorMessage(Messages.getString("NewProjectWizardSecondPage.19")); //$NON-NLS-1$
@@ -681,7 +686,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
             if (version.length() == 0) {
                 version = null;
             }
-            return new SkeletonEntry(getCustomSkeletonGroupId(), getCustomSkeletonArtifactId(), version, "", "");
+            return new SkeletonEntry(getCustomSkeletonGroupId(), getCustomSkeletonArtifactId(), version, "", ""); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -743,8 +748,8 @@ public class NewProjectWizardSecondPage extends WizardPage {
         return map.values().toArray(new ArtifactPair[0]);
     }
 
-    void setSkeleton(Artifact skeletonArtifact) {
-        skeleton = ArtifactPair.newInstance(skeletonArtifact);
+    void setSkeleton(ArtifactPair skeleton) {
+        this.skeleton = skeleton;
         if (!isChosenSkeletonFromTemplate()) {
             customSkeletonDescriptionText.setText(skeleton.getBehavior().getDescription());
         }

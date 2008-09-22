@@ -86,6 +86,8 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     private ArtifactPair[] skeletonAndFragments;
 
+    private ViliBehavior behavior;
+
     private Map<String, ParameterModel>[] parameterModelMaps;
 
     private ParameterModel[] requiredParameterModels = new ParameterModel[0];
@@ -247,8 +249,14 @@ public class NewProjectWizardThirdPage extends WizardPage {
         Composite genericTabContent = new Composite(tabFolder, SWT.NULL);
         genericTabContent.setLayout(new GridLayout());
         genericTabItem.setControl(genericTabContent);
-        createViewParametersControl(genericTabContent);
-        createDatabaseParametersControl(genericTabContent);
+
+        if (behavior.isJavaProject()) {
+            createJavaParametersControl(genericTabContent);
+            createViewParametersControl(genericTabContent);
+            createDatabaseParametersControl(genericTabContent);
+        } else {
+            new Label(genericTabContent, SWT.NULL).setText(Messages.getString("NewProjectWizardThirdPage.13")); //$NON-NLS-1$
+        }
 
         if (skeletonParameterExists()) {
             CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
@@ -268,7 +276,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
             scroll.setMinHeight(skeletonTabContent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
         }
 
-        if (skeletonAndFragments[0].getBehavior().isYmirProject()) {
+        if (behavior.isYmirProject()) {
             ymirConfigurationBlock = new YmirConfigurationBlock(this);
 
             CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
@@ -291,6 +299,10 @@ public class NewProjectWizardThirdPage extends WizardPage {
         tabFolderParent.layout();
 
         setDefaultValues();
+    }
+
+    void createJavaParametersControl(Composite genericTabContent) {
+
     }
 
     private boolean skeletonParameterExists() {
@@ -379,11 +391,14 @@ public class NewProjectWizardThirdPage extends WizardPage {
         if (visible) {
             if (!tabPrepared) {
                 skeletonAndFragments = ((NewProjectWizard) getWizard()).getSkeletonAndFragments();
+                behavior = skeletonAndFragments[0].getBehavior();
                 createTabFolder();
                 tabPrepared = true;
 
                 tabFolder.setSelection(0);
-                viewEncodingField.setFocus();
+                if (viewEncodingField != null) {
+                    viewEncodingField.setFocus();
+                }
 
                 setPageComplete(validatePage());
             }
@@ -392,6 +407,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     public void clearSkeletonParameters() {
         skeletonAndFragments = null;
+        behavior = null;
 
         if (tabFolder != null) {
             tabFolder.dispose();
@@ -410,7 +426,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
     }
 
     boolean validatePage() {
-        if (getViewEncoding().length() == 0) {
+        if (behavior.isJavaProject() && getViewEncoding().length() == 0) {
             setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardThirdPage.4"))); //$NON-NLS-1$
             return false;
         }
@@ -445,27 +461,37 @@ public class NewProjectWizardThirdPage extends WizardPage {
     void setDefaultValues() {
         tabFolder.setSelection(0);
 
-        viewEncodingField.setText("UTF-8"); //$NON-NLS-1$
-        useDatabaseField.setSelection(true);
-        databaseCombo.setText(databaseCombo.getItem(DEFAULT_DATABASE_INDEX));
-        databaseDriverClassNameField.setText(entries[DEFAULT_DATABASE_INDEX].getDriverClassName());
-        databaseURLField.setText(entries[DEFAULT_DATABASE_INDEX].getURL());
-        databaseUserField.setText(entries[DEFAULT_DATABASE_INDEX].getUser());
-        databasePasswordField.setText(entries[DEFAULT_DATABASE_INDEX].getPassword());
+        if (behavior.isJavaProject()) {
+            viewEncodingField.setText("UTF-8"); //$NON-NLS-1$
+            useDatabaseField.setSelection(true);
+            databaseCombo.setText(databaseCombo.getItem(DEFAULT_DATABASE_INDEX));
+            databaseDriverClassNameField.setText(entries[DEFAULT_DATABASE_INDEX].getDriverClassName());
+            databaseURLField.setText(entries[DEFAULT_DATABASE_INDEX].getURL());
+            databaseUserField.setText(entries[DEFAULT_DATABASE_INDEX].getUser());
+            databasePasswordField.setText(entries[DEFAULT_DATABASE_INDEX].getPassword());
+        }
     }
 
     public String getViewEncoding() {
-        return viewEncodingField.getText();
+        if (behavior.isJavaProject()) {
+            return viewEncodingField.getText();
+        } else {
+            return "";
+        }
     }
 
     public boolean isUseDatabase() {
-        return useDatabaseField.getSelection();
+        return behavior.isJavaProject() && useDatabaseField.getSelection();
     }
 
     public DatabaseEntry getDatabaseEntry() {
-        int idx = databaseCombo.getSelectionIndex();
-        return new DatabaseEntry(entries[idx].getName(), entries[idx].getType(), getDatabaseDriverClassName(),
-                getDatabaseURL(), getDatabaseUser(), getDatabasePassword(), entries[idx].getDependency());
+        if (behavior.isJavaProject()) {
+            int idx = databaseCombo.getSelectionIndex();
+            return new DatabaseEntry(entries[idx].getName(), entries[idx].getType(), getDatabaseDriverClassName(),
+                    getDatabaseURL(), getDatabaseUser(), getDatabasePassword(), entries[idx].getDependency());
+        } else {
+            return new DatabaseEntry("", "", "", "", "", "", null);
+        }
     }
 
     private String getDatabaseDriverClassName() {

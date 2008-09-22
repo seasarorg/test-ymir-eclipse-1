@@ -3,6 +3,8 @@ package org.seasar.ymir.eclipse;
 public interface ParameterKeys {
     String SLASH = "slash";
 
+    String DOLLAR = "dollar";
+
     String PROJECT_NAME = "projectName";
 
     String ROOT_PACKAGE_NAME = "rootPackageName";
