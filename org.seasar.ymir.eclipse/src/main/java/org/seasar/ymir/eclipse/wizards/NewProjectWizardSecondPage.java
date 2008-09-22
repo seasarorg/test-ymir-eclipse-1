@@ -81,15 +81,15 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private SkeletonArtifactResolver skeletonArtifactResolver;
 
-    private Table optionTemplateTable;
+    private Table fragmentTemplateTable;
 
-    private FragmentEntry[] optionTemplateEntries;
+    private FragmentEntry[] fragmentTemplateEntries;
 
-    private Text optionTemplateDescriptionText;
+    private Text fragmentTemplateDescriptionText;
 
-    private Button addCustomOptionButton;
+    private Button addCustomFragmentButton;
 
-    private Button removeCustomOptionButton;
+    private Button removeCustomFragmentButton;
 
     private Text fragmentGroupIdField;
 
@@ -101,13 +101,13 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private Button useLatestFragmentVersionField;
 
-    private List customOptionListField;
+    private List customFragmentListField;
 
-    private Text customOptionDescriptionText;
+    private Text customFragmentDescriptionText;
 
-    private java.util.List<ArtifactPair> customOptionListModel;
+    private java.util.List<ArtifactPair> customFragmentListModel;
 
-    private volatile ArtifactPair[] optionTemplateArtifacts;
+    private volatile ArtifactPair[] fragmentTemplateArtifacts;
 
     /**
      * Constructor for SampleNewWizardPage.
@@ -289,58 +289,58 @@ public class NewProjectWizardSecondPage extends WizardPage {
         data.heightHint = 150;
         composite.setLayoutData(data);
 
-        optionTemplateTable = new Table(composite, SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
-        optionTemplateTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        optionTemplateTable.addSelectionListener(new SelectionAdapter() {
+        fragmentTemplateTable = new Table(composite, SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
+        fragmentTemplateTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+        fragmentTemplateTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 setErrorMessage(null);
                 if (e.detail == SWT.CHECK) {
-                    TableItem[] items = optionTemplateTable.getItems();
+                    TableItem[] items = fragmentTemplateTable.getItems();
                     for (int i = 0; i < items.length; i++) {
                         if (items[i] == e.item) {
                             if (items[i].getChecked()) {
-                                optionTemplateArtifacts[i] = ArtifactPair
-                                        .newInstance(resolveFragmentArtifact(optionTemplateEntries[i]));
-                                if (optionTemplateArtifacts[i] == null) {
+                                fragmentTemplateArtifacts[i] = ArtifactPair
+                                        .newInstance(resolveFragmentArtifact(fragmentTemplateEntries[i]));
+                                if (fragmentTemplateArtifacts[i] == null) {
                                     items[i].setChecked(false);
                                     setErrorMessage(Messages.getString("NewProjectWizardSecondPage.13")); //$NON-NLS-1$
                                 }
                             } else {
-                                optionTemplateArtifacts[i] = null;
+                                fragmentTemplateArtifacts[i] = null;
                             }
                             break;
                         }
                     }
                 } else {
                     String description;
-                    int selectionIndex = optionTemplateTable.getSelectionIndex();
+                    int selectionIndex = fragmentTemplateTable.getSelectionIndex();
                     if (selectionIndex != -1) {
-                        description = optionTemplateEntries[selectionIndex].getDescription();
+                        description = fragmentTemplateEntries[selectionIndex].getDescription();
                     } else {
                         description = ""; //$NON-NLS-1$
                     }
-                    optionTemplateDescriptionText.setText(description);
+                    fragmentTemplateDescriptionText.setText(description);
                 }
             }
         });
-        new TableColumn(optionTemplateTable, SWT.LEFT).setWidth(120);
+        new TableColumn(fragmentTemplateTable, SWT.LEFT).setWidth(120);
 
-        optionTemplateEntries = Activator.getDefault().getFragmentEntries();
-        optionTemplateArtifacts = new ArtifactPair[optionTemplateEntries.length];
-        for (FragmentEntry fragment : optionTemplateEntries) {
-            new TableItem(optionTemplateTable, SWT.NONE).setText(new String[] { fragment.getName() });
+        fragmentTemplateEntries = Activator.getDefault().getFragmentEntries();
+        fragmentTemplateArtifacts = new ArtifactPair[fragmentTemplateEntries.length];
+        for (FragmentEntry fragment : fragmentTemplateEntries) {
+            new TableItem(fragmentTemplateTable, SWT.NONE).setText(new String[] { fragment.getName() });
         }
 
-        optionTemplateDescriptionText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP
+        fragmentTemplateDescriptionText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP
                 | SWT.READ_ONLY);
-        optionTemplateDescriptionText.setLayoutData(new GridData(GridData.FILL_BOTH));
+        fragmentTemplateDescriptionText.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Label customOptionListLabel = new Label(composite, SWT.NONE);
+        Label customFragmentListLabel = new Label(composite, SWT.NONE);
         data = new GridData();
         data.horizontalSpan = 2;
-        customOptionListLabel.setLayoutData(data);
-        customOptionListLabel.setText(Messages.getString("NewProjectWizardSecondPage.14")); //$NON-NLS-1$
+        customFragmentListLabel.setLayoutData(data);
+        customFragmentListLabel.setText(Messages.getString("NewProjectWizardSecondPage.14")); //$NON-NLS-1$
 
         Composite leftComposite = new Composite(composite, SWT.NULL);
         leftComposite.setFont(composite.getFont());
@@ -363,7 +363,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
             public void modifyText(ModifyEvent e) {
                 setErrorMessage(null);
 
-                addCustomOptionButton.setEnabled(isCustomOptionReadyForAdding());
+                addCustomFragmentButton.setEnabled(isCustomFragmentReadyForAdding());
             }
         });
 
@@ -376,7 +376,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
             public void modifyText(ModifyEvent e) {
                 setErrorMessage(null);
 
-                addCustomOptionButton.setEnabled(isCustomOptionReadyForAdding());
+                addCustomFragmentButton.setEnabled(isCustomFragmentReadyForAdding());
             }
         });
 
@@ -389,7 +389,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
             public void modifyText(ModifyEvent e) {
                 setErrorMessage(null);
 
-                addCustomOptionButton.setEnabled(isCustomOptionReadyForAdding());
+                addCustomFragmentButton.setEnabled(isCustomFragmentReadyForAdding());
             }
         });
 
@@ -405,17 +405,17 @@ public class NewProjectWizardSecondPage extends WizardPage {
                 fragmentVersionLabel.setEnabled(!enabled);
                 fragmentVersionField.setEnabled(!enabled);
 
-                addCustomOptionButton.setEnabled(isCustomOptionReadyForAdding());
+                addCustomFragmentButton.setEnabled(isCustomFragmentReadyForAdding());
             }
         });
 
-        addCustomOptionButton = new Button(leftComposite, SWT.PUSH);
-        addCustomOptionButton.setText(Messages.getString("NewProjectWizardSecondPage.15")); //$NON-NLS-1$
+        addCustomFragmentButton = new Button(leftComposite, SWT.PUSH);
+        addCustomFragmentButton.setText(Messages.getString("NewProjectWizardSecondPage.15")); //$NON-NLS-1$
         data = new GridData();
         data.horizontalSpan = 2;
         data.horizontalAlignment = SWT.RIGHT;
-        addCustomOptionButton.setLayoutData(data);
-        addCustomOptionButton.addSelectionListener(new SelectionAdapter() {
+        addCustomFragmentButton.setLayoutData(data);
+        addCustomFragmentButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 setErrorMessage(null);
@@ -425,9 +425,9 @@ public class NewProjectWizardSecondPage extends WizardPage {
                         .getText());
                 if (artifact != null) {
                     ArtifactPair pair = ArtifactPair.newInstance(artifact);
-                    customOptionListModel.add(pair);
-                    customOptionListField.add(pair.getBehavior().getLabel());
-                    customOptionDescriptionText.setText(pair.getBehavior().getDescription());
+                    customFragmentListModel.add(pair);
+                    customFragmentListField.add(pair.getBehavior().getLabel());
+                    customFragmentDescriptionText.setText(pair.getBehavior().getDescription());
                     fragmentGroupIdField.setText(""); //$NON-NLS-1$
                     fragmentArtifactIdField.setText(""); //$NON-NLS-1$
                     if (!useLatestFragmentVersionField.getSelection()) {
@@ -436,23 +436,23 @@ public class NewProjectWizardSecondPage extends WizardPage {
                 } else {
                     setErrorMessage(Messages.getString("NewProjectWizardSecondPage.19")); //$NON-NLS-1$
                 }
-                addCustomOptionButton.setEnabled(false);
+                addCustomFragmentButton.setEnabled(false);
             }
         });
 
-        customOptionListModel = new ArrayList<ArtifactPair>();
-        customOptionListField = new List(rightComposite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        customFragmentListModel = new ArrayList<ArtifactPair>();
+        customFragmentListField = new List(rightComposite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         data = new GridData(SWT.FILL, SWT.FILL, true, true);
         data.heightHint = 80;
-        customOptionListField.setLayoutData(data);
-        customOptionListField.addSelectionListener(new SelectionAdapter() {
+        customFragmentListField.setLayoutData(data);
+        customFragmentListField.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                removeCustomOptionButton.setEnabled(customOptionListField.getSelectionCount() > 0);
+                removeCustomFragmentButton.setEnabled(customFragmentListField.getSelectionCount() > 0);
 
-                int idx = customOptionListField.getSelectionIndex();
+                int idx = customFragmentListField.getSelectionIndex();
                 if (idx >= 0) {
-                    customOptionDescriptionText.setText(customOptionListModel.get(idx).getBehavior().getDescription());
+                    customFragmentDescriptionText.setText(customFragmentListModel.get(idx).getBehavior().getDescription());
                 }
             }
         });
@@ -464,37 +464,37 @@ public class NewProjectWizardSecondPage extends WizardPage {
         rightButtonsComposite.setLayoutData(data);
         rightButtonsComposite.setLayout(new FillLayout());
 
-        customOptionDescriptionText = new Text(rightComposite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP
+        customFragmentDescriptionText = new Text(rightComposite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP
                 | SWT.READ_ONLY);
         data = new GridData(SWT.FILL, SWT.FILL, true, true);
         data.heightHint = 80;
-        customOptionDescriptionText.setLayoutData(data);
+        customFragmentDescriptionText.setLayoutData(data);
 
-        removeCustomOptionButton = new Button(rightButtonsComposite, SWT.PUSH);
-        removeCustomOptionButton.setText(Messages.getString("NewProjectWizardSecondPage.20")); //$NON-NLS-1$
-        removeCustomOptionButton.addSelectionListener(new SelectionAdapter() {
+        removeCustomFragmentButton = new Button(rightButtonsComposite, SWT.PUSH);
+        removeCustomFragmentButton.setText(Messages.getString("NewProjectWizardSecondPage.20")); //$NON-NLS-1$
+        removeCustomFragmentButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 setErrorMessage(null);
 
                 java.util.List<ArtifactPair> list = new ArrayList<ArtifactPair>();
                 int pre = 0;
-                int[] indices = customOptionListField.getSelectionIndices();
+                int[] indices = customFragmentListField.getSelectionIndices();
                 for (int idx : indices) {
-                    list.addAll(customOptionListModel.subList(pre, idx));
+                    list.addAll(customFragmentListModel.subList(pre, idx));
                     pre = idx + 1;
                 }
-                list.addAll(customOptionListModel.subList(pre, customOptionListModel.size()));
-                customOptionListModel = list;
-                customOptionListField.remove(indices);
+                list.addAll(customFragmentListModel.subList(pre, customFragmentListModel.size()));
+                customFragmentListModel = list;
+                customFragmentListField.remove(indices);
 
-                removeCustomOptionButton.setEnabled(false);
+                removeCustomFragmentButton.setEnabled(false);
             }
         });
 
     }
 
-    boolean isCustomOptionReadyForAdding() {
+    boolean isCustomFragmentReadyForAdding() {
         String groupId = fragmentGroupIdField.getText();
         if (groupId.length() == 0) {
             return false;
@@ -507,7 +507,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
         if (version != null && version.length() == 0) {
             return false;
         }
-        for (ArtifactPair pair : customOptionListModel) {
+        for (ArtifactPair pair : customFragmentListModel) {
             Artifact artifact = pair.getArtifact();
             if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
                 return false;
@@ -558,8 +558,8 @@ public class NewProjectWizardSecondPage extends WizardPage {
         fragmentVersionLabel.setEnabled(false);
         fragmentVersionField.setEnabled(false);
         useLatestFragmentVersionField.setSelection(true);
-        addCustomOptionButton.setEnabled(false);
-        removeCustomOptionButton.setEnabled(false);
+        addCustomFragmentButton.setEnabled(false);
+        removeCustomFragmentButton.setEnabled(false);
     }
 
     private boolean validateToResolveSkeletonArtifact() {
@@ -604,14 +604,14 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private void clearSkeletonAndFragments() {
         skeleton = null;
-        for (int i = 0; i < optionTemplateEntries.length; i++) {
-            TableItem item = optionTemplateTable.getItem(i);
+        for (int i = 0; i < fragmentTemplateEntries.length; i++) {
+            TableItem item = fragmentTemplateTable.getItem(i);
             item.setChecked(false);
-            optionTemplateArtifacts[i] = null;
+            fragmentTemplateArtifacts[i] = null;
         }
-        customOptionListField.removeAll();
-        customOptionDescriptionText.setText(""); //$NON-NLS-1$
-        customOptionListModel.clear();
+        customFragmentListField.removeAll();
+        customFragmentDescriptionText.setText(""); //$NON-NLS-1$
+        customFragmentListModel.clear();
 
         ((NewProjectWizard) getWizard()).notifySkeletonAndFragmentsCleared();
     }
@@ -719,12 +719,12 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
         map.put(ArtifactUtils.getUniqueId(skeleton.getArtifact()), skeleton);
 
-        for (ArtifactPair fragment : optionTemplateArtifacts) {
+        for (ArtifactPair fragment : fragmentTemplateArtifacts) {
             if (fragment != null) {
                 map.put(ArtifactUtils.getUniqueId(fragment.getArtifact()), fragment);
             }
         }
-        for (ArtifactPair fragment : customOptionListModel) {
+        for (ArtifactPair fragment : customFragmentListModel) {
             map.put(ArtifactUtils.getUniqueId(fragment.getArtifact()), fragment);
         }
         return map.values().toArray(new ArtifactPair[0]);
@@ -737,18 +737,18 @@ public class NewProjectWizardSecondPage extends WizardPage {
     void setFragments(Artifact[] fragments) {
         for (Artifact fragment : fragments) {
             boolean matched = false;
-            for (int j = 0; j < optionTemplateEntries.length; j++) {
-                if (fragment.getGroupId().equals(optionTemplateEntries[j].getGroupId())
-                        && fragment.getArtifactId().equals(optionTemplateEntries[j].getArtifactId())) {
-                    optionTemplateTable.getItem(j).setChecked(true);
-                    optionTemplateArtifacts[j] = ArtifactPair.newInstance(fragment);
+            for (int j = 0; j < fragmentTemplateEntries.length; j++) {
+                if (fragment.getGroupId().equals(fragmentTemplateEntries[j].getGroupId())
+                        && fragment.getArtifactId().equals(fragmentTemplateEntries[j].getArtifactId())) {
+                    fragmentTemplateTable.getItem(j).setChecked(true);
+                    fragmentTemplateArtifacts[j] = ArtifactPair.newInstance(fragment);
                     matched = true;
                     break;
                 }
             }
             if (!matched) {
-                customOptionListField.add(ArtifactUtils.getUniqueId(fragment));
-                customOptionListModel.add(ArtifactPair.newInstance(fragment));
+                customFragmentListField.add(ArtifactUtils.getUniqueId(fragment));
+                customFragmentListModel.add(ArtifactPair.newInstance(fragment));
             }
         }
     }
