@@ -57,25 +57,27 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private Label templateListLabel;
 
-    private List templateListField;
+    private List skeletonTemplateListField;
 
-    private Text templateDescriptionText;
+    private Text skeletonTemplateDescriptionText;
 
-    private Button chooseFromTemplatesField;
+    private Button chooseSkeletonFromTemplatesField;
 
-    private Label skeletonGroupIdLabel;
+    private Label customSkeletonGroupIdLabel;
 
-    private Text skeletonGroupIdField;
+    private Text customSkeletonGroupIdField;
 
-    private Label skeletonArtifactIdLabel;
+    private Label customSkeletonArtifactIdLabel;
 
-    private Text skeletonArtifactIdField;
+    private Text customSkeletonArtifactIdField;
 
-    private Label skeletonVersionLabel;
+    private Label customSkeletonVersionLabel;
 
-    private Text skeletonVersionField;
+    private Text customSkeletonVersionField;
 
     private Button useLatestSkeletonVersionField;
+
+    private Text customSkeletonDescriptionText;
 
     private volatile ArtifactPair skeleton;
 
@@ -91,13 +93,13 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private Button removeCustomFragmentButton;
 
-    private Text fragmentGroupIdField;
+    private Text customFragmentGroupIdField;
 
-    private Text fragmentArtifactIdField;
+    private Text customFragmentArtifactIdField;
 
-    private Label fragmentVersionLabel;
+    private Label customFragmentVersionLabel;
 
-    private Text fragmentVersionField;
+    private Text customFragmentVersionField;
 
     private Button useLatestFragmentVersionField;
 
@@ -162,23 +164,23 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     void createSkeletonSelectionControl(Composite parent) {
-        chooseFromTemplatesField = new Button(parent, SWT.CHECK | SWT.LEFT);
-        chooseFromTemplatesField.setLayoutData(new GridData());
-        chooseFromTemplatesField.setText(Messages.getString("NewProjectWizardSecondPage.6")); //$NON-NLS-1$
-        chooseFromTemplatesField.addSelectionListener(new SelectionAdapter() {
+        chooseSkeletonFromTemplatesField = new Button(parent, SWT.CHECK | SWT.LEFT);
+        chooseSkeletonFromTemplatesField.setLayoutData(new GridData());
+        chooseSkeletonFromTemplatesField.setText(Messages.getString("NewProjectWizardSecondPage.6")); //$NON-NLS-1$
+        chooseSkeletonFromTemplatesField.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
-                boolean enabled = chooseFromTemplatesField.getSelection();
+                boolean enabled = chooseSkeletonFromTemplatesField.getSelection();
                 templateListLabel.setEnabled(enabled);
-                templateListField.setEnabled(enabled);
-                templateDescriptionText.setEnabled(enabled);
-                skeletonGroupIdLabel.setEnabled(!enabled);
-                skeletonGroupIdField.setEnabled(!enabled);
-                skeletonArtifactIdLabel.setEnabled(!enabled);
-                skeletonArtifactIdField.setEnabled(!enabled);
+                skeletonTemplateListField.setEnabled(enabled);
+                skeletonTemplateDescriptionText.setEnabled(enabled);
+                customSkeletonGroupIdLabel.setEnabled(!enabled);
+                customSkeletonGroupIdField.setEnabled(!enabled);
+                customSkeletonArtifactIdLabel.setEnabled(!enabled);
+                customSkeletonArtifactIdField.setEnabled(!enabled);
                 useLatestSkeletonVersionField.setEnabled(!enabled);
                 boolean versionEnabled = !enabled && !useLatestSkeletonVersionField.getSelection();
-                skeletonVersionLabel.setEnabled(versionEnabled);
-                skeletonVersionField.setEnabled(versionEnabled);
+                customSkeletonVersionLabel.setEnabled(versionEnabled);
+                customSkeletonVersionField.setEnabled(versionEnabled);
 
                 resolveSkeletonArtifact();
             }
@@ -195,89 +197,94 @@ public class NewProjectWizardSecondPage extends WizardPage {
         data.heightHint = 150;
         composite.setLayoutData(data);
 
-        templateListField = new List(composite, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-        templateListField.setFont(parent.getFont());
-        templateListField.setLayoutData(data);
+        skeletonTemplateListField = new List(composite, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        skeletonTemplateListField.setFont(parent.getFont());
+        skeletonTemplateListField.setLayoutData(data);
         entries = Activator.getDefault().getSkeletonEntries();
         for (SkeletonEntry entry : entries) {
-            templateListField.add(entry.getName());
+            skeletonTemplateListField.add(entry.getName());
         }
-        templateListField.addSelectionListener(new SelectionAdapter() {
+        skeletonTemplateListField.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 String description;
-                int selectionIndex = templateListField.getSelectionIndex();
+                int selectionIndex = skeletonTemplateListField.getSelectionIndex();
                 if (selectionIndex != -1) {
                     description = entries[selectionIndex].getDescription();
                 } else {
                     description = ""; //$NON-NLS-1$
                 }
-                templateDescriptionText.setText(description);
+                skeletonTemplateDescriptionText.setText(description);
 
                 resolveSkeletonArtifact();
             }
         });
 
-        templateDescriptionText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY);
-        templateDescriptionText.setLayoutData(new GridData(GridData.FILL_BOTH));
+        skeletonTemplateDescriptionText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP
+                | SWT.READ_ONLY);
+        skeletonTemplateDescriptionText.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        composite = new Composite(parent, SWT.NULL);
-        composite.setFont(parent.getFont());
-        composite.setLayout(new GridLayout(2, false));
-        composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite skeletonComposite = new Composite(composite, SWT.NULL);
+        skeletonComposite.setFont(parent.getFont());
+        skeletonComposite.setLayout(new GridLayout(2, false));
+        skeletonComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        skeletonGroupIdLabel = new Label(composite, SWT.NONE);
-        skeletonGroupIdLabel.setText(Messages.getString("NewProjectWizardSecondPage.7")); //$NON-NLS-1$
+        customSkeletonGroupIdLabel = new Label(skeletonComposite, SWT.NONE);
+        customSkeletonGroupIdLabel.setText(Messages.getString("NewProjectWizardSecondPage.7")); //$NON-NLS-1$
 
-        skeletonGroupIdField = new Text(composite, SWT.BORDER);
+        customSkeletonGroupIdField = new Text(skeletonComposite, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.widthHint = 250;
-        skeletonGroupIdField.setLayoutData(data);
-        skeletonGroupIdField.addModifyListener(new ModifyListener() {
+        customSkeletonGroupIdField.setLayoutData(data);
+        customSkeletonGroupIdField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 resolveSkeletonArtifact();
             }
         });
 
-        skeletonArtifactIdLabel = new Label(composite, SWT.NONE);
-        skeletonArtifactIdLabel.setText(Messages.getString("NewProjectWizardSecondPage.8")); //$NON-NLS-1$
+        customSkeletonArtifactIdLabel = new Label(skeletonComposite, SWT.NONE);
+        customSkeletonArtifactIdLabel.setText(Messages.getString("NewProjectWizardSecondPage.8")); //$NON-NLS-1$
 
-        skeletonArtifactIdField = new Text(composite, SWT.BORDER);
+        customSkeletonArtifactIdField = new Text(skeletonComposite, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.widthHint = 250;
-        skeletonArtifactIdField.setLayoutData(data);
-        skeletonArtifactIdField.addModifyListener(new ModifyListener() {
+        customSkeletonArtifactIdField.setLayoutData(data);
+        customSkeletonArtifactIdField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 resolveSkeletonArtifact();
             }
         });
 
-        skeletonVersionLabel = new Label(composite, SWT.NONE);
-        skeletonVersionLabel.setText(Messages.getString("NewProjectWizardSecondPage.9")); //$NON-NLS-1$
+        customSkeletonVersionLabel = new Label(skeletonComposite, SWT.NONE);
+        customSkeletonVersionLabel.setText(Messages.getString("NewProjectWizardSecondPage.9")); //$NON-NLS-1$
 
-        skeletonVersionField = new Text(composite, SWT.BORDER);
+        customSkeletonVersionField = new Text(skeletonComposite, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.widthHint = 250;
-        skeletonVersionField.setLayoutData(data);
-        skeletonVersionField.addModifyListener(new ModifyListener() {
+        customSkeletonVersionField.setLayoutData(data);
+        customSkeletonVersionField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 resolveSkeletonArtifact();
             }
         });
 
-        new Label(composite, SWT.NONE);
+        new Label(skeletonComposite, SWT.NONE);
 
-        useLatestSkeletonVersionField = new Button(composite, SWT.CHECK | SWT.LEFT);
+        useLatestSkeletonVersionField = new Button(skeletonComposite, SWT.CHECK | SWT.LEFT);
         useLatestSkeletonVersionField.setText(Messages.getString("NewProjectWizardSecondPage.10")); //$NON-NLS-1$
         useLatestSkeletonVersionField.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 boolean enabled = useLatestSkeletonVersionField.getSelection();
-                skeletonVersionLabel.setEnabled(!enabled);
-                skeletonVersionField.setEnabled(!enabled);
+                customSkeletonVersionLabel.setEnabled(!enabled);
+                customSkeletonVersionField.setEnabled(!enabled);
 
                 resolveSkeletonArtifact();
             }
         });
+
+        customSkeletonDescriptionText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP
+                | SWT.READ_ONLY);
+        customSkeletonDescriptionText.setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
     void createFragmentSelectionControl(Composite parent) {
@@ -357,9 +364,9 @@ public class NewProjectWizardSecondPage extends WizardPage {
         Label fragmentGroupIdLabel = new Label(leftComposite, SWT.NONE);
         fragmentGroupIdLabel.setText(Messages.getString("NewProjectWizardSecondPage.7")); //$NON-NLS-1$
 
-        fragmentGroupIdField = new Text(leftComposite, SWT.BORDER);
-        fragmentGroupIdField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        fragmentGroupIdField.addModifyListener(new ModifyListener() {
+        customFragmentGroupIdField = new Text(leftComposite, SWT.BORDER);
+        customFragmentGroupIdField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        customFragmentGroupIdField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setErrorMessage(null);
 
@@ -370,9 +377,9 @@ public class NewProjectWizardSecondPage extends WizardPage {
         Label fragmentArtifactIdLabel = new Label(leftComposite, SWT.NONE);
         fragmentArtifactIdLabel.setText(Messages.getString("NewProjectWizardSecondPage.8")); //$NON-NLS-1$
 
-        fragmentArtifactIdField = new Text(leftComposite, SWT.BORDER);
-        fragmentArtifactIdField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        fragmentArtifactIdField.addModifyListener(new ModifyListener() {
+        customFragmentArtifactIdField = new Text(leftComposite, SWT.BORDER);
+        customFragmentArtifactIdField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        customFragmentArtifactIdField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setErrorMessage(null);
 
@@ -380,12 +387,12 @@ public class NewProjectWizardSecondPage extends WizardPage {
             }
         });
 
-        fragmentVersionLabel = new Label(leftComposite, SWT.NONE);
-        fragmentVersionLabel.setText(Messages.getString("NewProjectWizardSecondPage.9")); //$NON-NLS-1$
+        customFragmentVersionLabel = new Label(leftComposite, SWT.NONE);
+        customFragmentVersionLabel.setText(Messages.getString("NewProjectWizardSecondPage.9")); //$NON-NLS-1$
 
-        fragmentVersionField = new Text(leftComposite, SWT.BORDER);
-        fragmentVersionField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        fragmentVersionField.addModifyListener(new ModifyListener() {
+        customFragmentVersionField = new Text(leftComposite, SWT.BORDER);
+        customFragmentVersionField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        customFragmentVersionField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setErrorMessage(null);
 
@@ -402,8 +409,8 @@ public class NewProjectWizardSecondPage extends WizardPage {
                 setErrorMessage(null);
 
                 boolean enabled = useLatestFragmentVersionField.getSelection();
-                fragmentVersionLabel.setEnabled(!enabled);
-                fragmentVersionField.setEnabled(!enabled);
+                customFragmentVersionLabel.setEnabled(!enabled);
+                customFragmentVersionField.setEnabled(!enabled);
 
                 addCustomFragmentButton.setEnabled(isCustomFragmentReadyForAdding());
             }
@@ -420,18 +427,18 @@ public class NewProjectWizardSecondPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 setErrorMessage(null);
 
-                Artifact artifact = resolveFragmentArtifact(fragmentGroupIdField.getText(), fragmentArtifactIdField
-                        .getText(), useLatestFragmentVersionField.getSelection() ? null : fragmentVersionField
-                        .getText());
+                Artifact artifact = resolveFragmentArtifact(customFragmentGroupIdField.getText(),
+                        customFragmentArtifactIdField.getText(), useLatestFragmentVersionField.getSelection() ? null
+                                : customFragmentVersionField.getText());
                 if (artifact != null) {
                     ArtifactPair pair = ArtifactPair.newInstance(artifact);
                     customFragmentListModel.add(pair);
                     customFragmentListField.add(pair.getBehavior().getLabel());
                     customFragmentDescriptionText.setText(pair.getBehavior().getDescription());
-                    fragmentGroupIdField.setText(""); //$NON-NLS-1$
-                    fragmentArtifactIdField.setText(""); //$NON-NLS-1$
+                    customFragmentGroupIdField.setText(""); //$NON-NLS-1$
+                    customFragmentArtifactIdField.setText(""); //$NON-NLS-1$
                     if (!useLatestFragmentVersionField.getSelection()) {
-                        fragmentVersionField.setText(""); //$NON-NLS-1$
+                        customFragmentVersionField.setText(""); //$NON-NLS-1$
                     }
                 } else {
                     setErrorMessage(Messages.getString("NewProjectWizardSecondPage.19")); //$NON-NLS-1$
@@ -452,7 +459,8 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
                 int idx = customFragmentListField.getSelectionIndex();
                 if (idx >= 0) {
-                    customFragmentDescriptionText.setText(customFragmentListModel.get(idx).getBehavior().getDescription());
+                    customFragmentDescriptionText.setText(customFragmentListModel.get(idx).getBehavior()
+                            .getDescription());
                 }
             }
         });
@@ -495,15 +503,15 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     boolean isCustomFragmentReadyForAdding() {
-        String groupId = fragmentGroupIdField.getText();
+        String groupId = customFragmentGroupIdField.getText();
         if (groupId.length() == 0) {
             return false;
         }
-        String artifactId = fragmentArtifactIdField.getText();
+        String artifactId = customFragmentArtifactIdField.getText();
         if (artifactId.length() == 0) {
             return false;
         }
-        String version = useLatestFragmentVersionField.getSelection() ? null : fragmentVersionField.getText();
+        String version = useLatestFragmentVersionField.getSelection() ? null : customFragmentVersionField.getText();
         if (version != null && version.length() == 0) {
             return false;
         }
@@ -541,36 +549,36 @@ public class NewProjectWizardSecondPage extends WizardPage {
     void setDefaultValues() {
         tabFolder.setSelection(0);
 
-        chooseFromTemplatesField.setSelection(true);
-        templateListField.setSelection(0, 0);
-        templateDescriptionText.setText(entries[0].getDescription());
-        skeletonGroupIdLabel.setEnabled(false);
-        skeletonGroupIdField.setEnabled(false);
-        skeletonArtifactIdLabel.setEnabled(false);
-        skeletonArtifactIdField.setEnabled(false);
-        skeletonVersionLabel.setEnabled(false);
-        skeletonVersionField.setEnabled(false);
+        chooseSkeletonFromTemplatesField.setSelection(true);
+        skeletonTemplateListField.setSelection(0, 0);
+        skeletonTemplateDescriptionText.setText(entries[0].getDescription());
+        customSkeletonGroupIdLabel.setEnabled(false);
+        customSkeletonGroupIdField.setEnabled(false);
+        customSkeletonArtifactIdLabel.setEnabled(false);
+        customSkeletonArtifactIdField.setEnabled(false);
+        customSkeletonVersionLabel.setEnabled(false);
+        customSkeletonVersionField.setEnabled(false);
         useLatestSkeletonVersionField.setEnabled(false);
         useLatestSkeletonVersionField.setSelection(true);
 
         resolveSkeletonArtifact();
 
-        fragmentVersionLabel.setEnabled(false);
-        fragmentVersionField.setEnabled(false);
+        customFragmentVersionLabel.setEnabled(false);
+        customFragmentVersionField.setEnabled(false);
         useLatestFragmentVersionField.setSelection(true);
         addCustomFragmentButton.setEnabled(false);
         removeCustomFragmentButton.setEnabled(false);
     }
 
     private boolean validateToResolveSkeletonArtifact() {
-        if (getSkeletonGroupId().length() == 0) {
+        if (getCustomSkeletonGroupId().length() == 0) {
             return false;
         }
-        if (getSkeletonArtifactId().length() == 0) {
+        if (getCustomSkeletonArtifactId().length() == 0) {
             return false;
         }
-        if (!chooseFromTemplatesField.getSelection() && !useLatestSkeletonVersionField.getSelection()
-                && skeletonVersionField.getText().length() == 0) {
+        if (!chooseSkeletonFromTemplatesField.getSelection() && !useLatestSkeletonVersionField.getSelection()
+                && customSkeletonVersionField.getText().length() == 0) {
             return false;
         }
         return true;
@@ -604,6 +612,7 @@ public class NewProjectWizardSecondPage extends WizardPage {
 
     private void clearSkeletonAndFragments() {
         skeleton = null;
+        customSkeletonDescriptionText.setText(""); //$NON-NLS-1$
         for (int i = 0; i < fragmentTemplateEntries.length; i++) {
             TableItem item = fragmentTemplateTable.getItem(i);
             item.setChecked(false);
@@ -660,57 +669,61 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     private SkeletonEntry getSkeletonEntry() {
-        if (!chooseFromTemplatesField.getSelection()) {
-            String version = getSkeletonVersion();
-            if (version.length() == 0) {
-                version = null;
-            }
-            return new SkeletonEntry(getSkeletonGroupId(), getSkeletonArtifactId(), version);
-        } else {
-            int index = templateListField.getSelectionIndex();
+        if (isChosenSkeletonFromTemplate()) {
+            int index = skeletonTemplateListField.getSelectionIndex();
             if (index == -1) {
                 return null;
             } else {
                 return entries[index];
             }
+        } else {
+            String version = getCustomSkeletonVersion();
+            if (version.length() == 0) {
+                version = null;
+            }
+            return new SkeletonEntry(getCustomSkeletonGroupId(), getCustomSkeletonArtifactId(), version, "", "");
         }
     }
 
-    private String getSkeletonGroupId() {
-        if (!chooseFromTemplatesField.getSelection()) {
-            return skeletonGroupIdField.getText();
-        } else {
-            int index = templateListField.getSelectionIndex();
+    boolean isChosenSkeletonFromTemplate() {
+        return chooseSkeletonFromTemplatesField.getSelection();
+    }
+
+    private String getCustomSkeletonGroupId() {
+        if (isChosenSkeletonFromTemplate()) {
+            int index = skeletonTemplateListField.getSelectionIndex();
             if (index == -1) {
                 return ""; //$NON-NLS-1$
             } else {
                 return entries[index].getGroupId();
             }
+        } else {
+            return customSkeletonGroupIdField.getText();
         }
     }
 
-    private String getSkeletonArtifactId() {
-        if (!chooseFromTemplatesField.getSelection()) {
-            return skeletonArtifactIdField.getText();
-        } else {
-            int index = templateListField.getSelectionIndex();
+    private String getCustomSkeletonArtifactId() {
+        if (isChosenSkeletonFromTemplate()) {
+            int index = skeletonTemplateListField.getSelectionIndex();
             if (index == -1) {
                 return ""; //$NON-NLS-1$
             } else {
                 return entries[index].getArtifactId();
             }
+        } else {
+            return customSkeletonArtifactIdField.getText();
         }
     }
 
-    private String getSkeletonVersion() {
-        if (!chooseFromTemplatesField.getSelection()) {
+    private String getCustomSkeletonVersion() {
+        if (isChosenSkeletonFromTemplate()) {
+            return ""; //$NON-NLS-1$
+        } else {
             if (useLatestSkeletonVersionField.getSelection()) {
                 return ""; //$NON-NLS-1$
             } else {
-                return skeletonVersionField.getText();
+                return customSkeletonVersionField.getText();
             }
-        } else {
-            return ""; //$NON-NLS-1$
         }
     }
 
@@ -731,7 +744,10 @@ public class NewProjectWizardSecondPage extends WizardPage {
     }
 
     void setSkeleton(Artifact skeletonArtifact) {
-        this.skeleton = ArtifactPair.newInstance(skeletonArtifact);
+        skeleton = ArtifactPair.newInstance(skeletonArtifact);
+        if (!isChosenSkeletonFromTemplate()) {
+            customSkeletonDescriptionText.setText(skeleton.getBehavior().getDescription());
+        }
     }
 
     void setFragments(Artifact[] fragments) {

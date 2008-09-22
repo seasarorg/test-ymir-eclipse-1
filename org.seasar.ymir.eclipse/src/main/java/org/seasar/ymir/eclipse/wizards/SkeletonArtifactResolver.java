@@ -36,6 +36,14 @@ public class SkeletonArtifactResolver implements Runnable {
     }
 
     public void run() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ignore) {
+        }
+        if (cancelled) {
+            return;
+        }
+
         page.getShell().getDisplay().asyncExec(new Runnable() {
             public void run() {
                 Artifact skeleton = null;
