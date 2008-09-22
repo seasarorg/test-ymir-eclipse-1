@@ -103,7 +103,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     private NewProjectWizardTempPage firstPage;
 
-    private NewProjectWizardSecondPage secondPage;
+    private NewProjectWizardFirstPage secondPage;
 
     private NewProjectWizardThirdPage thirdPage;
 
@@ -133,7 +133,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     public void addPages() {
         firstPage = new NewProjectWizardTempPage();
         addPage(firstPage);
-        secondPage = new NewProjectWizardSecondPage();
+        secondPage = new NewProjectWizardFirstPage();
         addPage(secondPage);
         thirdPage = new NewProjectWizardThirdPage();
         addPage(thirdPage);

@@ -15,7 +15,7 @@ import org.seasar.ymir.eclipse.FragmentEntry;
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class SkeletonArtifactResolver implements Runnable {
-    private NewProjectWizardSecondPage page;
+    private NewProjectWizardFirstPage page;
 
     private SkeletonEntry entry;
 
@@ -23,7 +23,7 @@ public class SkeletonArtifactResolver implements Runnable {
 
     private volatile boolean cancelled;
 
-    public SkeletonArtifactResolver(NewProjectWizardSecondPage page, SkeletonEntry entry) {
+    public SkeletonArtifactResolver(NewProjectWizardFirstPage page, SkeletonEntry entry) {
         this.page = page;
         this.entry = entry;
     }
