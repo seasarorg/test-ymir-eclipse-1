@@ -32,4 +32,6 @@ public interface ApplicationPropertiesKeys {
     String ECLIPSE_ENABLED = "extension.sourceCreator.eclipse.enable";
 
     String RESOURCE_SYNCHRONIZER_URL = "extension.sourceCreator.eclipse.resourceSynchronizerURL";
+
+    String ECLIPSE_PROJECTNAME = "extension.sourceCreator.eclipse.projectName";
 }

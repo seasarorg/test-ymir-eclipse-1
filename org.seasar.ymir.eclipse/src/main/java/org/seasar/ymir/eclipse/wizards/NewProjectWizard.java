@@ -348,6 +348,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             if (value.length() > 0) {
                 prop.setProperty(ApplicationPropertiesKeys.RESOURCE_SYNCHRONIZER_URL, value);
             }
+            prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_PROJECTNAME, secondPage.getProjectName());
         }
 
         return prop;
