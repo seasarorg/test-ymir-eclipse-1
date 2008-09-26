@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -52,6 +53,12 @@ import werkzeugkasten.mvnhack.repository.Artifact;
  */
 
 public class NewProjectWizardFirstPage extends WizardPage {
+    private static final String DS_KEYPREFIX_FIRST = "first.";
+
+    private static final String DS_KEY_FIRST_USESKELETONSNAPSHOT = DS_KEYPREFIX_FIRST + "useSkeletonSnapshot";
+
+    private static final String DS_KEY_FIRST_USEFRAGMENTSNAPSHOT = DS_KEYPREFIX_FIRST + "useFragmentSnapshot";
+
     private boolean initialized;
 
     private volatile boolean visible;
@@ -636,6 +643,10 @@ public class NewProjectWizardFirstPage extends WizardPage {
     void setDefaultValues() {
         tabFolder.setSelection(0);
 
+        IDialogSettings section = getDialogSettings().getSection(NewProjectWizard.DS_SECTION);
+        useSkeletonSnapshotField.setSelection(section.getBoolean(DS_KEY_FIRST_USESKELETONSNAPSHOT));
+        useFragmentSnapshotField.setSelection(section.getBoolean(DS_KEY_FIRST_USEFRAGMENTSNAPSHOT));
+
         chooseSkeletonFromTemplatesField.setSelection(true);
         skeletonTemplateListField.setSelection(0, 0);
         skeletonTemplateDescriptionText.setText(entries[0].getDescription());
@@ -880,5 +891,11 @@ public class NewProjectWizardFirstPage extends WizardPage {
 
     boolean useFragmentSnapshot() {
         return useFragmentSnapshotField.getSelection();
+    }
+
+    void putDialogSettings() {
+        IDialogSettings section = getDialogSettings().getSection(NewProjectWizard.DS_SECTION);
+        section.put(DS_KEY_FIRST_USESKELETONSNAPSHOT, useSkeletonSnapshotField.getSelection());
+        section.put(DS_KEY_FIRST_USEFRAGMENTSNAPSHOT, useFragmentSnapshotField.getSelection());
     }
 }

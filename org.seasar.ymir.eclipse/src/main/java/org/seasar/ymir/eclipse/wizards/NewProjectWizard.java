@@ -37,6 +37,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -92,6 +93,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     static final String REQUIRED_TEMPLATE = Messages.getString("NewProjectWizard.2"); //$NON-NLS-1$
 
+    static final String DS_SECTION = "NewProjectWizard";
+
     private NewProjectWizardFirstPage firstPage;
 
     private NewProjectWizardSecondPage secondPage;
@@ -119,6 +122,13 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         setDefaultPageImageDescriptor(Activator.getDefault().getImageRegistry().getDescriptor(Globals.IMAGE_YMIR));
 
         nonTransitiveContext = Activator.getDefault().getArtifactResolver().newContext(false);
+
+        IDialogSettings settings = Activator.getDefault().getDialogSettings();
+        setDialogSettings(settings);
+        IDialogSettings section = settings.getSection(DS_SECTION);
+        if (section == null) {
+            section = settings.addNewSection(DS_SECTION);
+        }
     }
 
     /**
@@ -149,6 +159,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
      * using wizard as execution context.
      */
     public boolean performFinish() {
+        firstPage.putDialogSettings();
         try {
             final ArtifactPair[] skeletonAndFragments = firstPage.getSkeletonAndFragments();
             final IProject project = secondPage.getProjectHandle();
