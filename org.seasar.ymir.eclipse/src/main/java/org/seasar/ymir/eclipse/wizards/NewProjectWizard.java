@@ -18,10 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import net.skirnir.xom.ValidationException;
-import net.skirnir.xom.XMLParser;
-import net.skirnir.xom.XOMapper;
-
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -58,12 +54,18 @@ import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.ViliBehavior;
+import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.Dependencies;
 import org.seasar.ymir.eclipse.maven.Dependency;
+import org.seasar.ymir.eclipse.maven.impl.ExtendedContext;
 import org.seasar.ymir.eclipse.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
+
+import net.skirnir.xom.ValidationException;
+import net.skirnir.xom.XMLParser;
+import net.skirnir.xom.XOMapper;
 
 public class NewProjectWizard extends Wizard implements INewWizard {
     private static final String PATH_APP_PROPERTIES = Globals.PATH_SRC_MAIN_RESOURCES + "/app.properties"; //$NON-NLS-1$
@@ -96,6 +98,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     private NewProjectWizardThirdPage thirdPage;
 
+    private ExtendedContext nonTransitiveContext;
+
     static {
         Map<String, String> map = new HashMap<String, String>();
         map.put("J2SE-1.3", "1.3"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -113,6 +117,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         setNeedsProgressMonitor(true);
         setWindowTitle(Messages.getString("NewProjectWizard.11")); //$NON-NLS-1$
         setDefaultPageImageDescriptor(Activator.getDefault().getImageRegistry().getDescriptor(Globals.IMAGE_YMIR));
+
+        nonTransitiveContext = Activator.getDefault().getArtifactResolver().newContext(false);
     }
 
     /**
@@ -467,16 +473,18 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         monitor.beginTask(Messages.getString("NewProjectWizard.1"), 2); //$NON-NLS-1$
         try {
             Activator activator = Activator.getDefault();
+            ArtifactResolver artifactResolver = activator.getArtifactResolver();
 
             IPath path = null;
             try {
-                Artifact artifact = activator.resolveArtifact(dependency.getGroupId(), dependency.getArtifactId(),
-                        dependency.getVersion(), false, new SubProgressMonitor(monitor, 1));
+                Artifact artifact = artifactResolver.resolve(getNonTransitiveContext(), dependency.getGroupId(),
+                        dependency.getArtifactId(), dependency.getVersion());
+                monitor.worked(1);
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
 
-                URL url = activator.getArtifactResolver().getURL(artifact);
+                URL url = artifactResolver.getURL(artifact);
                 IFile file = project.getFile(Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB
                         + "/" + ArtifactUtils.getFileName(artifact)); //$NON-NLS-1$ 
                 InputStream is = null;
@@ -497,6 +505,10 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         } finally {
             monitor.done();
         }
+    }
+
+    public ExtendedContext getNonTransitiveContext() {
+        return nonTransitiveContext;
     }
 
     private void setUpJRECompliance(IProject project, String jreVersion, IProgressMonitor monitor) throws CoreException {
@@ -720,7 +732,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         return secondPage.getRootPackageName();
     }
 
-    public void notifySkeletonAndFragmentsCleared() {
+    public void notifySkeletonCleared() {
         secondPage.notifySkeletonAndFragmentsCleared();
         thirdPage.notifySkeletonAndFragmentsCleared();
     }

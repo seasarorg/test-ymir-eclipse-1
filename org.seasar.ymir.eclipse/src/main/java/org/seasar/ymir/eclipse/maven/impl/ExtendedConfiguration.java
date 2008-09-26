@@ -30,7 +30,7 @@ public class ExtendedConfiguration extends DefaultConfiguration {
             addLocalRepository(usr);
         }
 
-        addRepository(new ExtendedRemoteRepository(Constants.CENTRAL_REPOSITORY, builder));
+        addRepository(new ExtendedRemoteRepository(Constants.CENTRAL_REPOSITORY, false, builder));
     }
 
     protected void addLocalRepository(File rep) {

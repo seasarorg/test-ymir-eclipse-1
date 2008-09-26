@@ -21,14 +21,6 @@ import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import net.skirnir.xom.BeanAccessor;
-import net.skirnir.xom.BeanAccessorFactory;
-import net.skirnir.xom.XMLParser;
-import net.skirnir.xom.XMLParserFactory;
-import net.skirnir.xom.XOMapper;
-import net.skirnir.xom.XOMapperFactory;
-import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -60,6 +52,14 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+
+import net.skirnir.xom.BeanAccessor;
+import net.skirnir.xom.BeanAccessorFactory;
+import net.skirnir.xom.XMLParser;
+import net.skirnir.xom.XMLParserFactory;
+import net.skirnir.xom.XOMapper;
+import net.skirnir.xom.XOMapperFactory;
+import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -248,29 +248,6 @@ public class Activator extends AbstractUIPlugin {
                 return bundle.getEntry(path);
             }
         });
-    }
-
-    public String getArtifactLatestVersion(String groupId, String artifactId) {
-        return artifactResolver.getLatestVersion(groupId, artifactId);
-    }
-
-    public Artifact resolveArtifact(String groupId, String artifactId, String version, boolean recursive,
-            IProgressMonitor monitor) throws ArtifactNotFoundException {
-        monitor.beginTask(Messages.getString("Activator.14"), 1); //$NON-NLS-1$
-        try {
-            return resolveArtifact(groupId, artifactId, version, recursive);
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private Artifact resolveArtifact(String groupId, String artifactId, String version, boolean recursive)
-            throws ArtifactNotFoundException {
-        Artifact artifact = artifactResolver.resolve(groupId, artifactId, version, recursive);
-        if (artifact == null) {
-            throw new ArtifactNotFoundException();
-        }
-        return artifact;
     }
 
     @SuppressWarnings("unchecked")//$NON-NLS-1$

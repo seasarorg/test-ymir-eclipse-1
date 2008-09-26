@@ -3,19 +3,21 @@ package org.seasar.ymir.eclipse.wizards;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.ArtifactNotFoundException;
 import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.ArtifactType;
+import org.seasar.ymir.eclipse.FragmentEntry;
 import org.seasar.ymir.eclipse.MavenArtifact;
 import org.seasar.ymir.eclipse.SkeletonEntry;
-import org.seasar.ymir.eclipse.FragmentEntry;
+import org.seasar.ymir.eclipse.maven.ArtifactResolver;
+import org.seasar.ymir.eclipse.maven.impl.ExtendedContext;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class SkeletonArtifactResolver implements Runnable {
     private NewProjectWizardFirstPage page;
+
+    private ExtendedContext nonTransitiveContext;
 
     private SkeletonEntry entry;
 
@@ -25,6 +27,7 @@ public class SkeletonArtifactResolver implements Runnable {
 
     public SkeletonArtifactResolver(NewProjectWizardFirstPage page, SkeletonEntry entry) {
         this.page = page;
+        nonTransitiveContext = ((NewProjectWizard) page.getWizard()).getNonTransitiveContext();
         this.entry = entry;
     }
 
@@ -49,10 +52,10 @@ public class SkeletonArtifactResolver implements Runnable {
         page.getShell().getDisplay().asyncExec(new Runnable() {
             public void run() {
                 Artifact skeleton = null;
-                List<Artifact> fragmentList = new ArrayList<Artifact>();
+                List<ArtifactPair> fragmentList = new ArrayList<ArtifactPair>();
                 boolean failed = false;
                 do {
-                    skeleton = resolveArtifact(entry);
+                    skeleton = resolveArtifact(entry, page.useSkeletonSnapshot());
                     if (cancelled) {
                         return;
                     }
@@ -62,7 +65,7 @@ public class SkeletonArtifactResolver implements Runnable {
                     }
 
                     for (FragmentEntry fragment : entry.getFragments()) {
-                        Artifact artifact = resolveArtifact(fragment);
+                        Artifact artifact = resolveArtifact(fragment, page.useFragmentSnapshot());
                         if (cancelled) {
                             return;
                         }
@@ -70,7 +73,7 @@ public class SkeletonArtifactResolver implements Runnable {
                             failed = true;
                             break;
                         }
-                        fragmentList.add(artifact);
+                        fragmentList.add(ArtifactPair.newInstance(artifact));
                     }
                 } while (false);
 
@@ -78,9 +81,7 @@ public class SkeletonArtifactResolver implements Runnable {
                 if (!failed) {
                     ArtifactPair pair = ArtifactPair.newInstance(skeleton);
                     if (pair.getBehavior().getArtifactType() == ArtifactType.SKELETON) {
-                        page.setSkeleton(pair);
-                        page.setFragments(fragmentList.toArray(new Artifact[0]));
-                        page.setPageComplete(page.validatePage());
+                        page.setSkeleton(pair, fragmentList.toArray(new ArtifactPair[0]));
                         errorMessage = null;
                     } else {
                         errorMessage = Messages.getString(Messages.getString("SkeletonArtifactResolver.0")); //$NON-NLS-1$
@@ -96,20 +97,16 @@ public class SkeletonArtifactResolver implements Runnable {
         });
     }
 
-    private Artifact resolveArtifact(MavenArtifact artifact) {
-        Activator activator = Activator.getDefault();
+    private Artifact resolveArtifact(MavenArtifact artifact, boolean containsSnapshot) {
+        ArtifactResolver artifactResolver = Activator.getDefault().getArtifactResolver();
         String version = artifact.getVersion();
         if (version == null) {
-            version = activator.getArtifactLatestVersion(artifact.getGroupId(), artifact.getArtifactId());
+            version = artifactResolver.getLatestVersion(nonTransitiveContext, artifact.getGroupId(), artifact
+                    .getArtifactId(), containsSnapshot);
             if (version == null) {
                 return null;
             }
         }
-        try {
-            return activator.resolveArtifact(artifact.getGroupId(), artifact.getArtifactId(), version, false,
-                    new NullProgressMonitor());
-        } catch (ArtifactNotFoundException ignore) {
-            return null;
-        }
+        return artifactResolver.resolve(nonTransitiveContext, artifact.getGroupId(), artifact.getArtifactId(), version);
     }
 }
