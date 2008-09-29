@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -25,7 +24,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Listener;
@@ -43,6 +41,7 @@ import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
+import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
@@ -53,11 +52,7 @@ import werkzeugkasten.mvnhack.repository.Artifact;
  */
 
 public class NewProjectWizardFirstPage extends WizardPage {
-    private static final String DS_KEYPREFIX_FIRST = "first.";
-
-    private static final String DS_KEY_FIRST_USESKELETONSNAPSHOT = DS_KEYPREFIX_FIRST + "useSkeletonSnapshot";
-
-    private static final String DS_KEY_FIRST_USEFRAGMENTSNAPSHOT = DS_KEYPREFIX_FIRST + "useFragmentSnapshot";
+    private static final String DS_KEYPREFIX_FIRST = "first."; //$NON-NLS-1$
 
     protected static final long WAIT_RESOLVE_SKELETON_ARTIFACT = 1000L;
 
@@ -121,10 +116,6 @@ public class NewProjectWizardFirstPage extends WizardPage {
 
     private Text customFragmentDescriptionText;
 
-    private Button useSkeletonSnapshotField;
-
-    private Button useFragmentSnapshotField;
-
     private Table archiveListTable;
 
     private java.util.List<ArtifactPair> customFragmentListModel;
@@ -183,7 +174,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
         createFragmentSelectionControl(fragmentTabContent);
 
         CTabItem advancedTabItem = new CTabItem(tabFolder, SWT.NONE);
-        advancedTabItem.setText("詳細");
+        advancedTabItem.setText(Messages.getString("NewProjectWizardFirstPage.24")); //$NON-NLS-1$
 
         Composite advancedTabContent = new Composite(tabFolder, SWT.NULL);
         advancedTabContent.setLayout(new GridLayout());
@@ -538,30 +529,9 @@ public class NewProjectWizardFirstPage extends WizardPage {
     }
 
     void createAdvancedControl(Composite parent) {
-        useSkeletonSnapshotField = new Button(parent, SWT.CHECK | SWT.LEFT);
-        useSkeletonSnapshotField.setLayoutData(new GridData());
-        useSkeletonSnapshotField.setText("スケルトンアーカイブの検索にSNAPSHOTを含める");
-        useSkeletonSnapshotField.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                resolveSkeletonArtifact();
-            }
-        });
+        new Label(parent, SWT.NONE).setText(Messages.getString("NewProjectWizardFirstPage.25")); //$NON-NLS-1$
 
-        useFragmentSnapshotField = new Button(parent, SWT.CHECK | SWT.LEFT);
-        useFragmentSnapshotField.setLayoutData(new GridData());
-        useFragmentSnapshotField.setText("フラグメントアーカイブの検索にSNAPSHOTを含める");
-        useFragmentSnapshotField.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                resolveSkeletonArtifact();
-            }
-        });
-
-        Group group = new Group(parent, SWT.NONE);
-        group.setLayout(new GridLayout());
-        group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        group.setText("展開されるアーカイブ");
-
-        archiveListTable = new Table(group, SWT.BORDER);
+        archiveListTable = new Table(parent, SWT.BORDER);
         archiveListTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         archiveListTable.setHeaderVisible(true);
         archiveListTable.setLinesVisible(true);
@@ -588,10 +558,10 @@ public class NewProjectWizardFirstPage extends WizardPage {
                     actualVersion = ((ExtendedArtifact) artifact).getActualVersion();
                 }
                 if (actualVersion == null) {
-                    version = version + " (local)";
+                    version = version + " (" + Messages.getString("NewProjectWizardFirstPage.27") + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 } else {
-                    version = version + " ("
-                            + actualVersion.substring(version.length() - ArtifactResolver.SNAPSHOT.length()) + ")";
+                    version = version + " (" //$NON-NLS-1$
+                            + actualVersion.substring(version.length() - ArtifactResolver.SNAPSHOT.length()) + ")"; //$NON-NLS-1$
                 }
             }
             item.setText(new String[] { artifact.getGroupId(), artifact.getArtifactId(), version });
@@ -645,9 +615,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
     void setDefaultValues() {
         tabFolder.setSelection(0);
 
-        IDialogSettings section = getDialogSettings().getSection(NewProjectWizard.DS_SECTION);
-        useSkeletonSnapshotField.setSelection(section.getBoolean(DS_KEY_FIRST_USESKELETONSNAPSHOT));
-        useFragmentSnapshotField.setSelection(section.getBoolean(DS_KEY_FIRST_USEFRAGMENTSNAPSHOT));
+        // IDialogSettings section = getDialogSettings().getSection(NewProjectWizard.DS_SECTION);
 
         chooseSkeletonFromTemplatesField.setSelection(true);
         skeletonTemplateListField.setSelection(0, 0);
@@ -892,16 +860,14 @@ public class NewProjectWizardFirstPage extends WizardPage {
     }
 
     boolean useSkeletonSnapshot() {
-        return useSkeletonSnapshotField.getSelection();
+        return Activator.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.P_USE_SNAPSHOT_SKELETON);
     }
 
     boolean useFragmentSnapshot() {
-        return useFragmentSnapshotField.getSelection();
+        return Activator.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.P_USE_SNAPSHOT_FRAGMENT);
     }
 
     void putDialogSettings() {
-        IDialogSettings section = getDialogSettings().getSection(NewProjectWizard.DS_SECTION);
-        section.put(DS_KEY_FIRST_USESKELETONSNAPSHOT, useSkeletonSnapshotField.getSelection());
-        section.put(DS_KEY_FIRST_USEFRAGMENTSNAPSHOT, useFragmentSnapshotField.getSelection());
+        // IDialogSettings section = getDialogSettings().getSection(NewProjectWizard.DS_SECTION);
     }
 }

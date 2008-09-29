@@ -3,14 +3,8 @@ package org.seasar.ymir.eclipse.preferences;
 /**
  * Constant definitions for plug-in preferences
  */
-public class PreferenceConstants {
+public interface PreferenceConstants {
+    String P_USE_SNAPSHOT_SKELETON = "useSnapshotSkeleton";
 
-	public static final String P_PATH = "pathPreference";
-
-	public static final String P_BOOLEAN = "booleanPreference";
-
-	public static final String P_CHOICE = "choicePreference";
-
-	public static final String P_STRING = "stringPreference";
-	
+    String P_USE_SNAPSHOT_FRAGMENT = "useSnapshotFragment";
 }

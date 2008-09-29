@@ -42,9 +42,9 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            name="Sample Preferences"
-            class="org.seasar.ymir.eclipse.preferences.SamplePreferencePage"
-            id="org.seasar.ymir.eclipse.preferences.SamplePreferencePage">
+            name="%plugin.name"
+            class="org.seasar.ymir.eclipse.preferences.ViliPreferencePage"
+            id="org.seasar.ymir.eclipse.preferences.ViliPreferencePage">
       </page>
    </extension>
    <extension
