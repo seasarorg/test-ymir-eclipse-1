@@ -12,13 +12,15 @@ import java.util.jar.JarFile;
 import werkzeugkasten.common.util.StreamUtil;
 
 public class StreamUtils {
+    private static final int BUF_SIZE = 65536;
+
     private StreamUtils() {
     }
 
     public static void copyStream(InputStream in, OutputStream out) throws IOException {
-        in = new BufferedInputStream(in);
-        out = new BufferedOutputStream(out);
-        byte[] buf = new byte[8192];
+        in = new BufferedInputStream(in, BUF_SIZE);
+        out = new BufferedOutputStream(out, BUF_SIZE);
+        byte[] buf = new byte[BUF_SIZE];
         int len;
         while ((len = in.read(buf)) > 0) {
             out.write(buf, 0, len);

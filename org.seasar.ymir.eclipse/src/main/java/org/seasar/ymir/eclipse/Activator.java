@@ -44,6 +44,7 @@ import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.util.CascadeMap;
 import org.seasar.ymir.eclipse.util.StreamUtils;
+import org.seasar.ymir.eclipse.util.URLUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import freemarker.cache.TemplateLoader;
@@ -603,17 +604,21 @@ public class Activator extends AbstractUIPlugin {
 
     public JarFile getJarFile(Artifact artifact) throws IOException {
         URL artifactURL = artifactResolver.getURL(artifact);
-        File artifactFile = File.createTempFile("ymir", ".jar"); //$NON-NLS-1$ //$NON-NLS-2$
-        artifactFile.deleteOnExit();
-        InputStream is = null;
-        OutputStream os = null;
-        try {
-            is = artifactURL.openStream();
-            os = new FileOutputStream(artifactFile);
-            StreamUtils.copyStream(is, os);
-        } finally {
-            StreamUtils.close(is);
-            StreamUtils.close(os);
+        File artifactFile = URLUtils.toFile(artifactURL);
+        if (artifactFile == null) {
+            artifactFile = File.createTempFile("ymir", ".jar"); //$NON-NLS-1$ //$NON-NLS-2$
+            artifactFile.deleteOnExit();
+            InputStream is = null;
+            OutputStream os = null;
+            try {
+                is = artifactURL.openStream();
+                os = new FileOutputStream(artifactFile);
+                System.out.println("URL=" + artifactURL + ", file=" + artifactFile);
+                StreamUtils.copyStream(is, os);
+            } finally {
+                StreamUtils.close(is);
+                StreamUtils.close(os);
+            }
         }
         return new JarFile(artifactFile);
     }

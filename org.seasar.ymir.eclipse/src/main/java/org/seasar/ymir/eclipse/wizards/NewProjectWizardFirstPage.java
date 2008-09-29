@@ -41,8 +41,8 @@ import org.seasar.ymir.eclipse.SkeletonEntry;
 import org.seasar.ymir.eclipse.ViliBehavior;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
-import org.seasar.ymir.eclipse.maven.impl.ExtendedContext;
-import org.seasar.ymir.eclipse.util.ArtifactUtils;
+import org.seasar.ymir.eclipse.maven.ExtendedContext;
+import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
@@ -58,6 +58,8 @@ public class NewProjectWizardFirstPage extends WizardPage {
     private static final String DS_KEY_FIRST_USESKELETONSNAPSHOT = DS_KEYPREFIX_FIRST + "useSkeletonSnapshot";
 
     private static final String DS_KEY_FIRST_USEFRAGMENTSNAPSHOT = DS_KEYPREFIX_FIRST + "useFragmentSnapshot";
+
+    protected static final long WAIT_RESOLVE_SKELETON_ARTIFACT = 1000L;
 
     private boolean initialized;
 
@@ -265,7 +267,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
         customSkeletonGroupIdField.setLayoutData(data);
         customSkeletonGroupIdField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                resolveSkeletonArtifact();
+                resolveSkeletonArtifact(WAIT_RESOLVE_SKELETON_ARTIFACT);
             }
         });
 
@@ -278,7 +280,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
         customSkeletonArtifactIdField.setLayoutData(data);
         customSkeletonArtifactIdField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                resolveSkeletonArtifact();
+                resolveSkeletonArtifact(WAIT_RESOLVE_SKELETON_ARTIFACT);
             }
         });
 
@@ -291,7 +293,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
         customSkeletonVersionField.setLayoutData(data);
         customSkeletonVersionField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                resolveSkeletonArtifact();
+                resolveSkeletonArtifact(WAIT_RESOLVE_SKELETON_ARTIFACT);
             }
         });
 
@@ -683,6 +685,10 @@ public class NewProjectWizardFirstPage extends WizardPage {
     }
 
     private void resolveSkeletonArtifact() {
+        resolveSkeletonArtifact(0L);
+    }
+
+    private void resolveSkeletonArtifact(long wait) {
         clearSkeleton();
         setPageComplete(false);
 
@@ -703,7 +709,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
 
         SkeletonEntry entry = getSkeletonEntry();
         if (entry != null) {
-            skeletonArtifactResolver = new SkeletonArtifactResolver(this, entry);
+            skeletonArtifactResolver = new SkeletonArtifactResolver(this, entry, wait);
             skeletonArtifactResolver.start();
         }
     }

@@ -58,8 +58,8 @@ import org.seasar.ymir.eclipse.ViliBehavior;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.Dependencies;
 import org.seasar.ymir.eclipse.maven.Dependency;
-import org.seasar.ymir.eclipse.maven.impl.ExtendedContext;
-import org.seasar.ymir.eclipse.util.ArtifactUtils;
+import org.seasar.ymir.eclipse.maven.ExtendedContext;
+import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;

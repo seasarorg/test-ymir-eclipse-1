@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.util;
+package org.seasar.ymir.eclipse.maven.util;
 
 import static org.seasar.ymir.eclipse.maven.ArtifactResolver.SUFFIX_SNAPSHOT;
 
@@ -13,6 +13,7 @@ import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
 import org.seasar.ymir.eclipse.maven.Metadata;
 import org.seasar.ymir.eclipse.maven.Snapshot;
 import org.seasar.ymir.eclipse.maven.Versioning;
+import org.seasar.ymir.eclipse.maven.Versions;
 
 import werkzeugkasten.mvnhack.Constants;
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -210,5 +211,35 @@ public class ArtifactUtils {
 
     public static boolean isSnapshot(String version) {
         return version != null && version.endsWith(SUFFIX_SNAPSHOT);
+    }
+
+    public static String getLatestVersion(Metadata metadata, boolean containsSnapshot) {
+        String version = null;
+        Versioning versioning = metadata.getVersioning();
+        if (versioning != null) {
+            version = versioning.getRelease();
+            if (!containsSnapshot && version != null && ArtifactUtils.isSnapshot(version)) {
+                version = null;
+            }
+        }
+        if (version == null) {
+            Versions versions = versioning.getVersions();
+            if (versions != null) {
+                String[] vs = versions.getVersions();
+                for (int i = vs.length - 1; i >= 0 && version == null; i--) {
+                    version = vs[i];
+                    if (!containsSnapshot && ArtifactUtils.isSnapshot(version)) {
+                        version = null;
+                    }
+                }
+            }
+        }
+        if (version == null) {
+            version = metadata.getVersion();
+            if (!containsSnapshot && version != null && ArtifactUtils.isSnapshot(version)) {
+                version = null;
+            }
+        }
+        return version;
     }
 }

@@ -1,5 +1,7 @@
 package org.seasar.ymir.eclipse.util;
 
+import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
+
 import junit.framework.TestCase;
 
 public class ArtifactUtilsTest extends TestCase {

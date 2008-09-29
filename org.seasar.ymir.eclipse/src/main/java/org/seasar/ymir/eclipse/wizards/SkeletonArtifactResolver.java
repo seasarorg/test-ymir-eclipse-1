@@ -10,22 +10,24 @@ import org.seasar.ymir.eclipse.FragmentEntry;
 import org.seasar.ymir.eclipse.MavenArtifact;
 import org.seasar.ymir.eclipse.SkeletonEntry;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
-import org.seasar.ymir.eclipse.maven.impl.ExtendedContext;
+import org.seasar.ymir.eclipse.maven.ExtendedContext;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class SkeletonArtifactResolver implements Runnable {
     private NewProjectWizardFirstPage page;
 
-    private ExtendedContext nonTransitiveContext;
-
     private SkeletonEntry entry;
+
+    private long wait;
+
+    private ExtendedContext nonTransitiveContext;
 
     private Thread thread;
 
     private volatile boolean cancelled;
 
-    public SkeletonArtifactResolver(NewProjectWizardFirstPage page, SkeletonEntry entry) {
+    public SkeletonArtifactResolver(NewProjectWizardFirstPage page, SkeletonEntry entry, long wait) {
         this.page = page;
         nonTransitiveContext = ((NewProjectWizard) page.getWizard()).getNonTransitiveContext();
         this.entry = entry;
@@ -42,7 +44,7 @@ public class SkeletonArtifactResolver implements Runnable {
 
     public void run() {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(wait);
         } catch (InterruptedException ignore) {
         }
         if (cancelled) {

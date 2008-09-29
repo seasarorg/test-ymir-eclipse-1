@@ -9,7 +9,7 @@ import org.seasar.ymir.eclipse.maven.ExtendedRepository;
 import org.seasar.ymir.eclipse.maven.Metadata;
 import org.seasar.ymir.eclipse.maven.Snapshot;
 import org.seasar.ymir.eclipse.maven.Versioning;
-import org.seasar.ymir.eclipse.util.ArtifactUtils;
+import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -68,8 +68,8 @@ public class ExtendedLocalRepository extends LocalRepository implements Extended
         return sb.toString();
     }
 
-    public boolean isSnapshot() {
-        return false;
+    public Type getType() {
+        return Type.LOCAL;
     }
 
     @Override

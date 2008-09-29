@@ -8,7 +8,7 @@ import java.util.Set;
 import org.seasar.ymir.eclipse.maven.ExtendedRepository;
 import org.seasar.ymir.eclipse.maven.Metadata;
 import org.seasar.ymir.eclipse.maven.Versioning;
-import org.seasar.ymir.eclipse.util.ArtifactUtils;
+import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.common.exception.FileNotFoundRuntimeException;
@@ -62,13 +62,13 @@ public class ExtendedRemoteRepository extends RemoteRepository implements Extend
         return sb.toString();
     }
 
-    public boolean isSnapshot() {
-        return snapshot;
+    public Type getType() {
+        return snapshot ? Type.SNAPSHOT : Type.REMOTE;
     }
 
     @Override
     public Artifact load(Context context, String groupId, String artifactId, String version) {
-        if (!ArtifactUtils.isSnapshot(version) || !(context instanceof ExtendedContext)) {
+        if (!ArtifactUtils.isSnapshot(version) || !(context instanceof DefaultExtendedContext)) {
             return ExtendedDefaultArtifact.newInstance(super.load(context, groupId, artifactId, version));
         }
 

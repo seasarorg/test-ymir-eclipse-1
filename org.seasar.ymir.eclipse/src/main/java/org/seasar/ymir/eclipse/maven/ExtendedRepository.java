@@ -7,5 +7,9 @@ public interface ExtendedRepository extends Repository {
 
     byte[] resolveMetadata(String groupId, String artifactId, String version);
 
-    boolean isSnapshot();
+    Type getType();
+
+    public static enum Type {
+        LOCAL, REMOTE, SNAPSHOT;
+    }
 }

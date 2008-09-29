@@ -1,10 +1,11 @@
 package org.seasar.ymir.eclipse.maven.impl;
 
-import werkzeugkasten.mvnhack.repository.Artifact;
-import werkzeugkasten.mvnhack.repository.Configuration;
+import org.seasar.ymir.eclipse.maven.ExtendedConfiguration;
 
-public class NonTransitiveContext extends ExtendedContext {
-    public NonTransitiveContext(Configuration configuration) {
+import werkzeugkasten.mvnhack.repository.Artifact;
+
+public class NonTransitiveContext extends DefaultExtendedContext {
+    public NonTransitiveContext(ExtendedConfiguration configuration) {
         super(configuration);
     }
 
