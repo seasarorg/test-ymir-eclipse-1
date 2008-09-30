@@ -543,7 +543,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         if (version != null) {
             return version;
         } else {
-            return ""; //$NON-NLS-1$
+            return "1.6"; //$NON-NLS-1$
         }
     }
 
