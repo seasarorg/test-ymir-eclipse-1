@@ -37,9 +37,19 @@ public interface ParameterKeys {
 
     String DEPENDENCIES = "dependencies";
 
+    /*
+     * for Ymir application
+     */
+
     String USE_RESOURCE_SYNCHRONIZER = "useResourceSynchronizer";
 
     String RESOURCE_SYNCHRONIZER_URL = "resourceSynchronizerURL";
 
     String HOTDEPLOY_TYPE = "hotdeployType";
+
+    String FIELD_PREFIX = "fieldPrefix";
+
+    String FIELD_SUFFIX = "fieldSuffix";
+
+    String FIELD_SPECIAL_PREFIX = "fieldSpecialPrefix";
 }
