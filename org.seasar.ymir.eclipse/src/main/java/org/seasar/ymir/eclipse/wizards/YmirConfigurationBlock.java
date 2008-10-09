@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.ymir.eclipse.Globals;
+import org.seasar.ymir.eclipse.HotdeployType;
 
 public class YmirConfigurationBlock {
     private static final String PAGEBASE = ".ymir.PageBase"; //$NON-NLS-1$
@@ -64,6 +65,12 @@ public class YmirConfigurationBlock {
 
     private Text resourceSynchronizerURLField;
 
+    private Button useS2HotdeployField;
+
+    private Button useJavaRebelHotdeployField;
+
+    private Button useVoidHotdeployField;
+
     private Button beantableEnabledField;
 
     public YmirConfigurationBlock(NewProjectWizardThirdPage parentPage) {
@@ -102,20 +109,21 @@ public class YmirConfigurationBlock {
 
         createAutoGenerationParameterControl(parent);
         createEclipseCooperationParameterControl(parent);
+        createHotdeployParameterControl(parent);
         createMiscParameterControl(parent);
 
         setDefaultValues();
     }
 
     void createAutoGenerationParameterControl(Composite parent) {
-        Group autoGenerationParameterGroup = new Group(parent, SWT.NONE);
+        Group group = new Group(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.numColumns = 2;
-        autoGenerationParameterGroup.setLayout(layout);
-        autoGenerationParameterGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        autoGenerationParameterGroup.setText(Messages.getString("YmirConfigurationComponent.4")); //$NON-NLS-1$
+        group.setLayout(layout);
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        group.setText(Messages.getString("YmirConfigurationComponent.4")); //$NON-NLS-1$
 
-        specifySuperclassField = new Button(autoGenerationParameterGroup, SWT.CHECK | SWT.LEFT);
+        specifySuperclassField = new Button(group, SWT.CHECK | SWT.LEFT);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         specifySuperclassField.setLayoutData(data);
@@ -129,24 +137,24 @@ public class YmirConfigurationBlock {
             }
         });
 
-        superclassLabel = new Label(autoGenerationParameterGroup, SWT.NONE);
+        superclassLabel = new Label(group, SWT.NONE);
         superclassLabel.setText(Messages.getString("YmirConfigurationComponent.6")); //$NON-NLS-1$
 
-        superclassField = new Text(autoGenerationParameterGroup, SWT.BORDER);
+        superclassField = new Text(group, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.widthHint = 250;
         superclassField.setLayoutData(data);
 
-        usingFreyjaRenderClassField = new Button(autoGenerationParameterGroup, SWT.CHECK | SWT.LEFT);
+        usingFreyjaRenderClassField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         usingFreyjaRenderClassField.setLayoutData(data);
         usingFreyjaRenderClassField.setText(Messages.getString("YmirConfigurationComponent.7")); //$NON-NLS-1$
 
-        fieldPrefixLabel = new Label(autoGenerationParameterGroup, SWT.NONE);
+        fieldPrefixLabel = new Label(group, SWT.NONE);
         fieldPrefixLabel.setText(Messages.getString("YmirConfigurationBlock.1")); //$NON-NLS-1$
 
-        Composite composite = new Composite(autoGenerationParameterGroup, SWT.NULL);
+        Composite composite = new Composite(group, SWT.NULL);
         composite.setLayout(new GridLayout(2, false));
 
         fieldPrefixField = new Text(composite, SWT.BORDER);
@@ -159,37 +167,37 @@ public class YmirConfigurationBlock {
         data.widthHint = 10;
         fieldSuffixField.setLayoutData(data);
 
-        inplaceEditorEnabled = new Button(autoGenerationParameterGroup, SWT.CHECK | SWT.LEFT);
+        inplaceEditorEnabled = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         inplaceEditorEnabled.setLayoutData(data);
         inplaceEditorEnabled.setText(Messages.getString("YmirConfigurationBlock.2")); //$NON-NLS-1$
 
-        controlPanelEnabled = new Button(autoGenerationParameterGroup, SWT.CHECK | SWT.LEFT);
+        controlPanelEnabled = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         controlPanelEnabled.setLayoutData(data);
         controlPanelEnabled.setText(Messages.getString("YmirConfigurationBlock.3")); //$NON-NLS-1$
 
-        formDtoCreationFeatureEnabledField = new Button(autoGenerationParameterGroup, SWT.CHECK | SWT.LEFT);
+        formDtoCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         formDtoCreationFeatureEnabledField.setLayoutData(data);
         formDtoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationComponent.9")); //$NON-NLS-1$
 
-        daoCreationFeatureEnabledField = new Button(autoGenerationParameterGroup, SWT.CHECK | SWT.LEFT);
+        daoCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         daoCreationFeatureEnabledField.setLayoutData(data);
         daoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationComponent.10")); //$NON-NLS-1$
 
-        dxoCreationFeatureEnabledField = new Button(autoGenerationParameterGroup, SWT.CHECK | SWT.LEFT);
+        dxoCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         dxoCreationFeatureEnabledField.setLayoutData(data);
         dxoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationComponent.11")); //$NON-NLS-1$
 
-        converterCreationFeatureEnabledField = new Button(autoGenerationParameterGroup, SWT.CHECK | SWT.LEFT);
+        converterCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         converterCreationFeatureEnabledField.setLayoutData(data);
@@ -197,14 +205,14 @@ public class YmirConfigurationBlock {
     }
 
     void createEclipseCooperationParameterControl(Composite parent) {
-        Group eclipseCooperationParameterGroup = new Group(parent, SWT.NONE);
+        Group group = new Group(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.numColumns = 2;
-        eclipseCooperationParameterGroup.setLayout(layout);
-        eclipseCooperationParameterGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        eclipseCooperationParameterGroup.setText(Messages.getString("YmirConfigurationComponent.13")); //$NON-NLS-1$
+        group.setLayout(layout);
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        group.setText(Messages.getString("YmirConfigurationComponent.13")); //$NON-NLS-1$
 
-        eclipseEnabledField = new Button(eclipseCooperationParameterGroup, SWT.CHECK | SWT.LEFT);
+        eclipseEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         eclipseEnabledField.setLayoutData(data);
@@ -217,25 +225,43 @@ public class YmirConfigurationBlock {
             }
         });
 
-        resourceSynchronizerURLLabel = new Label(eclipseCooperationParameterGroup, SWT.NONE);
+        resourceSynchronizerURLLabel = new Label(group, SWT.NONE);
         resourceSynchronizerURLLabel.setText(Messages.getString("YmirConfigurationComponent.15")); //$NON-NLS-1$
 
-        resourceSynchronizerURLField = new Text(eclipseCooperationParameterGroup, SWT.BORDER);
+        resourceSynchronizerURLField = new Text(group, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.widthHint = 250;
         resourceSynchronizerURLField.setLayoutData(data);
         resourceSynchronizerURLField.addModifyListener(validationListener);
     }
 
+    void createHotdeployParameterControl(Composite parent) {
+        Group group = new Group(parent, SWT.NONE);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 1;
+        group.setLayout(layout);
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        group.setText(Messages.getString("YmirConfigurationBlock.5")); //$NON-NLS-1$
+
+        useS2HotdeployField = new Button(group, SWT.RADIO);
+        useS2HotdeployField.setText(Messages.getString("YmirConfigurationBlock.6")); //$NON-NLS-1$
+
+        useJavaRebelHotdeployField = new Button(group, SWT.RADIO);
+        useJavaRebelHotdeployField.setText(Messages.getString("YmirConfigurationBlock.7")); //$NON-NLS-1$
+
+        useVoidHotdeployField = new Button(group, SWT.RADIO);
+        useVoidHotdeployField.setText(Messages.getString("YmirConfigurationBlock.8")); //$NON-NLS-1$
+    }
+
     void createMiscParameterControl(Composite parent) {
-        Group miscParameterGroup = new Group(parent, SWT.NONE);
+        Group group = new Group(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.numColumns = 2;
-        miscParameterGroup.setLayout(layout);
-        miscParameterGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        miscParameterGroup.setText(Messages.getString("YmirConfigurationBlock.4")); //$NON-NLS-1$
+        group.setLayout(layout);
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        group.setText(Messages.getString("YmirConfigurationBlock.4")); //$NON-NLS-1$
 
-        beantableEnabledField = new Button(miscParameterGroup, SWT.CHECK | SWT.LEFT);
+        beantableEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         beantableEnabledField.setText(Messages.getString("YmirConfigurationComponent.8")); //$NON-NLS-1$
     }
 
@@ -267,6 +293,8 @@ public class YmirConfigurationBlock {
         resourceSynchronizerURLLabel.setEnabled(eclipseEnabled);
         resourceSynchronizerURLField.setEnabled(eclipseEnabled);
         resourceSynchronizerURLField.setText("http://localhost:8386/"); //$NON-NLS-1$
+
+        useS2HotdeployField.setSelection(true);
 
         updatePageComplete();
     }
@@ -335,7 +363,17 @@ public class YmirConfigurationBlock {
         if (isEclipseEnabled()) {
             return resourceSynchronizerURLField.getText();
         } else {
-            return "";
+            return ""; //$NON-NLS-1$
+        }
+    }
+
+    public HotdeployType getHotdeployType() {
+        if (useVoidHotdeployField.getSelection()) {
+            return HotdeployType.VOID;
+        } else if (useJavaRebelHotdeployField.getSelection()) {
+            return HotdeployType.JAVAREBEL;
+        } else {
+            return HotdeployType.S2;
         }
     }
 

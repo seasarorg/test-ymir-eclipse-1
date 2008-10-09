@@ -40,4 +40,6 @@ public interface ParameterKeys {
     String USE_RESOURCE_SYNCHRONIZER = "useResourceSynchronizer";
 
     String RESOURCE_SYNCHRONIZER_URL = "resourceSynchronizerURL";
+
+    String HOTDEPLOY_TYPE = "hotdeployType";
 }

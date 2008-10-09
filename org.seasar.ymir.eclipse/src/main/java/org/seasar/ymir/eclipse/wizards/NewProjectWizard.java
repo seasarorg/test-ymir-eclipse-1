@@ -53,6 +53,7 @@ import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.Globals;
+import org.seasar.ymir.eclipse.HotdeployType;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.ViliBehavior;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
@@ -93,7 +94,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     static final String REQUIRED_TEMPLATE = Messages.getString("NewProjectWizard.2"); //$NON-NLS-1$
 
-    static final String DS_SECTION = "NewProjectWizard";
+    static final String DS_SECTION = "NewProjectWizard"; //$NON-NLS-1$
 
     private NewProjectWizardFirstPage firstPage;
 
@@ -263,8 +264,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     private Map<String, Object> createParameterMap(Dependency[] dependencies) {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put(ParameterKeys.SLASH, "/");
-        map.put(ParameterKeys.DOLLAR, "$");
+        map.put(ParameterKeys.SLASH, "/"); //$NON-NLS-1$
+        map.put(ParameterKeys.DOLLAR, "$"); //$NON-NLS-1$
         map.put(ParameterKeys.PROJECT_NAME, secondPage.getProjectName());
         map.put(ParameterKeys.ROOT_PACKAGE_NAME, secondPage.getRootPackageName());
         map.put(ParameterKeys.ROOT_PACKAGE_PATH, secondPage.getRootPackageName().replace('.', '/'));
@@ -287,6 +288,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         if (ymirConfig != null) {
             map.put(ParameterKeys.USE_RESOURCE_SYNCHRONIZER, ymirConfig.isEclipseEnabled());
             map.put(ParameterKeys.RESOURCE_SYNCHRONIZER_URL, ymirConfig.getResourceSynchronizerURL());
+            map.put(ParameterKeys.HOTDEPLOY_TYPE, ymirConfig.getHotdeployType().getName());
         }
 
         return map;
@@ -358,6 +360,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 .isDaoCreationFeatureEnabled()));
         prop.setProperty(ApplicationPropertiesKeys.DXO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
                 .isDxoCreationFeatureEnabled()));
+
         boolean eclipseEnabled = ymirConfig.isEclipseEnabled();
         prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_ENABLED, String.valueOf(eclipseEnabled));
         if (eclipseEnabled) {
@@ -367,6 +370,11 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             }
             prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_PROJECTNAME, secondPage.getProjectName());
         }
+
+        prop.setProperty(ApplicationPropertiesKeys.S2CONTAINER_CLASSLOADING_DISABLEHOTDEPLOY, String.valueOf(ymirConfig
+                .getHotdeployType() != HotdeployType.S2));
+        prop.setProperty(ApplicationPropertiesKeys.S2CONTAINER_COMPONENTREGISTRATION_DISABLEDYNAMIC, String
+                .valueOf(ymirConfig.getHotdeployType() == HotdeployType.VOID));
 
         return prop;
     }
