@@ -289,6 +289,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             map.put(ParameterKeys.USE_RESOURCE_SYNCHRONIZER, ymirConfig.isEclipseEnabled());
             map.put(ParameterKeys.RESOURCE_SYNCHRONIZER_URL, ymirConfig.getResourceSynchronizerURL());
             map.put(ParameterKeys.HOTDEPLOY_TYPE, ymirConfig.getHotdeployType().getName());
+            String fieldPrefix = ymirConfig.getFieldPrefix();
+            map.put(ParameterKeys.FIELD_PREFIX, fieldPrefix);
+            String fieldSuffix = ymirConfig.getFieldSuffix();
+            map.put(ParameterKeys.FIELD_SUFFIX, fieldSuffix);
+            map.put(ParameterKeys.FIELD_SPECIAL_PREFIX,
+                    fieldPrefix.length() == 0 && fieldSuffix.length() == 0 ? "this." : ""); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         return map;
