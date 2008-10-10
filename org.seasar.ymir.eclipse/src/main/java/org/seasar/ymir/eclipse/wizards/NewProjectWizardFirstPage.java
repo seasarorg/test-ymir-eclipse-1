@@ -464,7 +464,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
                         }
                         updateArchiveListTable();
                     } else {
-                        setErrorMessage(Messages.getString(Messages.getString("NewProjectWizardFirstPage.22"))); //$NON-NLS-1$
+                        setErrorMessage(Messages.getString("NewProjectWizardFirstPage.22")); //$NON-NLS-1$
                     }
                 } else {
                     setErrorMessage(Messages.getString("NewProjectWizardFirstPage.19")); //$NON-NLS-1$
