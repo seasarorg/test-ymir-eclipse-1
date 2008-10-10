@@ -42,6 +42,8 @@ import org.seasar.ymir.eclipse.ViliBehavior;
 public class NewProjectWizardThirdPage extends WizardPage {
     private static final int DEFAULT_DATABASE_INDEX = 0;
 
+    private static final int SCROLL_UNIT = 16;
+
     private Listener validationListener = new Listener() {
         public void handleEvent(Event event) {
             setPageComplete(validatePage());
@@ -282,10 +284,20 @@ public class NewProjectWizardThirdPage extends WizardPage {
             CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
             ymirConfigurationTabItem.setText(ymirConfigurationBlock.getTabLabel());
 
-            ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
+            final ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
             scroll.setLayout(new FillLayout());
             scroll.setExpandHorizontal(true); // ←君の意味を勘違いしていたせいで8時間を無駄にしたよ... orz 2008-09-20
             scroll.setExpandVertical(true);
+            scroll.getVerticalBar().addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (e.detail == SWT.ARROW_UP) {
+                        scroll.getVerticalBar().setIncrement(-SCROLL_UNIT);
+                    } else if (e.detail == SWT.ARROW_DOWN) {
+                        scroll.getVerticalBar().setIncrement(SCROLL_UNIT);
+                    }
+                }
+            });
             ymirConfigurationTabItem.setControl(scroll);
 
             ymirConfigurationTabContent = new Composite(scroll, SWT.NONE);
