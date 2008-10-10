@@ -21,7 +21,7 @@ import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
 
 public class YmirConfigurationBlock {
-    private static final String PAGEBASE = ".ymir.PageBase"; //$NON-NLS-1$
+    private static final String PAGEBASE = ".web.PageBase"; //$NON-NLS-1$
 
     private ModifyListener validationListener = new ModifyListener() {
         public void modifyText(ModifyEvent e) {
