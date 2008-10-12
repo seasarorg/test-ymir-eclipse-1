@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2007, 2008 Sonatype, Inc.
+  All rights reserved. This program and the accompanying materials
+  are made available under the terms of the Eclipse Public License v1.0
+  which accompanies this distribution, and is available at
+  http://www.eclipse.org/legal/epl-v10.html
+-->
+<?eclipse version="3.0"?>
+<plugin>
+   <extension-point id="m2menu" name="m2 menu items" schema="schema/m2menu.exsd"/>
+   <extension-point id="projectConfigurators" name="Project Configurators" schema="schema/projectConfigurators.exsd"/>
+
+   <extension point="org.eclipse.core.resources.natures"
+         id="maven2Nature"
+         name="%m2.nature.name">
+      <runtime>
+         <run class="org.maven.ide.eclipse.internal.builder.MavenNature"/>
+      </runtime>
+   </extension>
+
+   <extension point="org.eclipse.ui.decorators">
+     <decorator
+           adaptable="true"
+           icon="icons/mlabel.gif"
+           id="org.maven.ide.eclipse_light.maven2decorator"
+           label="%m2.decorator.name"
+           lightweight="true"
+           location="TOP_LEFT"
+           state="true">
+       <description>%m2.decorator.description</description>
+       <enablement>
+          <or>
+            <objectState name="nature" value="org.maven.ide.eclipse_light.maven2Nature"/>
+            <objectState name="name" value="pom.xml"/>
+            <objectState name="label" value="Maven Dependencies"/>
+          </or>
+       </enablement>
+     </decorator>
+
+     <decorator id="org.maven.ide.eclipse_light.mavenVersionDecorator"
+                adaptable="true"
+                label="%m2.decorator.version.name"
+                lightweight="false"
+                class="org.maven.ide.eclipse.ui.internal.MavenVersionDecorator"
+                state="false">
+       <description>%m2.decorator.version.description</description>
+       <enablement>
+          <or>
+            <objectState name="nature" value="org.maven.ide.eclipse_light.maven2Nature"/>
+            <objectState name="name" value="pom.xml"/>
+          </or>
+       </enablement>
+     </decorator>
+
+   </extension>
+
+   <extension point="org.eclipse.ui.popupMenus">
+      <objectContribution id="org.maven.ide.eclipse_light.projectMenu"
+                          objectClass="org.eclipse.core.resources.IProject"
+                          adaptable="true">
+         <action id="org.maven.ide.eclipse_light.projectMenu.action"
+                 class="org.maven.ide.eclipse.internal.actions.MavenMenuAction"
+                 label="%m2.popup.project.label"
+                 style="pulldown"
+                 menubarPath="additions"
+                 enablesFor="+"
+                 icon="icons/m2.gif"/>
+         <visibility>
+           <and>
+             <objectState name="open" value="true"/>
+             <objectState name="nature" value="org.maven.ide.eclipse_light.maven2Nature"/>
+           </and>
+         </visibility>
+      </objectContribution>
+
+      <objectContribution id="org.maven.ide.eclipse_light.projectMenu"
+                          objectClass="org.eclipse.core.resources.IProject"
+                          adaptable="true">
+         <action id="org.maven.ide.eclipse_light.projectMenu.action"
+                 class="org.maven.ide.eclipse.internal.actions.MavenMenuAction"
+                 label="%m2.popup.project.label"
+                 style="pulldown"
+                 menubarPath="additions"
+                 enablesFor="+"
+                 icon="icons/m2.gif"/>
+         <visibility>
+           <and>
+             <objectState name="open" value="true"/>
+             <not>
+               <objectState name="nature" value="org.maven.ide.eclipse_light.maven2Nature"/>
+             </not>
+           </and>
+         </visibility>
+      </objectContribution>
+
+      <objectContribution id="org.maven.ide.eclipse_light.workingSetMenu" adaptable="true"
+             objectClass="org.eclipse.ui.IWorkingSet">
+         <action id="org.maven.ide.eclipse_light.workingSetMenu.action"
+                 class="org.maven.ide.eclipse.internal.actions.MavenMenuAction"
+                 label="%m2.popup.project.label"
+                 style="pulldown"
+                 menubarPath="additions"
+                 enablesFor="+"
+                 icon="icons/m2.gif"/>
+      </objectContribution>
+   </extension>
+
+   <extension point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            id="org.maven.ide.eclipse_light.MavenPropertyTester"
+            class="org.maven.ide.eclipse.actions.MavenPropertyTester"
+            namespace="org.maven.ide.eclipse_light"
+            properties="launchable"
+            type="org.eclipse.core.runtime.IAdaptable"/>
+   </extension>
+
+   <extension point="org.eclipse.core.resources.markers"
+         id="maven2Problem"
+         name="%m2.marker.problem.name">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="false"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.keywords">
+      <keyword id="org.maven.ide.eclipse_light.maven" label="maven"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.preferencePages">
+      <page id="org.maven.ide.eclipse_light.preferences.Maven2PreferencePage"
+            class="org.maven.ide.eclipse.ui.internal.preferences.MavenPreferencePage"
+            name="%m2.preferences.page.name">
+         <keywordReference id="org.maven.ide.eclipse_light.maven"/>
+      </page>
+      <page id="org.maven.ide.eclipse_light.preferences.MavenInstallationsPreferencePage"
+            category="org.maven.ide.eclipse_light.preferences.Maven2PreferencePage"
+            class="org.maven.ide.eclipse.ui.internal.preferences.MavenInstallationsPreferencePage"
+            name="Installations">
+         <keywordReference id="org.maven.ide.eclipse_light.maven"/>
+      </page>
+   </extension>
+
+   <extension point="org.eclipse.core.runtime.preferences">
+      <initializer class="org.maven.ide.eclipse.internal.preferences.MavenPreferenceInitializer"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory label="Maven Console" icon="icons/m2.gif"
+            class="org.maven.ide.eclipse.ui.internal.MavenConsoleFactory"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.console.consolePageParticipants">
+      <consolePageParticipant
+            class="org.maven.ide.eclipse.ui.internal.MavenConsolePageParticipant"
+            id="org.maven.ide.eclipse_light.launch.console.Maven2ConsolePageParticipant">
+         <enablement>
+            <instanceof value="org.maven.ide.eclipse.internal.console.MavenConsoleImpl"/>
+         </enablement>
+      </consolePageParticipant>
+   </extension>
+
+   <extension point="org.eclipse.ui.actionSets">
+     <actionSet
+           id="org.maven.ide.eclipse_light.actionSet"
+           label="Maven"
+           visible="true">
+        <menu
+              id="mavenMenu"
+              label="Maven"
+              path="project/additions">
+        </menu>
+        <action
+              class="org.maven.ide.eclipse.actions.RefreshMavenModelsAction"
+              icon="icons/update_dependencies.gif"
+              id="org.maven.ide.eclipse_light.actions.RefreshModels"
+              label="Update All Maven Dependencies"
+              menubarPath="project/additions"
+              tooltip="Refresh Maven Models">
+        </action>
+     </actionSet>
+   </extension>
+
+   <extension point="org.eclipse.ui.propertyPages">
+      <page id="org.maven.ide.eclipse_light.MavenProjectPreferencePage"
+            class="org.maven.ide.eclipse.ui.internal.preferences.MavenProjectPreferencePage"
+            name="Maven"
+            objectClass="org.eclipse.core.resources.IProject"
+            adaptable="true">
+         <filter name="nature" value="org.maven.ide.eclipse_light.maven2Nature"/>
+      </page>
+   </extension>
+
+   <extension point="org.eclipse.jdt.ui.javaElementFilters">
+      <filter id="org.maven.ide.eclipse_light.MavenModuleFilter"
+          targetId="org.eclipse.jdt.ui.PackageExplorer"
+          class="org.maven.ide.eclipse.ui.internal.filter.MavenModuleFilter"
+          description="Filters module folders from the Maven projects"
+          name="Maven modules filter"
+          enabled="false"/>
+   </extension>
+
+</plugin>
