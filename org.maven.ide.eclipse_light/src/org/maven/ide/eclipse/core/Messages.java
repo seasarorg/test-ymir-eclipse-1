@@ -13,9 +13,8 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 
-
 public class Messages {
-  private static final String BUNDLE_NAME = IMavenConstants.PLUGIN_ID + ".messages"; //$NON-NLS-1$
+  private static final String BUNDLE_NAME = "org.maven.ide.eclipse.messages"; //$NON-NLS-1$
 
   private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 
@@ -30,20 +29,19 @@ public class Messages {
     }
   }
 
-  public static String getString( String key, Object[] args ) {
+  public static String getString(String key, Object[] args) {
     try {
-      return MessageFormat.format(
-        RESOURCE_BUNDLE.getString( key ), args );
-    } catch( MissingResourceException e ) {
+      return MessageFormat.format(RESOURCE_BUNDLE.getString(key), args);
+    } catch(MissingResourceException e) {
       return '!' + key + '!';
     }
   }
 
-  public static String getString( String key, Object arg ) {
-    return getString( key, new Object[]{ arg } );
+  public static String getString(String key, Object arg) {
+    return getString(key, new Object[] {arg});
   }
 
-  public static String getString( String key, int arg ) {
-    return getString( key, new Object[]{ String.valueOf(arg) } );
+  public static String getString(String key, int arg) {
+    return getString(key, new Object[] {String.valueOf(arg)});
   }
 }

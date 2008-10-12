@@ -12,8 +12,6 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -77,7 +75,7 @@ public class MavenPreferencePage extends FieldEditorPreferencePage implements IW
      * public static final String CHECKSUM_POLICY_IGNORE = "ignore";
      */
 
-    addSeparator();
+//    addSeparator();
 
 //    String[] goals = new String[] { //
 //        "generate-sources", //
@@ -90,15 +88,15 @@ public class MavenPreferencePage extends FieldEditorPreferencePage implements IW
 //        "generate-test-resources", // 
 //        "process-test-resources"};
 
-    GridData comboCompositeGridData = new GridData();
-    // comboCompositeGridData.verticalIndent = 15;
-    comboCompositeGridData.horizontalSpan = 3;
-    comboCompositeGridData.grabExcessHorizontalSpace = true;
-    comboCompositeGridData.horizontalAlignment = GridData.FILL;
-
-    Composite comboComposite = new Composite(getFieldEditorParent(), SWT.NONE);
-    comboComposite.setLayoutData(comboCompositeGridData);
-    comboComposite.setLayout(new GridLayout(2, false));
+//    GridData comboCompositeGridData = new GridData();
+//    // comboCompositeGridData.verticalIndent = 15;
+//    comboCompositeGridData.horizontalSpan = 3;
+//    comboCompositeGridData.grabExcessHorizontalSpace = true;
+//    comboCompositeGridData.horizontalAlignment = GridData.FILL;
+//
+//    Composite comboComposite = new Composite(getFieldEditorParent(), SWT.NONE);
+//    comboComposite.setLayoutData(comboCompositeGridData);
+//    comboComposite.setLayout(new GridLayout(2, false));
 
     // addSeparator();
   }

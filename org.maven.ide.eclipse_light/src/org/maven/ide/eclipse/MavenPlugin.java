@@ -191,7 +191,7 @@ public class MavenPlugin extends AbstractUIPlugin implements IStartup {
     }
   }
 
-  private Set<IndexInfo> loadIndexConfiguration(File configFile) throws IOException {
+  private Set<IndexInfo> loadIndexConfiguration(File configFile) {
     LinkedHashSet<IndexInfo> indexes = new LinkedHashSet<IndexInfo>();
     indexes.addAll(ExtensionReader.readIndexInfoConfig(configFile));
 
