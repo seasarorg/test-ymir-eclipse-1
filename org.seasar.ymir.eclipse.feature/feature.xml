@@ -3,7 +3,7 @@
       id="org.seasar.ymir.eclipse.feature"
       label="Vili Feature"
       version="0.0.1.SNAPSHOT"
-      provider-name="The Skirnir Project"
+      provider-name="The Seasar Project"
       plugin="org.seasar.ymir.eclipse">
 
    <description>
