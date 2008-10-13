@@ -567,7 +567,8 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public boolean libsAreManagedAutomatically() {
-        return Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null
+        return (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null || Platform
+                .getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null)
                 && Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null;
     }
 

@@ -37,6 +37,8 @@ public interface ParameterKeys {
 
     String DEPENDENCIES = "dependencies";
 
+    String PLATFORM = "platform";
+
     /*
      * for Ymir application
      */

@@ -18,6 +18,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import net.skirnir.xom.ValidationException;
+import net.skirnir.xom.XMLParser;
+import net.skirnir.xom.XOMapper;
+
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -55,6 +59,7 @@ import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
 import org.seasar.ymir.eclipse.ParameterKeys;
+import org.seasar.ymir.eclipse.PlatformDelegate;
 import org.seasar.ymir.eclipse.ViliBehavior;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.Dependencies;
@@ -64,10 +69,6 @@ import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
-
-import net.skirnir.xom.ValidationException;
-import net.skirnir.xom.XMLParser;
-import net.skirnir.xom.XOMapper;
 
 public class NewProjectWizard extends Wizard implements INewWizard {
     private static final String PATH_APP_PROPERTIES = Globals.PATH_SRC_MAIN_RESOURCES + "/app.properties"; //$NON-NLS-1$
@@ -283,6 +284,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         map.put(ParameterKeys.DATABASE_USER, entry.getUser());
         map.put(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
         map.put(ParameterKeys.DEPENDENCIES, getDependenciesString(dependencies));
+        map.put(ParameterKeys.PLATFORM, new PlatformDelegate());
 
         YmirConfigurationBlock ymirConfig = thirdPage.getYmirConfigurationBlock();
         if (ymirConfig != null) {
@@ -606,15 +608,18 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     private void setUpClasspath(IJavaProject javaProject, IPath jreContainerPath, IPath[] dependencyPaths,
             IProgressMonitor monitor) throws CoreException {
-        if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
-            setUpClasspathForM2Eclipse(javaProject, jreContainerPath, monitor);
+        if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null) {
+            setUpClasspathForM2Eclipse(javaProject, jreContainerPath, Globals.CLASSPATH_CONTAINER_M2ECLIPSE_LIGHT,
+                    monitor);
+        } else if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
+            setUpClasspathForM2Eclipse(javaProject, jreContainerPath, Globals.CLASSPATH_CONTAINER_M2ECLIPSE, monitor);
         } else {
             setUpClasspathForNonM2Eclipse(javaProject, jreContainerPath, dependencyPaths, monitor);
         }
     }
 
-    private void setUpClasspathForM2Eclipse(IJavaProject javaProject, IPath jreContainerPath, IProgressMonitor monitor)
-            throws JavaModelException {
+    private void setUpClasspathForM2Eclipse(IJavaProject javaProject, IPath jreContainerPath,
+            String m2EclipseContainerPath, IProgressMonitor monitor) throws JavaModelException {
         monitor.beginTask(Messages.getString("NewProjectWizard.23"), 1); //$NON-NLS-1$
 
         List<IClasspathEntry> newEntryList = new ArrayList<IClasspathEntry>();
@@ -627,7 +632,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             newEntryList.add(entry);
         }
         newEntryList.add(JavaCore.newContainerEntry(jreContainerPath));
-        newEntryList.add(JavaCore.newContainerEntry(new Path(Globals.CLASSPATH_CONTAINER_M2ECLIPSE)));
+        newEntryList.add(JavaCore.newContainerEntry(new Path(m2EclipseContainerPath)));
 
         javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]), new SubProgressMonitor(monitor, 1));
     }
@@ -641,10 +646,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             for (IClasspathEntry entry : javaProject.getRawClasspath()) {
                 int kind = entry.getEntryKind();
                 IPath path = entry.getPath();
-                if (kind == IClasspathEntry.CPE_CONTAINER
-                        && (Globals.CLASSPATH_CONTAINER_M2ECLIPSE.equals(path.toPortableString()) || PATH_JRE_CONTAINER
-                                .equals(path.segment(0)))) {
-                    continue;
+                if (kind == IClasspathEntry.CPE_CONTAINER) {
+                    if (Globals.CLASSPATH_CONTAINER_M2ECLIPSE_LIGHT.equals(path.toPortableString())
+                            || Globals.CLASSPATH_CONTAINER_M2ECLIPSE.equals(path.toPortableString())
+                            || PATH_JRE_CONTAINER.equals(path.segment(0))) {
+                        continue;
+                    }
                 } else if (kind == IClasspathEntry.CPE_LIBRARY) {
                     existsSet.add(ArtifactUtils.getArtifactId(path.toPortableString()));
                 }
@@ -683,7 +690,9 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             if (Platform.getBundle(Globals.BUNDLENAME_WEBLAUNCHER) != null) {
                 newNatureList.add(Globals.NATURE_ID_WEBLAUNCHER);
             }
-            if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
+            if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null) {
+                newNatureList.add(Globals.NATURE_ID_M2ECLIPSE_LIGHT);
+            } else if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
                 newNatureList.add(Globals.NATURE_ID_M2ECLIPSE);
                 command = description.newCommand();
                 command.setBuilderName(Globals.BUILDER_ID_M2ECLIPSE);
