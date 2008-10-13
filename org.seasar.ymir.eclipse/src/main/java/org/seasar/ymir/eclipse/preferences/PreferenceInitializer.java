@@ -18,5 +18,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         store.setDefault(PreferenceConstants.P_USE_SNAPSHOT_SKELETON, false);
         store.setDefault(PreferenceConstants.P_USE_SNAPSHOT_FRAGMENT, false);
+        store.setDefault(PreferenceConstants.P_OFFLINE, false);
     }
 }

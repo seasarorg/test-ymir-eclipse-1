@@ -447,8 +447,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                     throw new OperationCanceledException();
                 }
 
-                createSuperclass(project, applicationProperties.getProperty(ApplicationPropertiesKeys.SUPERCLASS),
-                        new SubProgressMonitor(monitor, 1));
+//                createSuperclass(project, applicationProperties.getProperty(ApplicationPropertiesKeys.SUPERCLASS),
+//                        new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }

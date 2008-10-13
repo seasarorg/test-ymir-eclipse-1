@@ -34,14 +34,19 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.Dependency;
+import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.CascadeMap;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.eclipse.util.URLUtils;
@@ -120,11 +125,22 @@ public class Activator extends AbstractUIPlugin {
         plugin = this;
 
         artifactResolver = new ArtifactResolver();
+        IPreferenceStore preferenceStore = getPreferenceStore();
+        artifactResolver.setOffline(preferenceStore.getBoolean(PreferenceConstants.P_OFFLINE));
+
         setUpSkeletonEntries();
         setUpFragmentEntries();
         setUpDatabaseEntries();
         setUpTemplateEngine();
         readSystemBehavior();
+
+        getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                if (PreferenceConstants.P_OFFLINE.equals(event.getProperty())) {
+                    artifactResolver.setOffline(((Boolean) event.getNewValue()).booleanValue());
+                }
+            }
+        });
     }
 
     @Override
@@ -301,27 +317,37 @@ public class Activator extends AbstractUIPlugin {
             JarFile jarFile, ViliBehavior behavior, IProgressMonitor monitor) throws IOException, CoreException {
         if (shouldIgnore(path, behavior)) {
             return;
-        } else if (path.endsWith("/")) { //$NON-NLS-1$
-            mkdirs(project.getFolder(resolvePath(path, cfg, parameterMap)), new SubProgressMonitor(monitor, 1));
+        }
+
+        String resolvedPath = resolvePath(path, cfg, parameterMap);
+        if (path.endsWith("/")) { //$NON-NLS-1$
+            mkdirs(project.getFolder(resolvedPath), new SubProgressMonitor(monitor, 1));
         } else {
             InputStream in;
             if (shouldEvaluateAsTemplate(path, behavior)) {
+                String templateEncoding = getTemplateEncoding(path, behavior);
                 byte[] evaluated;
                 try {
                     StringWriter sw = new StringWriter();
+                    cfg.setEncoding(Locale.getDefault(), templateEncoding);
                     cfg.getTemplate(path).process(parameterMap, sw);
-                    evaluated = sw.toString().getBytes(Globals.ENCODING);
+                    String evaluatedString = sw.toString();
+                    if (shouldIgnore(path, evaluatedString, behavior)) {
+                        return;
+                    }
+                    evaluated = evaluatedString.getBytes(templateEncoding);
                 } catch (TemplateException ex) {
                     IOException ioex = new IOException();
                     ioex.initCause(ex);
                     throw ioex;
+                } finally {
+                    cfg.setEncoding(Locale.getDefault(), Globals.ENCODING);
                 }
                 in = new ByteArrayInputStream(evaluated);
             } else {
                 in = jarFile.getInputStream(jarFile.getJarEntry(path));
             }
             try {
-                String resolvedPath = resolvePath(path, cfg, parameterMap);
                 IFile outputFile = project.getFile(resolvedPath);
                 if (outputFile.exists()) {
                     if (shouldMerge(path, behavior)) {
@@ -401,6 +427,19 @@ public class Activator extends AbstractUIPlugin {
         return false;
     }
 
+    private String getTemplateEncoding(String path, ViliBehavior behavior) {
+        String encoding = behavior.getTemplateEncoding(path);
+        if (encoding != null) {
+            return encoding;
+        }
+        encoding = systemBehavior.getTemplateEncoding(path);
+        if (encoding != null) {
+            return encoding;
+        }
+
+        return Globals.ENCODING;
+    }
+
     private String resolvePath(String path, Configuration cfg, Map<String, Object> parameterMap) throws IOException {
         try {
             StringWriter sw = new StringWriter();
@@ -428,6 +467,10 @@ public class Activator extends AbstractUIPlugin {
         }
 
         return false;
+    }
+
+    private boolean shouldIgnore(String path, String evaluatedString, ViliBehavior behavior) {
+        return behavior.getExpansionExcludesIfEmpty().matches(path) && evaluatedString.trim().length() == 0;
     }
 
     private boolean shouldEvaluateAsTemplate(String path, ViliBehavior behavior) {

@@ -62,4 +62,8 @@ public class ArtifactResolver {
     public String getLatestVersion(ExtendedContext context, String groupId, String artifactId, boolean containsSnapshot) {
         return context.getLatestVersion(groupId, artifactId, containsSnapshot);
     }
+
+    public void setOffline(boolean offline) {
+        configuration.setOffline(offline);
+    }
 }

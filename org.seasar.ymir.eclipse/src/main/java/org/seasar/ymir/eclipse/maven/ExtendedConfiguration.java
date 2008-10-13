@@ -19,4 +19,6 @@ public interface ExtendedConfiguration extends Configuration {
     Iterable<ExtendedRepository> getRepositoriesToResolveSnapshot();
 
     Iterable<ExtendedRepository> getRepositoriesToGetLatestVersion(boolean containsSnapshot);
+
+    void setOffline(boolean offline);
 }

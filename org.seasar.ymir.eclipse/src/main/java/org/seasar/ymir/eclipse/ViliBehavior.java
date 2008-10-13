@@ -3,20 +3,25 @@ package org.seasar.ymir.eclipse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.seasar.kvasir.util.LocaleUtils;
 import org.seasar.kvasir.util.PropertyUtils;
+import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.util.AntPathPatterns;
+import org.seasar.ymir.eclipse.util.ArrayUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class ViliBehavior {
     private static final String EXPANSION_EXCLUDES = "expansion.excludes";
+
+    private static final String EXPANSION_EXCLUDESIFEMPTY = "expansion.excludesIfEmpty";
 
     private static final String EXPANSION_MERGES = "expansion.merges";
 
@@ -25,6 +30,8 @@ public class ViliBehavior {
     private static final String TEMPLATE_EXCLUDES = "template.excludes";
 
     private static final String TEMPLATE_PARAMETERS = "template.parameters";
+
+    private static final String PREFIX_TEMPLATE_ENCODING = "template.encoding.";
 
     private static final String PREFIX_TEMPLATE_PARAMETER = "template.parameter.";
 
@@ -50,9 +57,11 @@ public class ViliBehavior {
 
     private Artifact artifact;
 
-    private Properties properties;
+    private MapProperties properties;
 
     private AntPathPatterns expansionExcludes;
+
+    private AntPathPatterns expansionExcludesIfEmpty;
 
     private AntPathPatterns expansionMerges;
 
@@ -61,6 +70,8 @@ public class ViliBehavior {
     private AntPathPatterns templateExcludes;
 
     private String[] templateParameters;
+
+    private Pair[] templateEncodingPairs = new Pair[0];
 
     public ViliBehavior(URL url) throws IOException {
         properties = readProperties(url);
@@ -75,8 +86,9 @@ public class ViliBehavior {
         initialize(properties);
     }
 
-    private Properties readProperties(URL url) throws IOException {
-        Properties properties = new Properties();
+    private MapProperties readProperties(URL url) throws IOException {
+        @SuppressWarnings("unchecked")
+        MapProperties properties = new MapProperties(new LinkedHashMap());
         InputStream is = url.openStream();
         try {
             properties.load(is);
@@ -86,10 +98,11 @@ public class ViliBehavior {
         return properties;
     }
 
-    private Properties readProperties(Artifact artifact) throws IOException {
+    private MapProperties readProperties(Artifact artifact) throws IOException {
         Activator activator = Activator.getDefault();
 
-        Properties properties = new Properties();
+        @SuppressWarnings("unchecked")
+        MapProperties properties = new MapProperties(new LinkedHashMap());
         JarFile jarFile = activator.getJarFile(artifact);
         try {
             JarEntry entry = jarFile.getJarEntry(Globals.VILI_BEHAVIOR_PROPERTIES);
@@ -108,7 +121,9 @@ public class ViliBehavior {
                     if (entry == null) {
                         continue;
                     }
-                    properties = new Properties(properties);
+                    @SuppressWarnings("unchecked")
+                    MapProperties newProperties = new MapProperties(new LinkedHashMap(), properties);
+                    properties = newProperties;
                     is = jarFile.getInputStream(entry);
                     try {
                         properties.load(is);
@@ -123,16 +138,29 @@ public class ViliBehavior {
         }
     }
 
-    private void initialize(Properties properties) {
+    private void initialize(MapProperties properties) {
         expansionExcludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDES));
+        expansionExcludesIfEmpty = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDESIFEMPTY));
         expansionMerges = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_MERGES));
         templateIncludes = AntPathPatterns.newInstance(properties.getProperty(TEMPLATE_INCLUDES));
         templateExcludes = AntPathPatterns.newInstance(properties.getProperty(TEMPLATE_EXCLUDES));
         templateParameters = PropertyUtils.toLines(properties.getProperty(TEMPLATE_PARAMETERS));
+
+        for (Enumeration<?> enm = properties.propertyNames(); enm.hasMoreElements();) {
+            String name = (String) enm.nextElement();
+            if (name.startsWith(PREFIX_TEMPLATE_ENCODING)) {
+                templateEncodingPairs = ArrayUtils.add(templateEncodingPairs, new Pair(AntPathPatterns
+                        .newInstance(properties.getProperty(name)), name.substring(PREFIX_TEMPLATE_ENCODING.length())));
+            }
+        }
     }
 
     public AntPathPatterns getExpansionExcludes() {
         return expansionExcludes;
+    }
+
+    public AntPathPatterns getExpansionExcludesIfEmpty() {
+        return expansionExcludesIfEmpty;
     }
 
     public AntPathPatterns getExpansionMerges() {
@@ -191,5 +219,33 @@ public class ViliBehavior {
 
     public ArtifactType getArtifactType() {
         return ArtifactType.enumOf(properties.getProperty(TYPE));
+    }
+
+    public String getTemplateEncoding(String path) {
+        for (int i = 0; i < templateEncodingPairs.length; i++) {
+            if (templateEncodingPairs[i].getAntPathPatterns().matches(path)) {
+                return templateEncodingPairs[i].getValue();
+            }
+        }
+        return null;
+    }
+
+    static class Pair {
+        private AntPathPatterns antPathPatterns;
+
+        private String value;
+
+        public Pair(AntPathPatterns antPathPatterns, String value) {
+            this.antPathPatterns = antPathPatterns;
+            this.value = value;
+        }
+
+        public AntPathPatterns getAntPathPatterns() {
+            return antPathPatterns;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

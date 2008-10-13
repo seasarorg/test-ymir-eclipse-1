@@ -34,10 +34,13 @@ public class ViliPreferencePage extends FieldEditorPreferencePage implements IWo
      * restore itself.
      */
     public void createFieldEditors() {
-        addField(new BooleanFieldEditor(PreferenceConstants.P_USE_SNAPSHOT_SKELETON, Messages.getString("ViliPreferencePage.1"), //$NON-NLS-1$
+        addField(new BooleanFieldEditor(PreferenceConstants.P_USE_SNAPSHOT_SKELETON, Messages
+                .getString("ViliPreferencePage.1"), //$NON-NLS-1$
                 getFieldEditorParent()));
-        addField(new BooleanFieldEditor(PreferenceConstants.P_USE_SNAPSHOT_FRAGMENT, Messages.getString("ViliPreferencePage.2"), //$NON-NLS-1$
+        addField(new BooleanFieldEditor(PreferenceConstants.P_USE_SNAPSHOT_FRAGMENT, Messages
+                .getString("ViliPreferencePage.2"), //$NON-NLS-1$
                 getFieldEditorParent()));
+        addField(new BooleanFieldEditor(PreferenceConstants.P_OFFLINE, "オフライン", getFieldEditorParent()));
     }
 
     /*

@@ -7,4 +7,6 @@ public interface PreferenceConstants {
     String P_USE_SNAPSHOT_SKELETON = "useSnapshotSkeleton";
 
     String P_USE_SNAPSHOT_FRAGMENT = "useSnapshotFragment";
+
+    String P_OFFLINE = "offline";
 }

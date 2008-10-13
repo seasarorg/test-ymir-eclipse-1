@@ -36,6 +36,8 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
 
     protected Set<ExtendedRemoteRepository> snapshotRepositories = new LinkedHashSet<ExtendedRemoteRepository>();;
 
+    protected boolean offline;
+
     public DefaultExtendedConfiguration() {
     }
 
@@ -139,8 +141,12 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
         return new Iterable<ExtendedRepository>() {
             @SuppressWarnings("unchecked")
             public Iterator<ExtendedRepository> iterator() {
-                return new CompositeIterator<ExtendedRepository>(localRepositories.iterator(), remoteRepositories
-                        .iterator());
+                if (offline) {
+                    return new CompositeIterator<ExtendedRepository>(localRepositories.iterator());
+                } else {
+                    return new CompositeIterator<ExtendedRepository>(localRepositories.iterator(), remoteRepositories
+                            .iterator());
+                }
             }
         };
     }
@@ -149,8 +155,12 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
         return new Iterable<ExtendedRepository>() {
             @SuppressWarnings("unchecked")
             public Iterator<ExtendedRepository> iterator() {
-                return new CompositeIterator<ExtendedRepository>(snapshotRepositories.iterator(), localRepositories
-                        .iterator());
+                if (offline) {
+                    return new CompositeIterator<ExtendedRepository>(localRepositories.iterator());
+                } else {
+                    return new CompositeIterator<ExtendedRepository>(snapshotRepositories.iterator(), localRepositories
+                            .iterator());
+                }
             }
         };
     }
@@ -160,13 +170,25 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
             @SuppressWarnings("unchecked")
             public Iterator<ExtendedRepository> iterator() {
                 if (containsSnapshot) {
-                    return new CompositeIterator<ExtendedRepository>(snapshotRepositories.iterator(),
-                            remoteRepositories.iterator(), localRepositories.iterator());
+                    if (offline) {
+                        return new CompositeIterator<ExtendedRepository>(localRepositories.iterator());
+                    } else {
+                        return new CompositeIterator<ExtendedRepository>(snapshotRepositories.iterator(),
+                                remoteRepositories.iterator(), localRepositories.iterator());
+                    }
                 } else {
-                    return new CompositeIterator<ExtendedRepository>(remoteRepositories.iterator(), localRepositories
-                            .iterator());
+                    if (offline) {
+                        return new CompositeIterator<ExtendedRepository>(localRepositories.iterator());
+                    } else {
+                        return new CompositeIterator<ExtendedRepository>(remoteRepositories.iterator(),
+                                localRepositories.iterator());
+                    }
                 }
             }
         };
+    }
+
+    public void setOffline(boolean offline) {
+        this.offline = offline;
     }
 }
