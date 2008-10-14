@@ -121,7 +121,7 @@ public class MavenProjectManagerImpl {
   public static final List<? extends IPath> METADATA_PATH = Arrays.asList( //
       new Path(".project"), //
       new Path(".classpath"), //
-      new Path(".settings/org.maven.ide.eclipse.prefs")); // dirty hack!
+      new Path(".settings/org.maven.ide.eclipse_light.prefs")); // dirty hack!
 
   private static final ThreadLocal<Context> context = new ThreadLocal<Context>();
 
@@ -1131,7 +1131,7 @@ public class MavenProjectManagerImpl {
     return new ContainerCustomizer() {
       public void customize(PlexusContainer container) {
         ComponentDescriptor resolverDescriptor = container.getComponentDescriptor(ArtifactResolver.ROLE);
-        resolverDescriptor.setImplementation(EclipseArtifactResolver.class.getName());
+        resolverDescriptor.setImplementation(LightEclipseArtifactResolver.class.getName());
 
         // desc = plexusContainer.getComponentDescriptor(ArtifactFactory.ROLE);
         // desc.setImplementation(org.maven.ide.eclipse.embedder.EclipseArtifactFactory.class.getName());

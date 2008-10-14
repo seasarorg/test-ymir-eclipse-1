@@ -15,6 +15,8 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -22,11 +24,12 @@ import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.DefaultArtifactResolver;
 
+import org.maven.ide.eclipse.MavenPlugin;
+import org.maven.ide.eclipse.core.IMavenConstants;
 import org.maven.ide.eclipse.embedder.ArtifactKey;
 
 
-
-public class EclipseArtifactResolver extends DefaultArtifactResolver {
+public class LightEclipseArtifactResolver extends DefaultArtifactResolver {
 
   public void resolve(Artifact artifact, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository)
       throws ArtifactResolutionException, ArtifactNotFoundException {
@@ -35,8 +38,8 @@ public class EclipseArtifactResolver extends DefaultArtifactResolver {
     }
   }
 
-  public void resolveAlways(Artifact artifact, List<ArtifactRepository > remoteRepositories, ArtifactRepository localRepository)
-      throws ArtifactResolutionException, ArtifactNotFoundException {
+  public void resolveAlways(Artifact artifact, List<ArtifactRepository> remoteRepositories,
+      ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException {
     if(!resolveAsEclipseProject(artifact)) {
       super.resolveAlways(artifact, remoteRepositories, localRepository);
     }
@@ -44,7 +47,9 @@ public class EclipseArtifactResolver extends DefaultArtifactResolver {
 
   protected static boolean resolveAsEclipseProject(Artifact artifact) {
     MavenProjectManagerImpl.Context context = MavenProjectManagerImpl.getContext();
-    if(context == null) { // XXX this is actually a bug 
+    if(context == null) { // XXX this is actually a bug
+      MavenPlugin.getDefault().getLog().log(
+          new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID, "Context of MavenProjectManager is null somehow"));
       return false;
     }
 
@@ -54,7 +59,7 @@ public class EclipseArtifactResolver extends DefaultArtifactResolver {
     }
 
     // check in the workspace, note that workspace artifacts never have classifiers
-    ArtifactKey key = new ArtifactKey(artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion(), null); 
+    ArtifactKey key = new ArtifactKey(artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion(), null);
     IPath pomPath = context.state.getWorkspaceArtifact(key);
     if(pomPath == null) {
       return false;
@@ -75,10 +80,10 @@ public class EclipseArtifactResolver extends DefaultArtifactResolver {
         || (context.resolverConfiguration.shouldIncludeModules() && WorkspaceState.isSameProject(context.pom, pom))) {
 
       IPath file = pom.getLocation();
-      if (!"pom".equals(artifact.getType())) {
+      if(!"pom".equals(artifact.getType())) {
         MavenProjectFacade facade = context.state.getProjectFacade(pom);
         IFolder outputLocation = root.getFolder(facade.getOutputLocation());
-        if (outputLocation.exists()) {
+        if(outputLocation.exists()) {
           file = outputLocation.getLocation();
         }
       }
