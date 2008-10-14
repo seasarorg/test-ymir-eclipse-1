@@ -1,26 +1,26 @@
-# Debugging options for the org.maven.ide.eclipse plugin.
+# Debugging options for the org.maven.ide.eclipse_light plugin.
 
-# Turn on debugging for the org.maven.ide.eclipse plugin.
-org.maven.ide.eclipse/debug=false
+# Turn on debugging for the org.maven.ide.eclipse_light plugin.
+org.maven.ide.eclipse_light/debug=false
 
 # Maven builder
-org.maven.ide.eclipse/debug/builder=false
+org.maven.ide.eclipse_light/debug/builder=false
 
 # Maven project facade
-org.maven.ide.eclipse/debug/projectManager=false
+org.maven.ide.eclipse_light/debug/projectManager=false
 
 
 # legacy options
 
 # plugin 
-org.maven.ide.eclipse/plugin=false
+org.maven.ide.eclipse_light/plugin=false
 
 # launcher activity
-org.maven.ide.eclipse/launcher=false
+org.maven.ide.eclipse_light/launcher=false
 
 # actions activity
-org.maven.ide.eclipse/actions=false
+org.maven.ide.eclipse_light/actions=false
 
 # console activity
-org.maven.ide.eclipse/console=false
+org.maven.ide.eclipse_light/console=false
 
