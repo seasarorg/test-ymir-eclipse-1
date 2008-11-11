@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.maven.ide.eclipse_light.feature"
-      label="m2eclipse-ligtht (Optional)"
+      label="m2eclipse-light (Optional)"
       version="0.9.7.qualifier"
       provider-name="The Seasar Project"
       plugin="org.maven.ide.eclipse_light">
