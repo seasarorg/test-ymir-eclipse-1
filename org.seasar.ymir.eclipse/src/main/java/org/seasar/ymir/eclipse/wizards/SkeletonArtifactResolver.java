@@ -31,6 +31,7 @@ public class SkeletonArtifactResolver implements Runnable {
         this.page = page;
         nonTransitiveContext = ((NewProjectWizard) page.getWizard()).getNonTransitiveContext();
         this.entry = entry;
+        this.wait = wait;
     }
 
     public void start() {
