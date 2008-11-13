@@ -447,8 +447,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                     throw new OperationCanceledException();
                 }
 
-//                createSuperclass(project, applicationProperties.getProperty(ApplicationPropertiesKeys.SUPERCLASS),
-//                        new SubProgressMonitor(monitor, 1));
+                // createSuperclass(project, applicationProperties.getProperty(ApplicationPropertiesKeys.SUPERCLASS),
+                // new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -700,9 +700,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             }
             if (Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null) {
                 newNatureList.add(Globals.NATURE_ID_MAVEN2ADDITIONAL);
-                command = description.newCommand();
-                command.setBuilderName(Globals.BUILDER_ID_WEBINFLIB);
-                newBuilderList.add(command);
             }
             addNatures(description, newNatureList);
             addBuilders(description, newBuilderList);
