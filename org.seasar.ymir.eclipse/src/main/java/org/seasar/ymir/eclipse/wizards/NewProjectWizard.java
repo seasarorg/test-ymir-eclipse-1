@@ -279,7 +279,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         DatabaseEntry entry = thirdPage.getDatabaseEntry();
         map.put(ParameterKeys.DATABASE_TYPE, entry.getType());
         map.put(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, entry.getDriverClassName());
-        map.put(ParameterKeys.DATABASE_URL, resolveDatabaseURL(entry.getURL()));
+        map.put(ParameterKeys.DATABASE_URL, entry.getURL());
         map.put(ParameterKeys.DATABASE_URL_FOR_YMIR, resolveDatabaseURLForYmir(entry.getURL()));
         map.put(ParameterKeys.DATABASE_USER, entry.getUser());
         map.put(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
@@ -317,10 +317,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             sb.append(sw.toString());
         }
         return sb.toString();
-    }
-
-    private String resolveDatabaseURL(String databaseURL) {
-        return databaseURL.replace(PLACEHOLDER_WEBAPP, "../src/main/webapp"); //$NON-NLS-1$
     }
 
     private String resolveDatabaseURLForYmir(String databaseURL) {
