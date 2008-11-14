@@ -27,8 +27,6 @@ public interface ParameterKeys {
 
     String DATABASE_URL = "databaseURL";
 
-    String DATABASE_URL_FOR_YMIR = "databaseURLForYmir";
-
     String DATABASE_USER = "databaseUser";
 
     String DATABASE_PASSWORD = "databasePassword";

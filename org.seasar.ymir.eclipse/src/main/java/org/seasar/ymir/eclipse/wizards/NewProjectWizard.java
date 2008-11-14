@@ -73,8 +73,6 @@ import werkzeugkasten.mvnhack.repository.Artifact;
 public class NewProjectWizard extends Wizard implements INewWizard {
     private static final String PATH_APP_PROPERTIES = Globals.PATH_SRC_MAIN_RESOURCES + "/app.properties"; //$NON-NLS-1$
 
-    private static final String PLACEHOLDER_WEBAPP = "%WEBAPP%"; //$NON-NLS-1$
-
     private static final char PACKAGE_DELIMITER = '.';
 
     private static final String CREATESUPERCLASS_KEY_PACKAGENAME = "packageName"; //$NON-NLS-1$
@@ -280,7 +278,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         map.put(ParameterKeys.DATABASE_TYPE, entry.getType());
         map.put(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, entry.getDriverClassName());
         map.put(ParameterKeys.DATABASE_URL, entry.getURL());
-        map.put(ParameterKeys.DATABASE_URL_FOR_YMIR, resolveDatabaseURLForYmir(entry.getURL()));
         map.put(ParameterKeys.DATABASE_USER, entry.getUser());
         map.put(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
         map.put(ParameterKeys.DEPENDENCIES, getDependenciesString(dependencies));
@@ -317,16 +314,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             sb.append(sw.toString());
         }
         return sb.toString();
-    }
-
-    private String resolveDatabaseURLForYmir(String databaseURL) {
-        int placeHolder = databaseURL.indexOf(PLACEHOLDER_WEBAPP);
-        if (placeHolder < 0) {
-            return "\"" + databaseURL + "\""; //$NON-NLS-1$ //$NON-NLS-2$
-        } else {
-            return "\"" + databaseURL.substring(0, placeHolder) + "\" + application.getRealPath(\"\") + \"" //$NON-NLS-1$ //$NON-NLS-2$
-                    + databaseURL.substring(placeHolder + PLACEHOLDER_WEBAPP.length()) + "\""; //$NON-NLS-1$
-        }
     }
 
     private MapProperties createApplicationProperties() throws CoreException {
