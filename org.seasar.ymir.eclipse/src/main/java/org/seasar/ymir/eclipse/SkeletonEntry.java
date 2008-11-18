@@ -1,5 +1,11 @@
 package org.seasar.ymir.eclipse;
 
+import net.skirnir.xom.annotation.Bean;
+import net.skirnir.xom.annotation.Child;
+import net.skirnir.xom.annotation.Default;
+import net.skirnir.xom.annotation.Required;
+
+@Bean("skeleton")
 public class SkeletonEntry implements MavenArtifact {
     static final String DEFULAT_GROUPID = "org.seasar.ymir.skeleton";
 
@@ -13,7 +19,12 @@ public class SkeletonEntry implements MavenArtifact {
 
     private String description;
 
-    private FragmentEntry[] fragments;
+    private FragmentEntries fragments;
+
+    public SkeletonEntry() {
+        name = "";
+        description = "";
+    }
 
     public SkeletonEntry(String artifactId, String name, String description, FragmentEntry... fragments) {
         this(DEFULAT_GROUPID, artifactId, null, name, description, fragments);
@@ -30,7 +41,9 @@ public class SkeletonEntry implements MavenArtifact {
         this.version = version;
         this.name = name;
         this.description = description;
-        this.fragments = fragments;
+        if (fragments.length > 0) {
+            this.fragments = new FragmentEntries(fragments);
+        }
     }
 
     @Override
@@ -42,23 +55,65 @@ public class SkeletonEntry implements MavenArtifact {
         return groupId;
     }
 
+    @Child(order = 1)
+    @Required
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
     public String getArtifactId() {
         return artifactId;
+    }
+
+    @Child(order = 2)
+    @Required
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
     }
 
     public String getVersion() {
         return version;
     }
 
+    @Child(order = 3)
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     public String getName() {
         return name;
+    }
+
+    @Child(order = 4)
+    @Default("")
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public FragmentEntry[] getFragments() {
+    @Child(order = 5)
+    @Default("")
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public FragmentEntries getFragments() {
         return fragments;
+    }
+
+    public FragmentEntry[] getAllFragments() {
+        if (fragments != null) {
+            return fragments.getFragments();
+        } else {
+            return new FragmentEntry[0];
+        }
+    }
+
+    @Child(order = 6)
+    public void setFragments(FragmentEntries fragments) {
+        this.fragments = fragments;
     }
 }

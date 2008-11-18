@@ -67,7 +67,7 @@ public class SkeletonArtifactResolver implements Runnable {
                         break;
                     }
 
-                    for (FragmentEntry fragment : entry.getFragments()) {
+                    for (FragmentEntry fragment : entry.getAllFragments()) {
                         Artifact artifact = resolveArtifact(fragment, page.useFragmentSnapshot());
                         if (cancelled) {
                             return;

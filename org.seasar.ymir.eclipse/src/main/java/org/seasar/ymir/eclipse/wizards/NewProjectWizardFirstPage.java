@@ -220,7 +220,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
         skeletonTemplateListField = new List(composite, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         skeletonTemplateListField.setFont(parent.getFont());
         skeletonTemplateListField.setLayoutData(data);
-        entries = Activator.getDefault().getSkeletonEntries();
+        entries = Activator.getDefault().getTemplateEntry().getAllSkeletons();
         for (SkeletonEntry entry : entries) {
             skeletonTemplateListField.add(entry.getName());
         }
@@ -354,7 +354,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
         });
         new TableColumn(fragmentTemplateTable, SWT.LEFT).setWidth(120);
 
-        fragmentTemplateEntries = Activator.getDefault().getFragmentEntries();
+        fragmentTemplateEntries = Activator.getDefault().getTemplateEntry().getAllFragments();
         fragmentTemplateArtifacts = new ArtifactPair[fragmentTemplateEntries.length];
         for (FragmentEntry fragment : fragmentTemplateEntries) {
             new TableItem(fragmentTemplateTable, SWT.NONE).setText(new String[] { fragment.getName() });

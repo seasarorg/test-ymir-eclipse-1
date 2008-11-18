@@ -21,10 +21,21 @@ import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import net.skirnir.xom.BeanAccessor;
+import net.skirnir.xom.BeanAccessorFactory;
+import net.skirnir.xom.IllegalSyntaxException;
+import net.skirnir.xom.ValidationException;
+import net.skirnir.xom.XMLParser;
+import net.skirnir.xom.XMLParserFactory;
+import net.skirnir.xom.XOMapper;
+import net.skirnir.xom.XOMapperFactory;
+import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
@@ -34,12 +45,15 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.preferences.IScopeContext;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.seasar.kvasir.util.collection.MapProperties;
@@ -57,14 +71,6 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-
-import net.skirnir.xom.BeanAccessor;
-import net.skirnir.xom.BeanAccessorFactory;
-import net.skirnir.xom.XMLParser;
-import net.skirnir.xom.XMLParserFactory;
-import net.skirnir.xom.XOMapper;
-import net.skirnir.xom.XOMapperFactory;
-import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -84,10 +90,6 @@ public class Activator extends AbstractUIPlugin {
     private static Activator plugin;
 
     private ArtifactResolver artifactResolver;
-
-    private SkeletonEntry[] skeletonEntries;
-
-    private FragmentEntry[] fragmentEntries;
 
     private DatabaseEntry[] databaseEntries;
 
@@ -127,8 +129,6 @@ public class Activator extends AbstractUIPlugin {
         IPreferenceStore preferenceStore = getPreferenceStore();
         artifactResolver.setOffline(preferenceStore.getBoolean(PreferenceConstants.P_OFFLINE));
 
-        setUpSkeletonEntries();
-        setUpFragmentEntries();
         setUpDatabaseEntries();
         setUpTemplateEngine();
         readSystemBehavior();
@@ -169,8 +169,6 @@ public class Activator extends AbstractUIPlugin {
         artifactResolver = null;
         mapper = null;
         parser = null;
-        skeletonEntries = null;
-        fragmentEntries = null;
         databaseEntries = null;
         systemBehavior = null;
         plugin = null;
@@ -201,36 +199,16 @@ public class Activator extends AbstractUIPlugin {
         return PLUGIN_ID;
     }
 
-    private void setUpSkeletonEntries() {
-        skeletonEntries = new SkeletonEntry[] {
-                new SkeletonEntry("ymir-skeleton-generic", Messages.getString("Activator.65"), //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.getString("Activator.10")), //$NON-NLS-1$
-                new SkeletonEntry("ymir-skeleton-generic", Messages.getString("Activator.66"), //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.getString("Activator.13"), new FragmentEntry("ymir-fragment-dbflute", "", "")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                new SkeletonEntry(
-                        "ymir-skeleton-skeleton", Messages.getString("Activator.68"), Messages.getString("Activator.69")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                new SkeletonEntry(
-                        "ymir-skeleton-fragment", Messages.getString("Activator.71"), Messages.getString("Activator.72")), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    }
-
-    private void setUpFragmentEntries() {
-        fragmentEntries = new FragmentEntry[] {
-                new FragmentEntry(
-                        "ymir-fragment-utility", Messages.getString("Activator.63"), Messages.getString("Activator.64")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                new FragmentEntry(
-                        "ymir-fragment-dbflute", Messages.getString("Activator.4"), Messages.getString("Activator.3")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                new FragmentEntry(
-                        "ymir-fragment-json", Messages.getString("Activator.1"), Messages.getString("Activator.0")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                new FragmentEntry("ymir-fragment-amf", Messages.getString("Activator.60"), //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.getString("Activator.61")), }; //$NON-NLS-1$
-    }
-
-    public SkeletonEntry[] getSkeletonEntries() {
-        return skeletonEntries;
-    }
-
-    public FragmentEntry[] getFragmentEntries() {
-        return fragmentEntries;
+    public TemplateEntry getTemplateEntry() {
+        try {
+            return createTemplateEntry(getPreferenceStore().getString(PreferenceConstants.P_TEMPLATE));
+        } catch (ValidationException ex) {
+            getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, ex.toString(), ex));
+            return new TemplateEntry();
+        } catch (IllegalSyntaxException ex) {
+            getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, ex.toString(), ex));
+            return new TemplateEntry();
+        }
     }
 
     private void setUpDatabaseEntries() {
@@ -709,6 +687,23 @@ public class Activator extends AbstractUIPlugin {
         } finally {
             StreamUtils.close(is);
             monitor.done();
+        }
+    }
+
+    public IPreferenceStore getPreferenceStore(IProject project) {
+        ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(project), PLUGIN_ID);
+        store.setSearchContexts(new IScopeContext[] { new ProjectScope(project), new InstanceScope() });
+        return store;
+    }
+
+    public TemplateEntry createTemplateEntry(String template) throws ValidationException, IllegalSyntaxException {
+        if (template == null) {
+            return null;
+        }
+        try {
+            return mapper.toBean(parser.parse(new StringReader(template)).getRootElement(), TemplateEntry.class);
+        } catch (IOException ex) {
+            throw new RuntimeException("Can't happen!", ex);
         }
     }
 }

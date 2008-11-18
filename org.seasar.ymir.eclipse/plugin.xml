@@ -44,7 +44,13 @@
       <page
             name="%plugin.name"
             class="org.seasar.ymir.eclipse.preferences.ViliPreferencePage"
-            id="org.seasar.ymir.eclipse.preferences.ViliPreferencePage">
+            id="org.seasar.ymir.eclipse.preferences.viliPreferencePage">
+      </page>
+      <page
+            category="org.seasar.ymir.eclipse.preferences.viliPreferencePage"
+            class="org.seasar.ymir.eclipse.preferences.TemplatePreferencePage"
+            id="org.seasar.ymir.eclipse.preferences.templatePreferencePage"
+            name="Template">
       </page>
    </extension>
    <extension
@@ -56,13 +62,19 @@
    <extension
          point="org.eclipse.ui.propertyPages">
       <page
-            name="Sample Page"
-            nameFilter="*.*"
-            class="org.seasar.ymir.eclipse.properties.SamplePropertyPage"
-            id="org.seasar.ymir.eclipse.properties.samplePropertyPage">
-        <enabledWhen>
-          <instanceof value="org.eclipse.core.resources.IProject" />
-        </enabledWhen>
+            class="org.seasar.ymir.eclipse.properties.ViliPropertyPage"
+            id="org.seasar.ymir.eclipse.properties.viliPropertyPage"
+            name="%plugin.name">
+         <enabledWhen>
+            <or>
+               <instanceof
+                     value="org.eclipse.jdt.core.IJavaProject">
+               </instanceof>
+               <adapt
+                     type="org.eclipse.core.resources.IProject">
+               </adapt>
+            </or>
+         </enabledWhen>
       </page>
    </extension>
 

@@ -9,4 +9,8 @@ public interface PreferenceConstants {
     String P_USE_SNAPSHOT_FRAGMENT = "useSnapshotFragment";
 
     String P_OFFLINE = "offline";
+
+    String P_TEMPLATE = "template";
+
+    String P_TEMPLATE_PROJECTSPECIFICSETTINGSENABLED = "template.projectSpecificSettingsEnabled";
 }
