@@ -26,7 +26,7 @@ public class DependenciesTest extends TestCase {
     }).setStrict(true);
 
     public void testToBean() throws Exception {
-        Dependencies actual = (Dependencies) mapper.toBean(XMLParserFactory.newInstance().parse(
+        Dependencies actual = mapper.toBean(XMLParserFactory.newInstance().parse(
                 new InputStreamReader(getClass().getClassLoader().getResourceAsStream(
                         getClass().getName().replace('.', '/').concat("_dependencies1.xml")), "UTF-8"))
                 .getRootElement(), Dependencies.class);

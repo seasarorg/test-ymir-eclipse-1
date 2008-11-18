@@ -24,7 +24,7 @@ public class MetadataTest extends TestCase {
     }).setStrict(true);
 
     public void testToBean() throws Exception {
-        Metadata actual = (Metadata) mapper.toBean(XMLParserFactory.newInstance().parse(
+        Metadata actual = mapper.toBean(XMLParserFactory.newInstance().parse(
                 new InputStreamReader(getClass().getClassLoader().getResourceAsStream(
                         getClass().getName().replace('.', '/').concat("_metadata1.xml")), "UTF-8")).getRootElement(),
                 Metadata.class);
