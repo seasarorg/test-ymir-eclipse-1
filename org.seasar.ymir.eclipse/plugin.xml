@@ -18,28 +18,6 @@
       </wizard>
    </extension>
    <extension
-         point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            objectClass="org.eclipse.core.resources.IFile"
-            id="org.seasar.ymir.eclipse.contribution1">
-         <menu
-               label="New Submenu"
-               path="additions"
-               id="org.seasar.ymir.eclipse.menu1">
-            <separator
-                  name="group1">
-            </separator>
-         </menu>
-         <action
-               label="New Action"
-               class="org.seasar.ymir.eclipse.popup.actions.NewAction"
-               menubarPath="org.seasar.ymir.eclipse.menu1/group1"
-               enablesFor="1"
-               id="org.seasar.ymir.eclipse.newAction">
-         </action>
-      </objectContribution>
-   </extension>
-   <extension
          point="org.eclipse.ui.preferencePages">
       <page
             name="%plugin.name"
