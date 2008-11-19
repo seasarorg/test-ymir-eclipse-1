@@ -5,3 +5,4 @@ Bundle-SymbolicName: org.seasar.ymir.eclipse.test
 Bundle-Version: 1.0.0.SNAPSHOT
 Bundle-Vendor: The Seasar Project
 Require-Bundle: org.junit
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
