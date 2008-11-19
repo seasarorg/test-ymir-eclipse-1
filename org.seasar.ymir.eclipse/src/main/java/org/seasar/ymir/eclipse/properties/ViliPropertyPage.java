@@ -106,7 +106,7 @@ public class ViliPropertyPage extends PropertyPage {
                 Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, ex.toString(), ex));
                 return false;
             }
-            store.setValue(PreferenceConstants.P_TEMPLATE, template);
+            store.putValue(PreferenceConstants.P_TEMPLATE, template);
         } else {
             store.setToDefault(PreferenceConstants.P_TEMPLATE);
         }
