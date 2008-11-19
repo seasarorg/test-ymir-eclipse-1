@@ -87,8 +87,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     private static final String PATH_JDT_CORE_PREFS = ".settings/org.eclipse.jdt.core.prefs"; //$NON-NLS-1$
 
-    private static final String DEFAULT_COMPLIANCE = "1.3"; //$NON-NLS-1$
-
     private static final String BUNDLE_PATHPREFIX_JDT_CORE_PREFS = "/prefs/compliance/org.eclipse.jdt.core.prefs-"; //$NON-NLS-1$
 
     static final String REQUIRED_TEMPLATE = Messages.getString("NewProjectWizard.2"); //$NON-NLS-1$
@@ -430,8 +428,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                     throw new OperationCanceledException();
                 }
 
-                // createSuperclass(project, applicationProperties.getProperty(ApplicationPropertiesKeys.SUPERCLASS),
-                // new SubProgressMonitor(monitor, 1));
+                createSuperclass(project, applicationProperties.getProperty(ApplicationPropertiesKeys.SUPERCLASS),
+                        new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -723,10 +721,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         set.addAll(Arrays.asList(description.getNatureIds()));
         set.addAll(newNatureList);
         description.setNatureIds(set.toArray(new String[0]));
-    }
-
-    private void throwCoreException(String message) throws CoreException {
-        throwCoreException(message, null);
     }
 
     private void throwCoreException(String message, Throwable cause) throws CoreException {

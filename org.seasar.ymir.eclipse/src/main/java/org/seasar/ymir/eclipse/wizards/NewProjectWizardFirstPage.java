@@ -52,8 +52,6 @@ import werkzeugkasten.mvnhack.repository.Artifact;
  */
 
 public class NewProjectWizardFirstPage extends WizardPage {
-    private static final String DS_KEYPREFIX_FIRST = "first."; //$NON-NLS-1$
-
     protected static final long WAIT_RESOLVE_SKELETON_ARTIFACT = 1000L;
 
     private boolean initialized;
