@@ -810,7 +810,9 @@ public class NewProjectWizardFirstPage extends WizardPage {
     public ArtifactPair[] getSkeletonAndFragments() {
         Map<String, ArtifactPair> map = new LinkedHashMap<String, ArtifactPair>();
 
-        map.put(ArtifactUtils.getUniqueId(skeleton.getArtifact()), skeleton);
+        if (skeleton != null) {
+            map.put(ArtifactUtils.getUniqueId(skeleton.getArtifact()), skeleton);
+        }
 
         for (ArtifactPair fragment : fragmentTemplateArtifacts) {
             if (fragment != null) {
