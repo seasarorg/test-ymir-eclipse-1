@@ -47,18 +47,14 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
     }
 
     protected void load() {
-        File cur = new File(".", Constants.DIR_REPOSITORY);
-        if (cur.exists()) {
-            addLocalRepository(cur);
-        }
         StringBuilder stb = new StringBuilder();
         stb.append(".m2");
         stb.append('/');
         stb.append(Constants.DIR_REPOSITORY);
         File usr = new File(System.getProperty("user.home"), stb.toString());
-        if (usr.exists()) {
-            addLocalRepository(usr);
-        }
+        usr.mkdirs();
+        // .m2ディレクトリがない場合でもローカルリポジトリとして登録しておく。でないとMavenを外で実行したことがないような環境で正しく動作しない。
+        addLocalRepository(usr);
 
         addRepository(new ExtendedRemoteRepository(Constants.CENTRAL_REPOSITORY, false, builder));
     }
