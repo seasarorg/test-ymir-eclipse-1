@@ -331,6 +331,8 @@ public class NewProjectWizardFirstPage extends WizardPage {
                                     items[i].setChecked(false);
                                     setErrorMessage(Messages.getString("NewProjectWizardFirstPage.13")); //$NON-NLS-1$
                                 }
+                                fragmentTemplateTable.setSelection(i);
+                                updateDescriptionText(i);
                             } else {
                                 fragmentTemplateArtifacts[i] = null;
                             }
@@ -339,15 +341,22 @@ public class NewProjectWizardFirstPage extends WizardPage {
                         }
                     }
                 } else {
-                    String description;
-                    int selectionIndex = fragmentTemplateTable.getSelectionIndex();
-                    if (selectionIndex != -1) {
-                        description = fragmentTemplateEntries[selectionIndex].getDescription();
-                    } else {
-                        description = ""; //$NON-NLS-1$
-                    }
-                    fragmentTemplateDescriptionText.setText(description);
+                    updateDescriptionText(fragmentTemplateTable.getSelectionIndex());
                 }
+            }
+
+            private void updateDescriptionText(int index) {
+                String description;
+                if (index != -1) {
+                    if (fragmentTemplateArtifacts[index] == null) {
+                        description = fragmentTemplateEntries[index].getDescription();
+                    } else {
+                        description = fragmentTemplateArtifacts[index].getBehavior().getDescription();
+                    }
+                } else {
+                    description = ""; //$NON-NLS-1$
+                }
+                fragmentTemplateDescriptionText.setText(description);
             }
         });
         new TableColumn(fragmentTemplateTable, SWT.LEFT).setWidth(120);
