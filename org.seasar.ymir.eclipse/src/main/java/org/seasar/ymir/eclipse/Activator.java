@@ -623,6 +623,7 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
+    // TODO JarInputStreamを使って一度ファイルシステムにコピーしないようにできるか検討する。
     public JarFile getJarFile(Artifact artifact) throws IOException {
         URL artifactURL = artifactResolver.getURL(artifact);
         File artifactFile = URLUtils.toFile(artifactURL);
