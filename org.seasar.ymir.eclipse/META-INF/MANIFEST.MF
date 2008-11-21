@@ -16,7 +16,9 @@ Bundle-ClassPath: .,
  lib/mvnhack-0.0.3.jar,
  lib/freemarker-2.3.9.jar,
  lib/kvasir-util-3.0.0-RC3.jar,
- lib/xom-0.1.0.jar
+ lib/xom-0.1.0.jar,
+ lib/stax-api-1.0.1.jar,
+ lib/wstx-asl-3.2.7.jar
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Export-Package: freemarker,

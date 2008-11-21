@@ -9,7 +9,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.jar.JarFile;
 
-import werkzeugkasten.common.util.StreamUtil;
+import werkzeugkasten.common.util.Streams;
 
 public class StreamUtils {
     private static final int BUF_SIZE = 65536;
@@ -64,7 +64,7 @@ public class StreamUtils {
         InputStream is = url.openStream();
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            StreamUtil.copy(is, os);
+            Streams.copy(is, os);
             return os.toByteArray();
         } finally {
             StreamUtils.close(is);

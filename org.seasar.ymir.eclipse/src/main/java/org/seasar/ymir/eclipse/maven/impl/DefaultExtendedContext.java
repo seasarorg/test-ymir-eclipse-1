@@ -16,8 +16,8 @@ import org.seasar.ymir.eclipse.maven.ExtendedRepository;
 import org.seasar.ymir.eclipse.maven.Metadata;
 import org.seasar.ymir.eclipse.maven.ExtendedRepository.Type;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
+import org.seasar.ymir.eclipse.util.StreamUtils;
 
-import werkzeugkasten.common.util.StreamUtil;
 import werkzeugkasten.common.util.UrlUtil;
 import werkzeugkasten.mvnhack.Constants;
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -168,7 +168,7 @@ public class DefaultExtendedContext implements ExtendedContext {
     }
 
     public void close(InputStream stream) {
-        StreamUtil.close(stream);
+        StreamUtils.close(stream);
     }
 
     public String getLatestVersion(String groupId, String artifactId, boolean containsSnapshot) {

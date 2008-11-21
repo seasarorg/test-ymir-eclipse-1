@@ -11,7 +11,6 @@ import org.seasar.ymir.eclipse.maven.Versioning;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
-import werkzeugkasten.common.exception.FileNotFoundRuntimeException;
 import werkzeugkasten.common.util.UrlUtil;
 import werkzeugkasten.mvnhack.Constants;
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -92,12 +91,8 @@ public class ExtendedRemoteRepository extends RemoteRepository implements Extend
         stb.append(baseUrl);
         stb.append(ArtifactUtils.toPom(groupId, artifactId, version, actualVersion));
         URL url = UrlUtil.toURL(stb.toString());
-        try {
-            return ExtendedDefaultArtifact.newInstance(builder.build(context, context.open(ArtifactUtil.create(groupId,
-                    artifactId, version), url)), actualVersion, lastUpdated);
-        } catch (FileNotFoundRuntimeException e) {
-        }
-        return null;
+        return ExtendedDefaultArtifact.newInstance(builder.build(context, context.open(ArtifactUtil.create(groupId,
+                artifactId, version), url)), actualVersion, lastUpdated);
     }
 
     @Override
