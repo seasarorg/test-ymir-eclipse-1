@@ -66,6 +66,8 @@ import org.seasar.ymir.eclipse.maven.Dependencies;
 import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
+import org.seasar.ymir.eclipse.util.JdtUtils;
+import org.seasar.ymir.eclipse.util.MapAdapter;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -166,8 +168,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             thirdPage.populateSkeletonParameters();
             final Dependency[] dependencies = createDependencies(thirdPage.getDatabaseEntry().getDependency(),
                     skeletonAndFragments);
-            final Map<String, Object> parameterMap = createParameterMap(dependencies);
             final MapProperties applicationProperties = createApplicationProperties();
+            final Map<String, Object> parameterMap = createParameterMap(dependencies, applicationProperties);
             IRunnableWithProgress op = new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
                     try {
@@ -259,7 +261,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
     }
 
-    private Map<String, Object> createParameterMap(Dependency[] dependencies) {
+    private Map<String, Object> createParameterMap(Dependency[] dependencies, MapProperties applicationProperties) {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(ParameterKeys.SLASH, "/"); //$NON-NLS-1$
         map.put(ParameterKeys.DOLLAR, "$"); //$NON-NLS-1$
@@ -280,19 +282,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         map.put(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
         map.put(ParameterKeys.DEPENDENCIES, getDependenciesString(dependencies));
         map.put(ParameterKeys.PLATFORM, new PlatformDelegate());
-
-        YmirConfigurationBlock ymirConfig = thirdPage.getYmirConfigurationBlock();
-        if (ymirConfig != null) {
-            map.put(ParameterKeys.USE_RESOURCE_SYNCHRONIZER, ymirConfig.isEclipseEnabled());
-            map.put(ParameterKeys.RESOURCE_SYNCHRONIZER_URL, ymirConfig.getResourceSynchronizerURL());
-            map.put(ParameterKeys.HOTDEPLOY_TYPE, ymirConfig.getHotdeployType().getName());
-            String fieldPrefix = ymirConfig.getFieldPrefix();
-            map.put(ParameterKeys.FIELD_PREFIX, fieldPrefix);
-            String fieldSuffix = ymirConfig.getFieldSuffix();
-            map.put(ParameterKeys.FIELD_SUFFIX, fieldSuffix);
-            map.put(ParameterKeys.FIELD_SPECIAL_PREFIX,
-                    fieldPrefix.length() == 0 && fieldSuffix.length() == 0 ? "this." : ""); //$NON-NLS-1$ //$NON-NLS-2$
-        }
+        map.put(ParameterKeys.FIELD_PREFIX, JdtUtils.getFieldPrefix());
+        map.put(ParameterKeys.FIELD_SUFFIX, JdtUtils.getFieldSuffix());
+        map.put(ParameterKeys.FIELD_SPECIAL_PREFIX, JdtUtils.getFieldSpecialPrefix());
+        // テンプレートから参照しやすいように、Ymirプロジェクトでない場合も空のMapをセットしておく。
+        map.put(ParameterKeys.YMIR, applicationProperties != null ? new MapAdapter(applicationProperties)
+                : new HashMap<String, String>());
 
         return map;
     }
@@ -328,12 +323,9 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
         prop.setProperty(ApplicationPropertiesKeys.SOURCECREATOR_ENABLE, String.valueOf(ymirConfig
                 .isAutoGenerationEnabled()));
-        String fieldPrefix = ymirConfig.getFieldPrefix();
-        prop.setProperty(ApplicationPropertiesKeys.FIELDPREFIX, fieldPrefix);
-        String fieldSuffix = ymirConfig.getFieldSuffix();
-        prop.setProperty(ApplicationPropertiesKeys.FIELDSUFFIX, fieldSuffix);
-        prop.setProperty(ApplicationPropertiesKeys.FIELDSPECIALPREFIX, fieldPrefix.length() == 0
-                && fieldSuffix.length() == 0 ? "this." : ""); //$NON-NLS-1$ //$NON-NLS-2$
+        prop.setProperty(ApplicationPropertiesKeys.FIELDPREFIX, JdtUtils.getFieldPrefix());
+        prop.setProperty(ApplicationPropertiesKeys.FIELDSUFFIX, JdtUtils.getFieldSuffix());
+        prop.setProperty(ApplicationPropertiesKeys.FIELDSPECIALPREFIX, JdtUtils.getFieldSpecialPrefix());
         prop.setProperty(ApplicationPropertiesKeys.ENABLEINPLACEEDITOR, String.valueOf(ymirConfig
                 .isInplaceEditorEnabled()));
         prop.setProperty(ApplicationPropertiesKeys.ENABLECONTROLPANEL, String.valueOf(ymirConfig
@@ -364,6 +356,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 .getHotdeployType() != HotdeployType.S2));
         prop.setProperty(ApplicationPropertiesKeys.S2CONTAINER_COMPONENTREGISTRATION_DISABLEDYNAMIC, String
                 .valueOf(ymirConfig.getHotdeployType() == HotdeployType.VOID));
+        prop.setProperty(ApplicationPropertiesKeys.HOTDEPLOY_TYPE, ymirConfig.getHotdeployType().getName());
 
         return prop;
     }

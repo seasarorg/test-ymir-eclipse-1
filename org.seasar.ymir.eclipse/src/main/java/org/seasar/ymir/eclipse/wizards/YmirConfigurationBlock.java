@@ -41,12 +41,6 @@ public class YmirConfigurationBlock {
 
     private Button usingFreyjaRenderClassField;
 
-    private Label fieldPrefixLabel;
-
-    private Text fieldPrefixField;
-
-    private Text fieldSuffixField;
-
     private Button inplaceEditorEnabled;
 
     private Button controlPanelEnabled;
@@ -92,9 +86,6 @@ public class YmirConfigurationBlock {
                 specifySuperclassField.setEnabled(enabled);
                 superclassField.setEnabled(enabled);
                 usingFreyjaRenderClassField.setEnabled(enabled);
-                fieldPrefixLabel.setEnabled(enabled);
-                fieldPrefixField.setEnabled(enabled);
-                fieldSuffixField.setEnabled(enabled);
                 inplaceEditorEnabled.setEnabled(enabled);
                 controlPanelEnabled.setEnabled(enabled);
                 formDtoCreationFeatureEnabledField.setEnabled(enabled);
@@ -150,22 +141,6 @@ public class YmirConfigurationBlock {
         data.horizontalSpan = 2;
         usingFreyjaRenderClassField.setLayoutData(data);
         usingFreyjaRenderClassField.setText(Messages.getString("YmirConfigurationComponent.7")); //$NON-NLS-1$
-
-        fieldPrefixLabel = new Label(group, SWT.NONE);
-        fieldPrefixLabel.setText(Messages.getString("YmirConfigurationBlock.1")); //$NON-NLS-1$
-
-        Composite composite = new Composite(group, SWT.NULL);
-        composite.setLayout(new GridLayout(2, false));
-
-        fieldPrefixField = new Text(composite, SWT.BORDER);
-        data = new GridData();
-        data.widthHint = 10;
-        fieldPrefixField.setLayoutData(data);
-
-        fieldSuffixField = new Text(composite, SWT.BORDER);
-        data = new GridData();
-        data.widthHint = 10;
-        fieldSuffixField.setLayoutData(data);
 
         inplaceEditorEnabled = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -321,14 +296,6 @@ public class YmirConfigurationBlock {
 
     public boolean isUsingFreyjaRenderClass() {
         return usingFreyjaRenderClassField.getSelection();
-    }
-
-    public String getFieldPrefix() {
-        return fieldPrefixField.getText();
-    }
-
-    public String getFieldSuffix() {
-        return fieldSuffixField.getText();
     }
 
     public boolean isInplaceEditorEnabled() {

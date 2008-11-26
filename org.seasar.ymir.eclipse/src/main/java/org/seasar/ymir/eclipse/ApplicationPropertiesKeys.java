@@ -38,4 +38,6 @@ public interface ApplicationPropertiesKeys {
     String S2CONTAINER_CLASSLOADING_DISABLEHOTDEPLOY = "s2container.classLoading.disableHotdeploy";
 
     String S2CONTAINER_COMPONENTREGISTRATION_DISABLEDYNAMIC = "s2container.componentRegistration.disableDynamic";
+
+    String HOTDEPLOY_TYPE = "hotdeployType";
 }
