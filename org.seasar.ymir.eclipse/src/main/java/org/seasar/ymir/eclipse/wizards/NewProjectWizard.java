@@ -66,6 +66,7 @@ import org.seasar.ymir.eclipse.maven.Dependencies;
 import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
+import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.util.JdtUtils;
 import org.seasar.ymir.eclipse.util.MapAdapter;
 import org.seasar.ymir.eclipse.util.StreamUtils;
@@ -73,8 +74,6 @@ import org.seasar.ymir.eclipse.util.StreamUtils;
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class NewProjectWizard extends Wizard implements INewWizard {
-    private static final String PATH_APP_PROPERTIES = Globals.PATH_SRC_MAIN_RESOURCES + "/app.properties"; //$NON-NLS-1$
-
     private static final char PACKAGE_DELIMITER = '.';
 
     private static final String CREATESUPERCLASS_KEY_PACKAGENAME = "packageName"; //$NON-NLS-1$
@@ -100,6 +99,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     private NewProjectWizardSecondPage secondPage;
 
     private NewProjectWizardThirdPage thirdPage;
+
+    private ViliProjectPreferences preferences;
 
     private ExtendedContext nonTransitiveContext;
 
@@ -129,6 +130,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         if (section == null) {
             section = settings.addNewSection(DS_SECTION);
         }
+
+        preferences = Activator.getDefault().newViliProjectPreferences();
     }
 
     /**
@@ -138,9 +141,9 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     public void addPages() {
         firstPage = new NewProjectWizardFirstPage();
         addPage(firstPage);
-        secondPage = new NewProjectWizardSecondPage();
+        secondPage = new NewProjectWizardSecondPage(preferences);
         addPage(secondPage);
-        thirdPage = new NewProjectWizardThirdPage();
+        thirdPage = new NewProjectWizardThirdPage(preferences);
         addPage(thirdPage);
     }
 
@@ -159,14 +162,14 @@ public class NewProjectWizard extends Wizard implements INewWizard {
      * using wizard as execution context.
      */
     public boolean performFinish() {
-        firstPage.putDialogSettings();
+        thirdPage.populateViliProjectPreferences();
+        thirdPage.populateSkeletonParameters();
         try {
             final ArtifactPair[] skeletonAndFragments = firstPage.getSkeletonAndFragments();
             final IProject project = secondPage.getProjectHandle();
             final IPath locationPath = secondPage.getLocationPath();
             final IPath jreContainerPath = secondPage.getJREContainerPath();
-            thirdPage.populateSkeletonParameters();
-            final Dependency[] dependencies = createDependencies(thirdPage.getDatabaseEntry().getDependency(),
+            final Dependency[] dependencies = createDependencies(preferences.getDatabaseEntry().getDependency(),
                     skeletonAndFragments);
             final MapProperties applicationProperties = createApplicationProperties();
             final Map<String, Object> parameterMap = createParameterMap(dependencies, applicationProperties);
@@ -183,7 +186,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 }
             };
 
-            getContainer().run(true, false, op);
+            getContainer().run(true, true, op);
         } catch (InterruptedException e) {
             return false;
         } catch (InvocationTargetException ex) {
@@ -266,15 +269,15 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         map.put(ParameterKeys.SLASH, "/"); //$NON-NLS-1$
         map.put(ParameterKeys.DOLLAR, "$"); //$NON-NLS-1$
         map.put(ParameterKeys.PROJECT_NAME, secondPage.getProjectName());
-        map.put(ParameterKeys.ROOT_PACKAGE_NAME, secondPage.getRootPackageName());
-        map.put(ParameterKeys.ROOT_PACKAGE_PATH, secondPage.getRootPackageName().replace('.', '/'));
+        map.put(ParameterKeys.ROOT_PACKAGE_NAME, preferences.getRootPackageName());
+        map.put(ParameterKeys.ROOT_PACKAGE_PATH, preferences.getRootPackageName().replace('.', '/'));
         map.put(ParameterKeys.GROUP_ID, secondPage.getProjectGroupId());
         map.put(ParameterKeys.ARTIFACT_ID, secondPage.getProjectArtifactId());
         map.put(ParameterKeys.VERSION, secondPage.getProjectVersion());
         map.put(ParameterKeys.JRE_VERSION, getJREVersion(secondPage.getJREContainerPath()));
-        map.put(ParameterKeys.VIEW_ENCODING, thirdPage.getViewEncoding());
-        map.put(ParameterKeys.USE_DATABASE, thirdPage.isUseDatabase());
-        DatabaseEntry entry = thirdPage.getDatabaseEntry();
+        map.put(ParameterKeys.VIEW_ENCODING, preferences.getViewEncoding());
+        map.put(ParameterKeys.USE_DATABASE, preferences.isUseDatabase());
+        DatabaseEntry entry = preferences.getDatabaseEntry();
         map.put(ParameterKeys.DATABASE_TYPE, entry.getType());
         map.put(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, entry.getDriverClassName());
         map.put(ParameterKeys.DATABASE_URL, entry.getURL());
@@ -310,13 +313,13 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     }
 
     private MapProperties createApplicationProperties() throws CoreException {
-        YmirConfigurationBlock ymirConfig = thirdPage.getYmirConfigurationBlock();
+        YmirConfigurationControl ymirConfig = thirdPage.getYmirConfigurationControl();
         if (ymirConfig == null) {
             return null;
         }
 
         MapProperties prop = new MapProperties(new TreeMap<String, String>());
-        prop.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, secondPage.getRootPackageName());
+        prop.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, preferences.getRootPackageName());
         String value = ymirConfig.getSuperclass();
         if (value.length() > 0) {
             prop.setProperty(ApplicationPropertiesKeys.SUPERCLASS, value);
@@ -691,7 +694,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("NewProjectWizard.20"), 1); //$NON-NLS-1$
         try {
-            Activator.getDefault().mergeProperties(project.getFile(PATH_APP_PROPERTIES), applicationProperties,
+            Activator.getDefault().mergeProperties(project.getFile(Globals.PATH_APP_PROPERTIES), applicationProperties,
                     new SubProgressMonitor(monitor, 1));
         } finally {
             monitor.done();
@@ -727,10 +730,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
      * @see IWorkbenchWizard#init(IWorkbench, IStructuredSelection)
      */
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-    }
-
-    public String getRootPackageName() {
-        return secondPage.getRootPackageName();
     }
 
     public void notifySkeletonCleared() {

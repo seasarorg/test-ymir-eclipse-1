@@ -1,7 +1,5 @@
 package org.seasar.ymir.eclipse.wizards;
 
-import static org.seasar.ymir.eclipse.wizards.NewProjectWizard.REQUIRED_TEMPLATE;
-
 import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.Platform;
@@ -14,22 +12,30 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
+import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 
-public class YmirConfigurationBlock {
+public class YmirConfigurationControl {
+    private static final String REQUIRED_TEMPLATE = "{0}を指定して下さい。";
+
     private static final String PAGEBASE = ".web.PageBase"; //$NON-NLS-1$
 
     private ModifyListener validationListener = new ModifyListener() {
         public void modifyText(ModifyEvent e) {
-            updatePageComplete();
+            setPageComplete(validatePage());
         }
     };
 
-    private NewProjectWizardThirdPage parentPage;
+    private Composite parent;
+
+    private ViliProjectPreferences preferences;
+
+    private boolean isPageComplete;
 
     private Button autoGenerationEnabledField;
 
@@ -67,17 +73,19 @@ public class YmirConfigurationBlock {
 
     private Button beantableEnabledField;
 
-    public YmirConfigurationBlock(NewProjectWizardThirdPage parentPage) {
-        this.parentPage = parentPage;
+    public YmirConfigurationControl(Composite parent, ViliProjectPreferences preferences) {
+        this.parent = parent;
+        this.preferences = preferences;
     }
 
-    public void updatePageComplete() {
-        parentPage.setPageComplete(parentPage.validatePage());
-    }
+    public Control createControl() {
+        Composite composite = new Composite(parent, SWT.NULL);
+        composite.setFont(parent.getFont());
+        composite.setLayout(new GridLayout());
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-    public void createControl(Composite parent) {
-        autoGenerationEnabledField = new Button(parent, SWT.CHECK | SWT.LEFT);
-        autoGenerationEnabledField.setText(Messages.getString("YmirConfigurationBlock.0")); //$NON-NLS-1$
+        autoGenerationEnabledField = new Button(composite, SWT.CHECK | SWT.LEFT);
+        autoGenerationEnabledField.setText(Messages.getString("YmirConfigurationControl.0")); //$NON-NLS-1$
         autoGenerationEnabledField.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -98,12 +106,12 @@ public class YmirConfigurationBlock {
             }
         });
 
-        createAutoGenerationParameterControl(parent);
-        createEclipseCooperationParameterControl(parent);
-        createHotdeployParameterControl(parent);
-        createMiscParameterControl(parent);
+        createAutoGenerationParameterControl(composite);
+        createEclipseCooperationParameterControl(composite);
+        createHotdeployParameterControl(composite);
+        createMiscParameterControl(composite);
 
-        setDefaultValues();
+        return composite;
     }
 
     void createAutoGenerationParameterControl(Composite parent) {
@@ -146,13 +154,13 @@ public class YmirConfigurationBlock {
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         inplaceEditorEnabled.setLayoutData(data);
-        inplaceEditorEnabled.setText(Messages.getString("YmirConfigurationBlock.2")); //$NON-NLS-1$
+        inplaceEditorEnabled.setText(Messages.getString("YmirConfigurationControl.2")); //$NON-NLS-1$
 
         controlPanelEnabled = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         controlPanelEnabled.setLayoutData(data);
-        controlPanelEnabled.setText(Messages.getString("YmirConfigurationBlock.3")); //$NON-NLS-1$
+        controlPanelEnabled.setText(Messages.getString("YmirConfigurationControl.3")); //$NON-NLS-1$
 
         formDtoCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -216,16 +224,16 @@ public class YmirConfigurationBlock {
         layout.numColumns = 1;
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText(Messages.getString("YmirConfigurationBlock.5")); //$NON-NLS-1$
+        group.setText(Messages.getString("YmirConfigurationControl.5")); //$NON-NLS-1$
 
         useS2HotdeployField = new Button(group, SWT.RADIO);
-        useS2HotdeployField.setText(Messages.getString("YmirConfigurationBlock.6")); //$NON-NLS-1$
+        useS2HotdeployField.setText(Messages.getString("YmirConfigurationControl.6")); //$NON-NLS-1$
 
         useJavaRebelHotdeployField = new Button(group, SWT.RADIO);
-        useJavaRebelHotdeployField.setText(Messages.getString("YmirConfigurationBlock.7")); //$NON-NLS-1$
+        useJavaRebelHotdeployField.setText(Messages.getString("YmirConfigurationControl.7")); //$NON-NLS-1$
 
         useVoidHotdeployField = new Button(group, SWT.RADIO);
-        useVoidHotdeployField.setText(Messages.getString("YmirConfigurationBlock.8")); //$NON-NLS-1$
+        useVoidHotdeployField.setText(Messages.getString("YmirConfigurationControl.8")); //$NON-NLS-1$
     }
 
     void createMiscParameterControl(Composite parent) {
@@ -234,24 +242,34 @@ public class YmirConfigurationBlock {
         layout.numColumns = 2;
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText(Messages.getString("YmirConfigurationBlock.4")); //$NON-NLS-1$
+        group.setText(Messages.getString("YmirConfigurationControl.4")); //$NON-NLS-1$
 
         beantableEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         beantableEnabledField.setText(Messages.getString("YmirConfigurationComponent.8")); //$NON-NLS-1$
     }
 
-    boolean validatePage() {
+    public boolean validatePage() {
         if (isAutoGenerationEnabled()) {
             if (isEclipseEnabled() && getResourceSynchronizerURL().length() == 0) {
-                parentPage.setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages
-                        .getString("YmirConfigurationComponent.15"))); //$NON-NLS-1$
+                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, "同期サーバのURL"));
                 return false;
             }
         }
         return true;
     }
 
-    void setDefaultValues() {
+    public void setErrorMessage(String message) {
+    }
+
+    public boolean isPageComplete() {
+        return isPageComplete;
+    }
+
+    public void setPageComplete(boolean isPageComplete) {
+        this.isPageComplete = isPageComplete;
+    }
+
+    public void setDefaultValues() {
         autoGenerationEnabledField.setSelection(true);
 
         superclassLabel.setEnabled(false);
@@ -271,7 +289,7 @@ public class YmirConfigurationBlock {
 
         useS2HotdeployField.setSelection(true);
 
-        updatePageComplete();
+        setPageComplete(validatePage());
     }
 
     public boolean isBeantableEnabled() {
@@ -283,7 +301,7 @@ public class YmirConfigurationBlock {
     }
 
     private String getSuperclassDefaultValue() {
-        return ((NewProjectWizard) parentPage.getWizard()).getRootPackageName() + PAGEBASE;
+        return preferences.getRootPackageName() + PAGEBASE;
     }
 
     public String getSuperclass() {
@@ -342,9 +360,5 @@ public class YmirConfigurationBlock {
         } else {
             return HotdeployType.S2;
         }
-    }
-
-    public String getTabLabel() {
-        return Messages.getString("YmirConfigurationComponent.2"); //$NON-NLS-1$
     }
 }

@@ -20,7 +20,6 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
@@ -28,10 +27,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.kvasir.util.PropertyUtils;
-import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.ViliBehavior;
+import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
+import org.seasar.ymir.eclipse.ui.ViliProjectPreferencesControl;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well
@@ -50,35 +50,15 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
     };
 
+    private ViliProjectPreferences preferences;
+
     private DatabaseEntry[] entries;
 
     private Composite tabFolderParent;
 
     private CTabFolder tabFolder;
 
-    private Text viewEncodingField;
-
-    private Button useDatabaseField;
-
-    private Label databaseLabel;
-
-    private Combo databaseCombo;
-
-    private Label databaseDriverClassNameLabel;
-
-    private Text databaseDriverClassNameField;
-
-    private Label databaseURLLabel;
-
-    private Text databaseURLField;
-
-    private Label databaseUserLabel;
-
-    private Text databaseUserField;
-
-    private Label databasePasswordLabel;
-
-    private Text databasePasswordField;
+    private ViliProjectPreferencesControl preferencesControl;
 
     private Composite skeletonTabContent;
 
@@ -94,15 +74,12 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     private ParameterModel[] requiredParameterModels = new ParameterModel[0];
 
-    private YmirConfigurationBlock ymirConfigurationBlock;
+    private YmirConfigurationControl ymirConfigurationControl;
 
-    /**
-     * Constructor for SampleNewWizardPage.
-     * 
-     * @param pageName
-     */
-    public NewProjectWizardThirdPage() {
+    public NewProjectWizardThirdPage(ViliProjectPreferences preferences) {
         super("NewProjectWizardThirdPage"); //$NON-NLS-1$
+
+        this.preferences = preferences;
 
         setTitle(Messages.getString("NewProjectWizardThirdPage.1")); //$NON-NLS-1$
         setDescription(Messages.getString("NewProjectWizardThirdPage.2")); //$NON-NLS-1$
@@ -124,121 +101,6 @@ public class NewProjectWizardThirdPage extends WizardPage {
         setMessage(null);
     }
 
-    void createViewParametersControl(Composite parent) {
-        Group group = new Group(parent, SWT.NONE);
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        group.setLayout(layout);
-        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText(Messages.getString("NewProjectWizardThirdPage.3")); //$NON-NLS-1$
-
-        Label encodingLabel = new Label(group, SWT.NONE);
-        encodingLabel.setText(Messages.getString("NewProjectWizardThirdPage.4")); //$NON-NLS-1$
-
-        viewEncodingField = new Text(group, SWT.BORDER);
-        GridData data = new GridData(GridData.FILL_HORIZONTAL);
-        data.widthHint = 250;
-        viewEncodingField.setLayoutData(data);
-        viewEncodingField.addListener(SWT.Modify, validationListener);
-    }
-
-    void createDatabaseParametersControl(Composite parent) {
-        useDatabaseField = new Button(parent, SWT.CHECK | SWT.LEFT);
-        useDatabaseField.setText(Messages.getString("NewProjectWizardThirdPage.5")); //$NON-NLS-1$
-        useDatabaseField.addListener(SWT.Selection, validationListener);
-        useDatabaseField.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event event) {
-                boolean enabled = useDatabaseField.getSelection();
-                databaseLabel.setEnabled(enabled);
-                databaseCombo.setEnabled(enabled);
-                databaseDriverClassNameLabel.setEnabled(enabled);
-                databaseDriverClassNameField.setEnabled(enabled);
-                databaseURLLabel.setEnabled(enabled);
-                databaseURLField.setEnabled(enabled);
-                databaseUserLabel.setEnabled(enabled);
-                databaseUserField.setEnabled(enabled);
-                databasePasswordLabel.setEnabled(enabled);
-                databasePasswordField.setEnabled(enabled);
-            }
-        });
-
-        Group databaseGroup = new Group(parent, SWT.NONE);
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        databaseGroup.setLayout(layout);
-        databaseGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        databaseGroup.setText(Messages.getString("NewProjectWizardThirdPage.6")); //$NON-NLS-1$
-
-        entries = Activator.getDefault().getDatabaseEntries();
-        String[] items = new String[entries.length];
-        for (int i = 0; i < entries.length; i++) {
-            items[i] = entries[i].getName();
-        }
-
-        databaseLabel = new Label(databaseGroup, SWT.NONE);
-        databaseLabel.setText(Messages.getString("NewProjectWizardThirdPage.0")); //$NON-NLS-1$
-
-        databaseCombo = new Combo(databaseGroup, SWT.READ_ONLY);
-        GridData data = new GridData(GridData.FILL_HORIZONTAL);
-        data.widthHint = 250;
-        databaseCombo.setLayoutData(data);
-        databaseCombo.setItems(items);
-        databaseCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                int idx = databaseCombo.getSelectionIndex();
-                databaseDriverClassNameField.setText(entries[idx].getDriverClassName());
-                databaseURLField.setText(entries[idx].getURL());
-                databaseUserField.setText(entries[idx].getUser());
-                databasePasswordField.setText(entries[idx].getPassword());
-
-                setPageComplete(validatePage());
-            }
-        });
-
-        databaseDriverClassNameLabel = new Label(databaseGroup, SWT.NONE);
-        databaseDriverClassNameLabel.setText(Messages.getString("NewProjectWizardThirdPage.7")); //$NON-NLS-1$
-
-        databaseDriverClassNameField = new Text(databaseGroup, SWT.BORDER);
-        data = new GridData(GridData.FILL_HORIZONTAL);
-        data.widthHint = 250;
-        databaseDriverClassNameField.setLayoutData(data);
-        databaseDriverClassNameField.addListener(SWT.Modify, validationListener);
-        databaseDriverClassNameField.addListener(SWT.Modify, new Listener() {
-            public void handleEvent(Event e) {
-                if (!databaseDriverClassNameField.getText().equals(
-                        entries[databaseCombo.getSelectionIndex()].getDriverClassName())) {
-                    databaseCombo.setText(databaseCombo.getItem(entries.length - 1));
-                }
-            }
-        });
-
-        databaseURLLabel = new Label(databaseGroup, SWT.NONE);
-        databaseURLLabel.setText(Messages.getString("NewProjectWizardThirdPage.8")); //$NON-NLS-1$
-
-        databaseURLField = new Text(databaseGroup, SWT.BORDER);
-        data = new GridData(GridData.FILL_HORIZONTAL);
-        data.widthHint = 250;
-        databaseURLField.setLayoutData(data);
-        databaseURLField.addListener(SWT.Modify, validationListener);
-
-        databaseUserLabel = new Label(databaseGroup, SWT.NONE);
-        databaseUserLabel.setText(Messages.getString("NewProjectWizardThirdPage.9")); //$NON-NLS-1$
-
-        databaseUserField = new Text(databaseGroup, SWT.BORDER);
-        data = new GridData(GridData.FILL_HORIZONTAL);
-        data.widthHint = 250;
-        databaseUserField.setLayoutData(data);
-
-        databasePasswordLabel = new Label(databaseGroup, SWT.NONE);
-        databasePasswordLabel.setText(Messages.getString("NewProjectWizardThirdPage.10")); //$NON-NLS-1$
-
-        databasePasswordField = new Text(databaseGroup, SWT.BORDER);
-        data = new GridData(GridData.FILL_HORIZONTAL);
-        data.widthHint = 250;
-        databasePasswordField.setLayoutData(data);
-    }
-
     void createTabFolder() {
         tabFolder = new CTabFolder(tabFolderParent, SWT.NULL);
         tabFolder.setLayout(new FillLayout());
@@ -252,13 +114,13 @@ public class NewProjectWizardThirdPage extends WizardPage {
         genericTabContent.setLayout(new GridLayout());
         genericTabItem.setControl(genericTabContent);
 
-        if (behavior.isJavaProject()) {
-            createJavaParametersControl(genericTabContent);
-            createViewParametersControl(genericTabContent);
-            createDatabaseParametersControl(genericTabContent);
-        } else {
-            new Label(genericTabContent, SWT.NULL).setText(Messages.getString("NewProjectWizardThirdPage.13")); //$NON-NLS-1$
-        }
+        preferencesControl = new ViliProjectPreferencesControl(genericTabContent, preferences, behavior.isJavaProject()) {
+            @Override
+            public void setErrorMessage(String message) {
+                NewProjectWizardThirdPage.this.setErrorMessage(message);
+            }
+        };
+        preferencesControl.createControl();
 
         if (skeletonParameterExists()) {
             CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
@@ -279,10 +141,8 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
 
         if (behavior.isYmirProject()) {
-            ymirConfigurationBlock = new YmirConfigurationBlock(this);
-
             CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
-            ymirConfigurationTabItem.setText(ymirConfigurationBlock.getTabLabel());
+            ymirConfigurationTabItem.setText("Ymirプロジェクト設定");
 
             final ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
             scroll.setLayout(new FillLayout());
@@ -304,17 +164,19 @@ public class NewProjectWizardThirdPage extends WizardPage {
             ymirConfigurationTabContent.setLayout(new GridLayout());
             scroll.setContent(ymirConfigurationTabContent);
 
-            ymirConfigurationBlock.createControl(ymirConfigurationTabContent);
+            ymirConfigurationControl = new YmirConfigurationControl(ymirConfigurationTabContent, preferences) {
+                @Override
+                public void setErrorMessage(String message) {
+                    NewProjectWizardThirdPage.this.setErrorMessage(message);
+                }
+            };
+            ymirConfigurationControl.createControl();
             scroll.setMinHeight(ymirConfigurationTabContent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
         }
 
         tabFolderParent.layout();
 
         setDefaultValues();
-    }
-
-    void createJavaParametersControl(Composite genericTabContent) {
-
     }
 
     private boolean skeletonParameterExists() {
@@ -408,13 +270,17 @@ public class NewProjectWizardThirdPage extends WizardPage {
                 tabPrepared = true;
 
                 tabFolder.setSelection(0);
-                if (viewEncodingField != null) {
-                    viewEncodingField.setFocus();
-                }
+                preferencesControl.setVisible(true);
 
                 setPageComplete(validatePage());
             }
         }
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        return super.isPageComplete() && preferencesControl != null && preferencesControl.isPageComplete()
+                && (ymirConfigurationControl == null || ymirConfigurationControl.isPageComplete());
     }
 
     public void notifySkeletonAndFragmentsCleared() {
@@ -431,28 +297,17 @@ public class NewProjectWizardThirdPage extends WizardPage {
         parameterModelMaps = null;
         requiredParameterModels = new ParameterModel[0];
 
+        preferencesControl = null;
+
         ymirConfigurationTabContent = null;
-        ymirConfigurationBlock = null;
+        ymirConfigurationControl = null;
 
         setPageComplete(false);
     }
 
     boolean validatePage() {
-        if (behavior.isJavaProject() && getViewEncoding().length() == 0) {
-            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardThirdPage.4"))); //$NON-NLS-1$
+        if (!preferencesControl.validatePage()) {
             return false;
-        }
-        if (isUseDatabase()) {
-            if (getDatabaseDriverClassName().length() == 0) {
-                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages
-                        .getString("NewProjectWizardThirdPage.7"))); //$NON-NLS-1$
-                return false;
-            }
-            if (getDatabaseURL().length() == 0) {
-                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages
-                        .getString("NewProjectWizardThirdPage.8"))); //$NON-NLS-1$
-                return false;
-            }
         }
 
         for (ParameterModel model : requiredParameterModels) {
@@ -462,7 +317,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
             }
         }
 
-        if (ymirConfigurationBlock != null && !ymirConfigurationBlock.validatePage()) {
+        if (ymirConfigurationControl != null && !ymirConfigurationControl.validatePage()) {
             return false;
         }
 
@@ -471,71 +326,11 @@ public class NewProjectWizardThirdPage extends WizardPage {
     }
 
     void setDefaultValues() {
+        preferencesControl.setDefaultValues();
+        if (ymirConfigurationControl != null) {
+            ymirConfigurationControl.setDefaultValues();
+        }
         tabFolder.setSelection(0);
-
-        if (behavior.isJavaProject()) {
-            viewEncodingField.setText("UTF-8"); //$NON-NLS-1$
-            useDatabaseField.setSelection(true);
-            databaseCombo.setText(databaseCombo.getItem(DEFAULT_DATABASE_INDEX));
-            databaseDriverClassNameField.setText(entries[DEFAULT_DATABASE_INDEX].getDriverClassName());
-            databaseURLField.setText(entries[DEFAULT_DATABASE_INDEX].getURL());
-            databaseUserField.setText(entries[DEFAULT_DATABASE_INDEX].getUser());
-            databasePasswordField.setText(entries[DEFAULT_DATABASE_INDEX].getPassword());
-        }
-    }
-
-    public String getViewEncoding() {
-        if (behavior.isJavaProject()) {
-            return viewEncodingField.getText();
-        } else {
-            return "";
-        }
-    }
-
-    public boolean isUseDatabase() {
-        return behavior.isJavaProject() && useDatabaseField.getSelection();
-    }
-
-    public DatabaseEntry getDatabaseEntry() {
-        if (behavior.isJavaProject()) {
-            int idx = databaseCombo.getSelectionIndex();
-            return new DatabaseEntry(entries[idx].getName(), entries[idx].getType(), getDatabaseDriverClassName(),
-                    getDatabaseURL(), getDatabaseUser(), getDatabasePassword(), entries[idx].getDependency());
-        } else {
-            return new DatabaseEntry("", "", "", "", "", "", null);
-        }
-    }
-
-    private String getDatabaseDriverClassName() {
-        if (isUseDatabase()) {
-            return databaseDriverClassNameField.getText();
-        } else {
-            return ""; //$NON-NLS-1$
-        }
-    }
-
-    private String getDatabaseURL() {
-        if (isUseDatabase()) {
-            return databaseURLField.getText();
-        } else {
-            return ""; //$NON-NLS-1$
-        }
-    }
-
-    private String getDatabaseUser() {
-        if (isUseDatabase()) {
-            return databaseUserField.getText();
-        } else {
-            return ""; //$NON-NLS-1$
-        }
-    }
-
-    private String getDatabasePassword() {
-        if (isUseDatabase()) {
-            return databasePasswordField.getText();
-        } else {
-            return ""; //$NON-NLS-1$
-        }
     }
 
     public void populateSkeletonParameters() {
@@ -554,8 +349,12 @@ public class NewProjectWizardThirdPage extends WizardPage {
         }
     }
 
-    public YmirConfigurationBlock getYmirConfigurationBlock() {
-        return ymirConfigurationBlock;
+    public YmirConfigurationControl getYmirConfigurationControl() {
+        return ymirConfigurationControl;
+    }
+
+    public void populateViliProjectPreferences() {
+        preferencesControl.populateViliProjectPreferences();
     }
 
     static interface ParameterModel {

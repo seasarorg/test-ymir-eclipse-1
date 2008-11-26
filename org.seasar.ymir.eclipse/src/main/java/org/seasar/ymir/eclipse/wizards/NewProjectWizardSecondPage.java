@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
+import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.wizards.jre.BuildJREDescriptor;
 import org.seasar.ymir.eclipse.wizards.jre.JREsComboBlock;
 
@@ -40,6 +41,8 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
             setPageComplete(validatePage());
         }
     };
+
+    private ViliProjectPreferences preferences;
 
     private boolean conrtolsPrepared;
 
@@ -71,8 +74,10 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
 
     private Text projectVersionField;
 
-    public NewProjectWizardSecondPage() {
+    public NewProjectWizardSecondPage(ViliProjectPreferences preferences) {
         super("NewProjectWizardSecondPage"); //$NON-NLS-1$
+
+        this.preferences = preferences;
 
         setTitle(Messages.getString("NewProjectWizardSecondPage.1")); //$NON-NLS-1$
         setDescription(Messages.getString("NewProjectWizardSecondPage.2")); //$NON-NLS-1$
@@ -156,9 +161,11 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
         rootPackageNameField.addModifyListener(validationListener);
         rootPackageNameField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
+                String rootPackageName = rootPackageNameField.getText().trim();
                 if (useRootPackageNameAsProjectGroupIdField.getSelection()) {
-                    projectGroupIdField.setText(rootPackageNameField.getText().trim());
+                    projectGroupIdField.setText(rootPackageName);
                 }
+                preferences.setRootPackageName(rootPackageName);
             }
         });
 
@@ -315,7 +322,7 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
         return jreBlock.getPath();
     }
 
-    public String getRootPackageName() {
+    private String getRootPackageName() {
         return rootPackageNameField.getText();
     }
 

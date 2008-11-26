@@ -55,5 +55,14 @@
          </enabledWhen>
       </page>
    </extension>
+   <extension
+         id="id1"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.seasar.ymir.eclipse.natures.ViliNature">
+         </run>
+      </runtime>
+   </extension>
 
 </plugin>

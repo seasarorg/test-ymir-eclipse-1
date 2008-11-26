@@ -35,6 +35,8 @@ public interface Globals {
 
     String PATH_SRC_MAIN_WEBAPP_WEBINF_LIB = "src/main/webapp/WEB-INF/lib";
 
+    String PATH_APP_PROPERTIES = PATH_SRC_MAIN_RESOURCES + "/app.properties"; //$NON-NLS-1$
+
     String BUNDLENAME_WEBLAUNCHER = "werkzeugkasten.weblauncher";
 
     String NATURE_ID_WEBLAUNCHER = BUNDLENAME_WEBLAUNCHER + ".nature";

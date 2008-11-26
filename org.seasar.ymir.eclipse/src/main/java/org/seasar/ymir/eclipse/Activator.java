@@ -41,6 +41,7 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -58,8 +59,13 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
-import org.seasar.ymir.eclipse.maven.Dependency;
+import org.seasar.ymir.eclipse.natures.ViliNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
+import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
+import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
+import org.seasar.ymir.eclipse.preferences.impl.DefaultViliProjectPreferencesProvider;
+import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesImpl;
+import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesProviderImpl;
 import org.seasar.ymir.eclipse.util.CascadeMap;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.eclipse.util.URLUtils;
@@ -90,8 +96,6 @@ public class Activator extends AbstractUIPlugin {
     private static Activator plugin;
 
     private ArtifactResolver artifactResolver;
-
-    private DatabaseEntry[] databaseEntries;
 
     private Configuration cfg;
 
@@ -129,7 +133,6 @@ public class Activator extends AbstractUIPlugin {
         IPreferenceStore preferenceStore = getPreferenceStore();
         artifactResolver.setOffline(preferenceStore.getBoolean(PreferenceConstants.P_OFFLINE));
 
-        setUpDatabaseEntries();
         setUpTemplateEngine();
         readSystemBehavior();
 
@@ -169,7 +172,6 @@ public class Activator extends AbstractUIPlugin {
         artifactResolver = null;
         mapper = null;
         parser = null;
-        databaseEntries = null;
         systemBehavior = null;
         plugin = null;
         super.stop(context);
@@ -209,27 +211,6 @@ public class Activator extends AbstractUIPlugin {
             getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, ex.toString(), ex));
             return new TemplateEntry();
         }
-    }
-
-    private void setUpDatabaseEntries() {
-        databaseEntries = new DatabaseEntry[] {
-                new DatabaseEntry(
-                        "H2 Database Engine", "h2", "org.h2.Driver", "jdbc:h2:file:%WEBAPP%/WEB-INF/h2/h2", "sa", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                        "", new Dependency("com.h2database", "h2", "1.0.78", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                new DatabaseEntry("MySQL Community Server", "mysql", "com.mysql.jdbc.Driver", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        "jdbc:mysql://localhost:3306/[DBNAME]", "", "", new Dependency("mysql", "mysql-connector-java", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                                "5.1.6", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
-                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-3.0)", "postgresql", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                                "8.3-603.jdbc3", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
-                new DatabaseEntry("PostgreSQL 8.3 database (JDBC-4.0)", "postgresql", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                                "8.3-603.jdbc4", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
-                new DatabaseEntry(Messages.getString("Activator.50"), "", "", "", "", "", null), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-    }
-
-    public DatabaseEntry[] getDatabaseEntries() {
-        return databaseEntries;
     }
 
     private void setUpTemplateEngine() {
@@ -705,6 +686,79 @@ public class Activator extends AbstractUIPlugin {
             return mapper.toBean(parser.parse(new StringReader(template)).getRootElement(), TemplateEntry.class);
         } catch (IOException ex) {
             throw new RuntimeException("Can't happen!", ex);
+        }
+    }
+
+    public ViliProjectPreferences newViliProjectPreferences() {
+        return new ViliProjectPreferencesImpl(new DefaultViliProjectPreferencesProvider());
+    }
+
+    public ViliProjectPreferences getViliProjectPreferences(IProject project) {
+        ViliProjectPreferencesProvider provider;
+        try {
+            provider = new ViliProjectPreferencesProviderImpl(project);
+        } catch (CoreException ex) {
+            getLog().log(ex.getStatus());
+            provider = new DefaultViliProjectPreferencesProvider();
+        }
+        return new ViliProjectPreferencesImpl(provider);
+    }
+
+    public MapProperties loadApplicationProperties(IProject project) {
+        MapProperties properties = new MapProperties(new TreeMap<String, String>());
+        boolean isViliProject;
+        try {
+            isViliProject = project.hasNature(ViliNature.ID);
+        } catch (CoreException ex) {
+            isViliProject = false;
+        }
+        if (isViliProject) {
+            IFile file = project.getFile(Globals.PATH_APP_PROPERTIES);
+            if (file.exists()) {
+                InputStream is = null;
+                try {
+                    is = file.getContents();
+                    properties.load(is);
+                } catch (IOException ex) {
+                    getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.OK, "Can't load: " + file, ex));
+                } catch (CoreException ex) {
+                    getLog().log(ex.getStatus());
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException ignore) {
+                        }
+                    }
+                }
+            }
+        }
+        return properties;
+    }
+
+    public void saveApplicationProperties(IProject project, MapProperties properties) throws IOException {
+        boolean isViliProject;
+        try {
+            isViliProject = project.hasNature(ViliNature.ID);
+        } catch (CoreException ex) {
+            isViliProject = false;
+        }
+        if (isViliProject) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                properties.store(baos);
+            } catch (IOException ex) {
+                getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, "Can't happen!", ex));
+                return;
+            }
+            try {
+                writeFile(project.getFile(Globals.PATH_APP_PROPERTIES), new ByteArrayInputStream(baos.toByteArray()),
+                        new NullProgressMonitor());
+            } catch (CoreException ex) {
+                IOException ioe = new IOException();
+                ioe.initCause(ex);
+                throw ioe;
+            }
         }
     }
 }

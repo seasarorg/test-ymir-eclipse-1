@@ -127,8 +127,7 @@ public class ViliPropertyPage extends PropertyPage {
         try {
             return Activator.getDefault().getPreferenceStore(getProject());
         } catch (CoreException ex) {
-            Activator.getDefault().getLog().log(
-                    new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't get PreferenceStore", ex));
+            Activator.getDefault().getLog().log(ex.getStatus());
             return null;
         }
     }
