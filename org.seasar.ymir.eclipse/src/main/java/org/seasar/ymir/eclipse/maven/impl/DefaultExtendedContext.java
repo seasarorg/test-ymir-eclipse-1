@@ -53,11 +53,11 @@ public class DefaultExtendedContext implements ExtendedContext {
     }
 
     protected String toId(String groupId, String artifactId, String version) {
-        return ArtifactUtil.toPath(groupId, artifactId, version, "");
+        return ArtifactUtil.toPath(groupId, artifactId, version, ""); //$NON-NLS-1$
     }
 
     protected String toId(String groupId, String artifactId, boolean containsSnapshot) {
-        return groupId + ":" + artifactId + "/" + containsSnapshot;
+        return groupId + ":" + artifactId + "/" + containsSnapshot; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public void addManagedDependency(Artifact artifact) {
@@ -152,7 +152,7 @@ public class DefaultExtendedContext implements ExtendedContext {
 
     public InputStream open(Artifact artifact, URL url) {
         URL from = findLocal(artifact, url);
-        Constants.LOG.log(Level.INFO, "read from {0}", from);
+        Constants.LOG.log(Level.INFO, "read from {0}", from); //$NON-NLS-1$
         InputStream result = UrlUtil.open(from);
         return result;
     }

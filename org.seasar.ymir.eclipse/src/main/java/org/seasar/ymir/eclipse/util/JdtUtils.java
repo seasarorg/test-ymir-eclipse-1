@@ -8,13 +8,13 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 public class JdtUtils {
-    private static final String QUALIFIER = "org.eclipse.jdt.core";
+    private static final String QUALIFIER = "org.eclipse.jdt.core"; //$NON-NLS-1$
 
-    private static final String P_FIELDPREFIXES = "org.eclipse.jdt.core.codeComplete.fieldPrefixes";
+    private static final String P_FIELDPREFIXES = "org.eclipse.jdt.core.codeComplete.fieldPrefixes"; //$NON-NLS-1$
 
-    private static final String P_FIELDSUFFIXES = "org.eclipse.jdt.core.codeComplete.fieldSuffixes";
+    private static final String P_FIELDSUFFIXES = "org.eclipse.jdt.core.codeComplete.fieldSuffixes"; //$NON-NLS-1$
 
-    private static final String FIELDSPECIALPREFIX = "this.";
+    private static final String FIELDSPECIALPREFIX = "this."; //$NON-NLS-1$
 
     private JdtUtils() {
     }
@@ -52,10 +52,10 @@ public class JdtUtils {
     }
 
     private static String getFieldSpecialPrefix(IPreferenceStore store) {
-        if (getFieldPrefix(store).equals("") && getFieldSuffix(store).equals("")) {
+        if (getFieldPrefix(store).equals("") && getFieldSuffix(store).equals("")) { //$NON-NLS-1$ //$NON-NLS-2$
             return FIELDSPECIALPREFIX;
         } else {
-            return "";
+            return ""; //$NON-NLS-1$
         }
     }
 
@@ -71,7 +71,7 @@ public class JdtUtils {
 
     private static String getFirstElement(String string) {
         if (string == null) {
-            return "";
+            return ""; //$NON-NLS-1$
         }
         int comma = string.indexOf(',');
         if (comma < 0) {

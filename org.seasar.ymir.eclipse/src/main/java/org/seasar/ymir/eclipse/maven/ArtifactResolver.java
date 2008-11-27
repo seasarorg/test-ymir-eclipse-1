@@ -14,9 +14,9 @@ import werkzeugkasten.mvnhack.repository.Repository;
 import werkzeugkasten.mvnhack.repository.impl.StAXArtifactBuilder;
 
 public class ArtifactResolver {
-    public static final String SNAPSHOT = "SNAPSHOT";
+    public static final String SNAPSHOT = "SNAPSHOT"; //$NON-NLS-1$
 
-    public static final String SUFFIX_SNAPSHOT = "-" + SNAPSHOT;
+    public static final String SUFFIX_SNAPSHOT = "-" + SNAPSHOT; //$NON-NLS-1$
 
     private ExtendedConfiguration configuration;
 
@@ -25,8 +25,8 @@ public class ArtifactResolver {
     public ArtifactResolver() {
         configuration = new DefaultExtendedConfiguration(new Properties());
         builder = new StAXArtifactBuilder();
-        configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2", false, builder));
-        configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2-snapshot", true,
+        configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2", false, builder)); //$NON-NLS-1$
+        configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2-snapshot", true, //$NON-NLS-1$
                 builder));
     }
 
@@ -43,7 +43,7 @@ public class ArtifactResolver {
     }
 
     public URL getURL(Artifact artifact) {
-        String suffix = "." + artifact.getType();
+        String suffix = "." + artifact.getType(); //$NON-NLS-1$
         for (Repository repo : configuration.getRepositories()) {
             for (URL url : repo.getLocation(artifact)) {
                 if (url.toExternalForm().endsWith(suffix)) {

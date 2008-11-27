@@ -32,7 +32,7 @@ public class ExtendedDefaultArtifact implements ExtendedArtifact {
 
     @Override
     public String toString() {
-        return artifact.toString() + " actualVersion :" + actualVersion + " lastUpdated :" + lastUpdated;
+        return artifact.toString() + " actualVersion :" + actualVersion + " lastUpdated :" + lastUpdated; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public String getArtifactId() {

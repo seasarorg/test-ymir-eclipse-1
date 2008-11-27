@@ -148,7 +148,7 @@ public class JREsComboBlock {
         Font font = parent.getFont();
         fControl = SWTUtils.createComposite(parent, font, 1, 1, GridData.FILL_BOTH);
         if (fTitle == null) {
-            fTitle = Messages.getString("JREsComboBlock.3");
+            fTitle = Messages.getString("JREsComboBlock.3"); //$NON-NLS-1$
         }
         Group group = SWTUtils.createGroup(fControl, fTitle, 1, 1, GridData.FILL_HORIZONTAL);
         Composite comp = SWTUtils.createComposite(group, font, 2, 1, GridData.FILL_BOTH, 0, 0);
@@ -167,7 +167,7 @@ public class JREsComboBlock {
         }
 
         // specific JRE type
-        String text = Messages.getString("JREsComboBlock.1");
+        String text = Messages.getString("JREsComboBlock.1"); //$NON-NLS-1$
         if (fSpecificDescriptor != null) {
             text = fSpecificDescriptor.getDescription();
         }
@@ -180,7 +180,7 @@ public class JREsComboBlock {
                         fCombo.select(0);
                     }
                     if (fVMs.isEmpty()) {
-                        setError(Messages.getString("JREsComboBlock.0"));
+                        setError(Messages.getString("JREsComboBlock.0")); //$NON-NLS-1$
                     } else {
                         setStatus(OK_STATUS);
                     }
@@ -206,7 +206,7 @@ public class JREsComboBlock {
         fillWithWorkspaceJREs();
 
         // execution environments
-        fEnvironmentsButton = SWTUtils.createRadioButton(comp, Messages.getString("JREsComboBlock.4"));
+        fEnvironmentsButton = SWTUtils.createRadioButton(comp, Messages.getString("JREsComboBlock.4")); //$NON-NLS-1$
         fEnvironmentsButton.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
                 if (fEnvironmentsButton.getSelection()) {
@@ -216,7 +216,7 @@ public class JREsComboBlock {
                     }
                     fEnvironmentsCombo.setEnabled(true);
                     if (fEnvironments.isEmpty()) {
-                        setError(Messages.getString("JREsComboBlock.5"));
+                        setError(Messages.getString("JREsComboBlock.5")); //$NON-NLS-1$
                     } else {
                         setStatus(OK_STATUS);
                     }
@@ -397,10 +397,10 @@ public class JREsComboBlock {
             IPath path = JavaRuntime.newJREContainerPath(env);
             IVMInstall install = JavaRuntime.getVMInstall(path);
             if (install != null) {
-                names[i] = MessageFormat.format(Messages.getString("JREsComboBlock.15"), new Object[] { env.getId(),
+                names[i] = MessageFormat.format(Messages.getString("JREsComboBlock.15"), new Object[] { env.getId(), //$NON-NLS-1$
                         install.getName() });
             } else {
-                names[i] = MessageFormat.format(Messages.getString("JREsComboBlock.16"), new Object[] { env.getId() });
+                names[i] = MessageFormat.format(Messages.getString("JREsComboBlock.16"), new Object[] { env.getId() }); //$NON-NLS-1$
             }
             i++;
         }
@@ -531,12 +531,12 @@ public class JREsComboBlock {
                 if (environment == null) {
                     fErrorPath = containerPath;
                     selectEnvironment(environment);
-                    setError(MessageFormat.format(Messages.getString("JREsComboBlock.6"), new Object[] { envId }));
+                    setError(MessageFormat.format(Messages.getString("JREsComboBlock.6"), new Object[] { envId })); //$NON-NLS-1$
                 } else {
                     selectEnvironment(environment);
                     IVMInstall[] installs = environment.getCompatibleVMs();
                     if (installs.length == 0) {
-                        setError(MessageFormat.format(Messages.getString("JREsComboBlock.7"),
+                        setError(MessageFormat.format(Messages.getString("JREsComboBlock.7"), //$NON-NLS-1$
                                 new Object[] { environment.getId() }));
                     }
                 }
@@ -547,19 +547,19 @@ public class JREsComboBlock {
                     fErrorPath = containerPath;
                     String installTypeId = JavaRuntime.getVMInstallTypeId(containerPath);
                     if (installTypeId == null) {
-                        setError(Messages.getString("JREsComboBlock.8"));
+                        setError(Messages.getString("JREsComboBlock.8")); //$NON-NLS-1$
                     } else {
                         IVMInstallType installType = JavaRuntime.getVMInstallType(installTypeId);
                         if (installType == null) {
-                            setError(MessageFormat.format(Messages.getString("JREsComboBlock.9"),
+                            setError(MessageFormat.format(Messages.getString("JREsComboBlock.9"), //$NON-NLS-1$
                                     new Object[] { installTypeId }));
                         } else {
                             String installName = JavaRuntime.getVMInstallName(containerPath);
                             if (installName == null) {
-                                setError(MessageFormat.format(Messages.getString("JREsComboBlock.10"),
+                                setError(MessageFormat.format(Messages.getString("JREsComboBlock.10"), //$NON-NLS-1$
                                         new Object[] { installType.getName() }));
                             } else {
-                                setError(MessageFormat.format(Messages.getString("JREsComboBlock.11"), new Object[] {
+                                setError(MessageFormat.format(Messages.getString("JREsComboBlock.11"), new Object[] { //$NON-NLS-1$
                                         installName, installType.getName() }));
                             }
                         }
@@ -568,9 +568,9 @@ public class JREsComboBlock {
                     selectJRE(install);
                     File location = install.getInstallLocation();
                     if (location == null) {
-                        setError(Messages.getString("JREsComboBlock.12"));
+                        setError(Messages.getString("JREsComboBlock.12")); //$NON-NLS-1$
                     } else if (!location.exists()) {
-                        setError(Messages.getString("JREsComboBlock.13"));
+                        setError(Messages.getString("JREsComboBlock.13")); //$NON-NLS-1$
                     }
                 }
             }

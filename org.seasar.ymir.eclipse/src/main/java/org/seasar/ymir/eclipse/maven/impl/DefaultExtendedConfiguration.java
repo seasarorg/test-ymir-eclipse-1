@@ -48,10 +48,10 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
 
     protected void load() {
         StringBuilder stb = new StringBuilder();
-        stb.append(".m2");
+        stb.append(".m2"); //$NON-NLS-1$
         stb.append('/');
         stb.append(Constants.DIR_REPOSITORY);
-        File usr = new File(System.getProperty("user.home"), stb.toString());
+        File usr = new File(System.getProperty("user.home"), stb.toString()); //$NON-NLS-1$
         usr.mkdirs();
         // .m2ディレクトリがない場合でもローカルリポジトリとして登録しておく。でないとMavenを外で実行したことがないような環境で正しく動作しない。
         addLocalRepository(usr);
@@ -60,7 +60,7 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
     }
 
     protected void addLocalRepository(File rep) {
-        Constants.LOG.log(Level.INFO, "LocalRepository :{0}", rep.toString());
+        Constants.LOG.log(Level.INFO, "LocalRepository :{0}", rep.toString()); //$NON-NLS-1$
         ExtendedLocalRepository lr = new ExtendedLocalRepository(rep, builder);
         addRepository(lr);
         addDestination(lr);
@@ -69,16 +69,16 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
     protected void load(Properties properties) {
         String rs = properties.getProperty(Constants.PROP_REPOSITORY);
         if (StringUtil.isEmpty(rs) == false) {
-            for (String s : rs.split(",")) {
+            for (String s : rs.split(",")) { //$NON-NLS-1$
                 if (validateURL(s)) {
                     addRepository(new RemoteRepository(s, builder));
                 }
             }
         }
         UrlUtil.setUpProxy(properties.getProperty(Constants.PROP_PROXY));
-        String hosts = properties.getProperty("http.nonProxyHosts");
+        String hosts = properties.getProperty("http.nonProxyHosts"); //$NON-NLS-1$
         if (StringUtil.isEmpty(hosts) == false) {
-            System.setProperty("http.nonProxyHosts", hosts);
+            System.setProperty("http.nonProxyHosts", hosts); //$NON-NLS-1$
         }
     }
 
@@ -97,7 +97,7 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
 
     public void addRepository(Repository repository) {
         if (!(repository instanceof ExtendedRepository)) {
-            throw new IllegalArgumentException("Must be an instance of ExtendedRepository: " + repository);
+            throw new IllegalArgumentException("Must be an instance of ExtendedRepository: " + repository); //$NON-NLS-1$
         }
 
         ExtendedRepository er = (ExtendedRepository) repository;
@@ -135,7 +135,7 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
 
     public Iterable<ExtendedRepository> getRepositoriesToResolveRelased() {
         return new Iterable<ExtendedRepository>() {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("unchecked") //$NON-NLS-1$
             public Iterator<ExtendedRepository> iterator() {
                 if (offline) {
                     return new CompositeIterator<ExtendedRepository>(localRepositories.iterator());
@@ -149,7 +149,7 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
 
     public Iterable<ExtendedRepository> getRepositoriesToResolveSnapshot() {
         return new Iterable<ExtendedRepository>() {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("unchecked") //$NON-NLS-1$
             public Iterator<ExtendedRepository> iterator() {
                 if (offline) {
                     return new CompositeIterator<ExtendedRepository>(localRepositories.iterator());
@@ -163,7 +163,7 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
 
     public Iterable<ExtendedRepository> getRepositoriesToGetLatestVersion(final boolean containsSnapshot) {
         return new Iterable<ExtendedRepository>() {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("unchecked") //$NON-NLS-1$
             public Iterator<ExtendedRepository> iterator() {
                 if (containsSnapshot) {
                     if (offline) {

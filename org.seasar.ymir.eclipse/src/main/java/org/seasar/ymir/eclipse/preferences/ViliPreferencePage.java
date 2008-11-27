@@ -40,7 +40,7 @@ public class ViliPreferencePage extends FieldEditorPreferencePage implements IWo
         addField(new BooleanFieldEditor(PreferenceConstants.P_USE_SNAPSHOT_FRAGMENT, Messages
                 .getString("ViliPreferencePage.2"), //$NON-NLS-1$
                 getFieldEditorParent()));
-        addField(new BooleanFieldEditor(PreferenceConstants.P_OFFLINE, "オフライン", getFieldEditorParent()));
+        addField(new BooleanFieldEditor(PreferenceConstants.P_OFFLINE, Messages.getString("ViliPreferencePage.3"), getFieldEditorParent())); //$NON-NLS-1$
     }
 
     /*

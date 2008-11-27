@@ -138,7 +138,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
         if (behavior.isYmirProject()) {
             CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
-            ymirConfigurationTabItem.setText("Ymirプロジェクト設定");
+            ymirConfigurationTabItem.setText(Messages.getString("NewProjectWizardThirdPage.0")); //$NON-NLS-1$
 
             final ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
             scroll.setLayout(new FillLayout());

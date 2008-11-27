@@ -23,13 +23,13 @@ import net.skirnir.xom.ValidationException;
 import net.skirnir.xom.XMLParserFactory;
 
 public class ArtifactUtils {
-    private static final Pattern PATTERN_COMPARE_VRESIONS_SEGMENT = Pattern.compile("(\\d+)(.*)");
+    private static final Pattern PATTERN_COMPARE_VRESIONS_SEGMENT = Pattern.compile("(\\d+)(.*)"); //$NON-NLS-1$
 
-    private static final Pattern PATTERN_COMPARE_VERSIONS_DELIMITER = Pattern.compile("(\\D+)(.*)");
+    private static final Pattern PATTERN_COMPARE_VERSIONS_DELIMITER = Pattern.compile("(\\D+)(.*)"); //$NON-NLS-1$
 
-    private static final Pattern PATTERN_GET_ARTIFACT_NAME_DELIMITER = Pattern.compile("-\\d");
+    private static final Pattern PATTERN_GET_ARTIFACT_NAME_DELIMITER = Pattern.compile("-\\d"); //$NON-NLS-1$
 
-    private static final String SNAPSHOT = "-SNAPSHOT";
+    private static final String SNAPSHOT = "-SNAPSHOT"; //$NON-NLS-1$
 
     private ArtifactUtils() {
     }
@@ -94,7 +94,7 @@ public class ArtifactUtils {
     }
 
     public static String getFileName(Artifact artifact) {
-        return artifact.getArtifactId() + "-" + artifact.getVersion() + "." + artifact.getType();
+        return artifact.getArtifactId() + "-" + artifact.getVersion() + "." + artifact.getType(); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public static String getArtifactId(String path) {
@@ -120,7 +120,7 @@ public class ArtifactUtils {
     }
 
     public static String getId(Artifact artifact) {
-        return artifact.getGroupId() + ":" + artifact.getArtifactId() + "-" + artifact.getVersion() + "."
+        return artifact.getGroupId() + ":" + artifact.getArtifactId() + "-" + artifact.getVersion() + "." //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 + artifact.getType();
     }
 
@@ -129,7 +129,7 @@ public class ArtifactUtils {
     }
 
     public static String getUniqueId(String groupId, String artifactId) {
-        return groupId + ":" + artifactId;
+        return groupId + ":" + artifactId; //$NON-NLS-1$
     }
 
     public static Metadata createMetadata(byte[] bytes) {
@@ -140,7 +140,7 @@ public class ArtifactUtils {
         try {
             return Activator.getDefault().getXOMapper().toBean(
                     XMLParserFactory.newInstance().parse(
-                            new InputStreamReader(new ByteArrayInputStream(bytes), "UTF-8")).getRootElement(),
+                            new InputStreamReader(new ByteArrayInputStream(bytes), "UTF-8")).getRootElement(), //$NON-NLS-1$
                     Metadata.class);
         } catch (ValidationException ex) {
             return null;
@@ -160,7 +160,7 @@ public class ArtifactUtils {
         if (artifact instanceof ExtendedArtifact) {
             actualVersion = ((ExtendedArtifact) artifact).getActualVersion();
         }
-        return toPath(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), actualVersion, "."
+        return toPath(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), actualVersion, "." //$NON-NLS-1$
                 + artifact.getType());
     }
 
@@ -200,8 +200,8 @@ public class ArtifactUtils {
                     long lastUpdated = versioning.getLastUpdated() != null ? versioning.getLastUpdated().longValue()
                             : 0L;
                     if (lastUpdated > localCopyLastUpdated) {
-                        return version.substring(0, version.length() - SUFFIX_SNAPSHOT.length()) + "-" + timestamp
-                                + "-" + buildNumber;
+                        return version.substring(0, version.length() - SUFFIX_SNAPSHOT.length()) + "-" + timestamp //$NON-NLS-1$
+                                + "-" + buildNumber; //$NON-NLS-1$
                     }
                 }
             }

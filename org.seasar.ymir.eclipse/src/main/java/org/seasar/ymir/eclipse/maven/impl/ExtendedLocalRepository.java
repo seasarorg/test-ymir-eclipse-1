@@ -18,7 +18,7 @@ import werkzeugkasten.mvnhack.repository.Context;
 import werkzeugkasten.mvnhack.repository.impl.LocalRepository;
 
 public class ExtendedLocalRepository extends LocalRepository implements ExtendedRepository {
-    private static final Object NAME_MAVEN_METADATA = "maven-metadata-local.xml";
+    private static final Object NAME_MAVEN_METADATA = "maven-metadata-local.xml"; //$NON-NLS-1$
 
     private File root;
 

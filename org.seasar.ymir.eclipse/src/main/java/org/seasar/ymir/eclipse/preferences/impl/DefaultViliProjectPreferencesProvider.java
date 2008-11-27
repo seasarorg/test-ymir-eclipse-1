@@ -16,11 +16,11 @@ public class DefaultViliProjectPreferencesProvider extends ViliProjectPreference
     }
 
     public String getRootPackageName() {
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     public String getViewEncoding() {
-        return "UTF-8";
+        return "UTF-8"; //$NON-NLS-1$
     }
 
     public boolean isUseDatabase() {

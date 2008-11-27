@@ -19,10 +19,9 @@ import org.eclipse.swt.widgets.Text;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
-import org.seasar.ymir.eclipse.wizards.Messages;
 
 public class YmirConfigurationControl {
-    private static final String REQUIRED_TEMPLATE = "{0}を指定して下さい。";
+    private static final String REQUIRED_TEMPLATE = Messages.getString("YmirConfigurationControl.21"); //$NON-NLS-1$
 
     private static final String PAGEBASE = ".web.PageBase"; //$NON-NLS-1$
 
@@ -121,13 +120,13 @@ public class YmirConfigurationControl {
         layout.numColumns = 2;
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText(Messages.getString("YmirConfigurationComponent.4")); //$NON-NLS-1$
+        group.setText(Messages.getString("YmirConfigurationControl.9")); //$NON-NLS-1$
 
         specifySuperclassField = new Button(group, SWT.CHECK | SWT.LEFT);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         specifySuperclassField.setLayoutData(data);
-        specifySuperclassField.setText(Messages.getString("YmirConfigurationComponent.5")); //$NON-NLS-1$
+        specifySuperclassField.setText(Messages.getString("YmirConfigurationControl.10")); //$NON-NLS-1$
         specifySuperclassField.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -138,7 +137,7 @@ public class YmirConfigurationControl {
         });
 
         superclassLabel = new Label(group, SWT.NONE);
-        superclassLabel.setText(Messages.getString("YmirConfigurationComponent.6")); //$NON-NLS-1$
+        superclassLabel.setText(Messages.getString("YmirConfigurationControl.11")); //$NON-NLS-1$
 
         superclassField = new Text(group, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -149,7 +148,7 @@ public class YmirConfigurationControl {
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         usingFreyjaRenderClassField.setLayoutData(data);
-        usingFreyjaRenderClassField.setText(Messages.getString("YmirConfigurationComponent.7")); //$NON-NLS-1$
+        usingFreyjaRenderClassField.setText(Messages.getString("YmirConfigurationControl.12")); //$NON-NLS-1$
 
         inplaceEditorEnabled = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -167,25 +166,25 @@ public class YmirConfigurationControl {
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         formDtoCreationFeatureEnabledField.setLayoutData(data);
-        formDtoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationComponent.9")); //$NON-NLS-1$
+        formDtoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationControl.14")); //$NON-NLS-1$
 
         daoCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         daoCreationFeatureEnabledField.setLayoutData(data);
-        daoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationComponent.10")); //$NON-NLS-1$
+        daoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationControl.15")); //$NON-NLS-1$
 
         dxoCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         dxoCreationFeatureEnabledField.setLayoutData(data);
-        dxoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationComponent.11")); //$NON-NLS-1$
+        dxoCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationControl.16")); //$NON-NLS-1$
 
         converterCreationFeatureEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         converterCreationFeatureEnabledField.setLayoutData(data);
-        converterCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationComponent.12")); //$NON-NLS-1$
+        converterCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationControl.17")); //$NON-NLS-1$
     }
 
     void createEclipseCooperationParameterControl(Composite parent) {
@@ -194,13 +193,13 @@ public class YmirConfigurationControl {
         layout.numColumns = 2;
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText(Messages.getString("YmirConfigurationComponent.13")); //$NON-NLS-1$
+        group.setText(Messages.getString("YmirConfigurationControl.18")); //$NON-NLS-1$
 
         eclipseEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 2;
         eclipseEnabledField.setLayoutData(data);
-        eclipseEnabledField.setText(Messages.getString("YmirConfigurationComponent.14")); //$NON-NLS-1$
+        eclipseEnabledField.setText(Messages.getString("YmirConfigurationControl.19")); //$NON-NLS-1$
         eclipseEnabledField.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
                 boolean enabled = eclipseEnabledField.getSelection();
@@ -210,7 +209,7 @@ public class YmirConfigurationControl {
         });
 
         resourceSynchronizerURLLabel = new Label(group, SWT.NONE);
-        resourceSynchronizerURLLabel.setText(Messages.getString("YmirConfigurationComponent.15")); //$NON-NLS-1$
+        resourceSynchronizerURLLabel.setText(Messages.getString("YmirConfigurationControl.20")); //$NON-NLS-1$
 
         resourceSynchronizerURLField = new Text(group, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -246,13 +245,13 @@ public class YmirConfigurationControl {
         group.setText(Messages.getString("YmirConfigurationControl.4")); //$NON-NLS-1$
 
         beantableEnabledField = new Button(group, SWT.CHECK | SWT.LEFT);
-        beantableEnabledField.setText(Messages.getString("YmirConfigurationComponent.8")); //$NON-NLS-1$
+        beantableEnabledField.setText(Messages.getString("YmirConfigurationControl.13")); //$NON-NLS-1$
     }
 
     public boolean validatePage() {
         if (isAutoGenerationEnabled()) {
             if (isEclipseEnabled() && getResourceSynchronizerURL().length() == 0) {
-                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, "同期サーバのURL"));
+                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("YmirConfigurationControl.20"))); //$NON-NLS-1$
                 return false;
             }
         }

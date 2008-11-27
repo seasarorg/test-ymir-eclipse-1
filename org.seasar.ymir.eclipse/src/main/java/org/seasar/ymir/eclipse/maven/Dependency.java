@@ -63,7 +63,7 @@ public class Dependency {
 
     @Override
     public String toString() {
-        return groupId + ":" + artifactId + "-" + version + ", scope=" + scope;
+        return groupId + ":" + artifactId + "-" + version + ", scope=" + scope; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     public String getGroupId() {

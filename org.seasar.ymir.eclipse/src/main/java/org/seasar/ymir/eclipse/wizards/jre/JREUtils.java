@@ -4,10 +4,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class JREUtils {
-    private static final Pattern JRE_NAME_PATTERN = Pattern.compile("(?:j2re|j2sdk|jre|jdk)(\\d+\\.\\d+)\\.",
+    private static final Pattern JRE_NAME_PATTERN = Pattern.compile("(?:j2re|j2sdk|jre|jdk)(\\d+\\.\\d+)\\.", //$NON-NLS-1$
             Pattern.CASE_INSENSITIVE);
 
-    private static final String DEFAULT_JRE_VERSION = "1.6";
+    private static final String DEFAULT_JRE_VERSION = "1.6"; //$NON-NLS-1$
 
     private JREUtils() {
     }

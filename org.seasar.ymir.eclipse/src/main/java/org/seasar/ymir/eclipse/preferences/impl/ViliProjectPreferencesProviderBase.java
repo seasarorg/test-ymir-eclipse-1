@@ -17,7 +17,7 @@ abstract public class ViliProjectPreferencesProviderBase implements ViliProjectP
             new DatabaseEntry("PostgreSQL 8.3 database (JDBC-4.0)", "postgresql", "org.postgresql.Driver", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     "jdbc:postgresql://localhost:5432/[DBNAME]", "", "", new Dependency("postgresql", "postgresql", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                             "8.3-603.jdbc4", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
-            new DatabaseEntry("カスタム", "", "", "", "", "", null), };
+            new DatabaseEntry(Messages.getString("ViliProjectPreferencesProviderBase.0"), "", "", "", "", "", null), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 
     public DatabaseEntry[] getDatabaseEntries() {
         return databaseEntries;

@@ -24,7 +24,7 @@ public class BuildJREDescriptor extends JREDescriptor {
      * @see org.eclipse.jdt.internal.debug.ui.jres.JREDescriptor#getDescription()
      */
     public String getDescription() {
-        return MessageFormat.format(Messages.getString("BuildJREDescriptor.0"), new Object[] { JavaRuntime
+        return MessageFormat.format(Messages.getString("BuildJREDescriptor.0"), new Object[] { JavaRuntime //$NON-NLS-1$
                 .getDefaultVMInstall().getName() });
     }
 }

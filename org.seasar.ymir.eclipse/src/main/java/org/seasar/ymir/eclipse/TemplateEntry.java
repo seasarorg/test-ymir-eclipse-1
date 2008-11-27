@@ -3,7 +3,7 @@ package org.seasar.ymir.eclipse;
 import net.skirnir.xom.annotation.Bean;
 import net.skirnir.xom.annotation.Child;
 
-@Bean("template")
+@Bean("template") //$NON-NLS-1$
 public class TemplateEntry {
     private SkeletonEntries skeletons;
 

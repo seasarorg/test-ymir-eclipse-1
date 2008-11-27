@@ -64,7 +64,7 @@ public class ViliPropertyPage extends PropertyPage {
         tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
 
         CTabItem templateTabItem = new CTabItem(tabFolder, SWT.NONE);
-        templateTabItem.setText("テンプレート");
+        templateTabItem.setText(Messages.getString("ViliPropertyPage.0")); //$NON-NLS-1$
 
         Composite templateTabContent = new Composite(tabFolder, SWT.NULL);
         templateTabContent.setLayout(new GridLayout());

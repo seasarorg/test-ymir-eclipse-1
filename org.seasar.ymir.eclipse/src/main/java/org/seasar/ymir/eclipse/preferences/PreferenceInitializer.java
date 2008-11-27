@@ -57,9 +57,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         try {
             Activator.getDefault().getXOMapper().toXML(defaultTemplateEntry, sw);
         } catch (ValidationException ex) {
-            throw new RuntimeException("Can't happen!", ex);
+            throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
         } catch (IOException ex) {
-            throw new RuntimeException("Can't happen!", ex);
+            throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
         }
         String defaultTemplate = sw.toString();
         store.setDefault(PreferenceConstants.P_TEMPLATE, defaultTemplate);

@@ -5,7 +5,7 @@ import net.skirnir.xom.annotation.Child;
 import net.skirnir.xom.annotation.Default;
 import net.skirnir.xom.annotation.Required;
 
-@Bean("fragment")
+@Bean("fragment") //$NON-NLS-1$
 public class FragmentEntry implements MavenArtifact {
     private String groupId;
 
@@ -18,8 +18,8 @@ public class FragmentEntry implements MavenArtifact {
     private String description;
 
     public FragmentEntry() {
-        name = "";
-        description = "";
+        name = ""; //$NON-NLS-1$
+        description = ""; //$NON-NLS-1$
     }
 
     public FragmentEntry(String artifactId, String name, String description) {
@@ -40,7 +40,7 @@ public class FragmentEntry implements MavenArtifact {
 
     @Override
     public String toString() {
-        return name + "(" + groupId + ":" + artifactId + "-" + version + ")";
+        return name + "(" + groupId + ":" + artifactId + "-" + version + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 
     public String getGroupId() {
@@ -77,7 +77,7 @@ public class FragmentEntry implements MavenArtifact {
     }
 
     @Child(order = 4)
-    @Default("")
+    @Default("") //$NON-NLS-1$
     public void setName(String name) {
         this.name = name;
     }
@@ -87,7 +87,7 @@ public class FragmentEntry implements MavenArtifact {
     }
 
     @Child(order = 5)
-    @Default("")
+    @Default("") //$NON-NLS-1$
     public void setDescription(String description) {
         this.description = description;
     }

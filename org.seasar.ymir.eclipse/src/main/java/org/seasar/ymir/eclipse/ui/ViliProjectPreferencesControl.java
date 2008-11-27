@@ -20,7 +20,7 @@ import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 
 public class ViliProjectPreferencesControl {
-    private static final String REQUIRED_TEMPLATE = "{0}を指定して下さい。";
+    private static final String REQUIRED_TEMPLATE = Messages.getString("ViliProjectPreferencesControl.0"); //$NON-NLS-1$
 
     private Composite parent;
 
@@ -80,7 +80,7 @@ public class ViliProjectPreferencesControl {
             createViewParametersControl(composite);
             createDatabaseParametersControl(composite);
         } else {
-            new Label(composite, SWT.NULL).setText("設定可能な項目はありません。");
+            new Label(composite, SWT.NULL).setText(Messages.getString("ViliProjectPreferencesControl.1")); //$NON-NLS-1$
         }
 
         return composite;
@@ -92,10 +92,10 @@ public class ViliProjectPreferencesControl {
         layout.numColumns = 2;
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText("ビュー");
+        group.setText(Messages.getString("ViliProjectPreferencesControl.2")); //$NON-NLS-1$
 
         Label encodingLabel = new Label(group, SWT.NONE);
-        encodingLabel.setText("文字エンコーディング");
+        encodingLabel.setText(Messages.getString("ViliProjectPreferencesControl.3")); //$NON-NLS-1$
 
         viewEncodingField = new Text(group, SWT.BORDER);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
@@ -106,7 +106,7 @@ public class ViliProjectPreferencesControl {
 
     void createDatabaseParametersControl(Composite parent) {
         useDatabaseField = new Button(parent, SWT.CHECK | SWT.LEFT);
-        useDatabaseField.setText("データベースと接続する");
+        useDatabaseField.setText(Messages.getString("ViliProjectPreferencesControl.4")); //$NON-NLS-1$
         useDatabaseField.addListener(SWT.Selection, validationListener);
         useDatabaseField.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
@@ -129,7 +129,7 @@ public class ViliProjectPreferencesControl {
         layout.numColumns = 2;
         databaseGroup.setLayout(layout);
         databaseGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        databaseGroup.setText("データベース");
+        databaseGroup.setText(Messages.getString("ViliProjectPreferencesControl.5")); //$NON-NLS-1$
 
         String[] items = new String[entries.length];
         for (int i = 0; i < entries.length; i++) {
@@ -137,7 +137,7 @@ public class ViliProjectPreferencesControl {
         }
 
         databaseLabel = new Label(databaseGroup, SWT.NONE);
-        databaseLabel.setText("データベースの種類");
+        databaseLabel.setText(Messages.getString("ViliProjectPreferencesControl.6")); //$NON-NLS-1$
 
         databaseCombo = new Combo(databaseGroup, SWT.READ_ONLY);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
@@ -158,7 +158,7 @@ public class ViliProjectPreferencesControl {
         });
 
         databaseDriverClassNameLabel = new Label(databaseGroup, SWT.NONE);
-        databaseDriverClassNameLabel.setText("ドライバクラス");
+        databaseDriverClassNameLabel.setText(Messages.getString("ViliProjectPreferencesControl.7")); //$NON-NLS-1$
 
         databaseDriverClassNameField = new Text(databaseGroup, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -175,7 +175,7 @@ public class ViliProjectPreferencesControl {
         });
 
         databaseURLLabel = new Label(databaseGroup, SWT.NONE);
-        databaseURLLabel.setText("接続URL");
+        databaseURLLabel.setText(Messages.getString("ViliProjectPreferencesControl.8")); //$NON-NLS-1$
 
         databaseURLField = new Text(databaseGroup, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -184,7 +184,7 @@ public class ViliProjectPreferencesControl {
         databaseURLField.addListener(SWT.Modify, validationListener);
 
         databaseUserLabel = new Label(databaseGroup, SWT.NONE);
-        databaseUserLabel.setText("接続ユーザ");
+        databaseUserLabel.setText(Messages.getString("ViliProjectPreferencesControl.9")); //$NON-NLS-1$
 
         databaseUserField = new Text(databaseGroup, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -192,7 +192,7 @@ public class ViliProjectPreferencesControl {
         databaseUserField.setLayoutData(data);
 
         databasePasswordLabel = new Label(databaseGroup, SWT.NONE);
-        databasePasswordLabel.setText("接続パスワード");
+        databasePasswordLabel.setText(Messages.getString("ViliProjectPreferencesControl.10")); //$NON-NLS-1$
 
         databasePasswordField = new Text(databaseGroup, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -234,16 +234,16 @@ public class ViliProjectPreferencesControl {
     public boolean validatePage() {
         if (isJavaProject) {
             if (getViewEncoding().length() == 0) {
-                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, "文字エンコーディング"));
+                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("ViliProjectPreferencesControl.3"))); //$NON-NLS-1$
                 return false;
             }
             if (isUseDatabase()) {
                 if (getDatabaseDriverClassName().length() == 0) {
-                    setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, "ドライバクラス"));
+                    setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("ViliProjectPreferencesControl.7"))); //$NON-NLS-1$
                     return false;
                 }
                 if (getDatabaseURL().length() == 0) {
-                    setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, "接続URL"));
+                    setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("ViliProjectPreferencesControl.8"))); //$NON-NLS-1$
                     return false;
                 }
             }
@@ -274,7 +274,7 @@ public class ViliProjectPreferencesControl {
         if (isJavaProject) {
             return viewEncodingField.getText();
         } else {
-            return "";
+            return ""; //$NON-NLS-1$
         }
     }
 
@@ -288,7 +288,7 @@ public class ViliProjectPreferencesControl {
             return new DatabaseEntry(entries[idx].getName(), entries[idx].getType(), getDatabaseDriverClassName(),
                     getDatabaseURL(), getDatabaseUser(), getDatabasePassword(), entries[idx].getDependency());
         } else {
-            return new DatabaseEntry("", "", "", "", "", "", null);
+            return new DatabaseEntry("", "", "", "", "", "", null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
         }
     }
 

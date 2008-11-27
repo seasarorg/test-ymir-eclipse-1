@@ -35,12 +35,12 @@ public class TemplateControl {
 
         if (forProject) {
             projectSpecificSettingsEnabledButton = new Button(composite, SWT.CHECK);
-            projectSpecificSettingsEnabledButton.setText("Enable pr&oject specific settings");
+            projectSpecificSettingsEnabledButton.setText(Messages.getString("TemplateControl.0")); //$NON-NLS-1$
         }
 
         templateContentLabel = new Label(composite, SWT.NONE);
         templateContentLabel.setLayoutData(new GridData());
-        templateContentLabel.setText("テンプレート定義:");
+        templateContentLabel.setText(Messages.getString("TemplateControl.1")); //$NON-NLS-1$
 
         templateContentText = new Text(composite, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
         GridData gridData = new GridData();

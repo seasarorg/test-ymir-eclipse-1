@@ -616,7 +616,7 @@ public class Activator extends AbstractUIPlugin {
             try {
                 is = artifactURL.openStream();
                 os = new FileOutputStream(artifactFile);
-                System.out.println("URL=" + artifactURL + ", file=" + artifactFile);
+                System.out.println("URL=" + artifactURL + ", file=" + artifactFile); //$NON-NLS-1$ //$NON-NLS-2$
                 StreamUtils.copyStream(is, os);
             } finally {
                 StreamUtils.close(is);
@@ -685,7 +685,7 @@ public class Activator extends AbstractUIPlugin {
         try {
             return mapper.toBean(parser.parse(new StringReader(template)).getRootElement(), TemplateEntry.class);
         } catch (IOException ex) {
-            throw new RuntimeException("Can't happen!", ex);
+            throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
         }
     }
 
@@ -720,7 +720,7 @@ public class Activator extends AbstractUIPlugin {
                     is = file.getContents();
                     properties.load(is);
                 } catch (IOException ex) {
-                    getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.OK, "Can't load: " + file, ex));
+                    getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.OK, "Can't load: " + file, ex)); //$NON-NLS-1$
                 } catch (CoreException ex) {
                     getLog().log(ex.getStatus());
                 } finally {
@@ -748,7 +748,7 @@ public class Activator extends AbstractUIPlugin {
             try {
                 properties.store(baos);
             } catch (IOException ex) {
-                getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, "Can't happen!", ex));
+                getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, "Can't happen!", ex)); //$NON-NLS-1$
                 return;
             }
             try {

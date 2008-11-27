@@ -22,7 +22,7 @@ public class TemplatePreferencePage extends PreferencePage implements IWorkbench
 
     public TemplatePreferencePage() {
         setPreferenceStore(Activator.getDefault().getPreferenceStore());
-        setDescription("プロジェクトのスケルトンテンプレートです。");
+        setDescription(Messages.getString("TemplatePreferencePage.0")); //$NON-NLS-1$
     }
 
     @Override

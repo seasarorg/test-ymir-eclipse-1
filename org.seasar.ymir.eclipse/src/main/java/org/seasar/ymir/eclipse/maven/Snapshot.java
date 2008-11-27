@@ -33,7 +33,7 @@ public class Snapshot {
     }
 
     @Child(order = 3)
-    @Default("false")
+    @Default("false") //$NON-NLS-1$
     public void setLocalCopy(boolean localCopy) {
         this.localCopy = localCopy;
     }

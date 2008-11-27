@@ -38,7 +38,7 @@ public class ArtifactPair {
             try {
                 behavior = new ViliBehavior(artifact);
             } catch (IOException ex) {
-                throw new RuntimeException("Can't load vili-behavior: " + artifact, ex);
+                throw new RuntimeException("Can't load vili-behavior: " + artifact, ex); //$NON-NLS-1$
             }
         }
         return behavior;

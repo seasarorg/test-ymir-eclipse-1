@@ -3,7 +3,7 @@ package org.seasar.ymir.eclipse;
 import net.skirnir.xom.annotation.Bean;
 import net.skirnir.xom.annotation.Child;
 
-@Bean("fragments")
+@Bean("fragments") //$NON-NLS-1$
 public class FragmentEntries {
     private FragmentEntry[] fragments = new FragmentEntry[0];
 

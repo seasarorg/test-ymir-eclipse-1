@@ -30,8 +30,8 @@ public class DatabaseEntry {
 
     @Override
     public String toString() {
-        return "name=" + name + ", type=" + type + ", driverClassName=" + driverClassName + ", URL=" + databaseURL
-                + ", user=" + user + ", password=" + password;
+        return "name=" + name + ", type=" + type + ", driverClassName=" + driverClassName + ", URL=" + databaseURL //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                + ", user=" + user + ", password=" + password; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public String getName() {

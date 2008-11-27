@@ -20,7 +20,7 @@ import werkzeugkasten.mvnhack.repository.impl.ArtifactUtil;
 import werkzeugkasten.mvnhack.repository.impl.RemoteRepository;
 
 public class ExtendedRemoteRepository extends RemoteRepository implements ExtendedRepository {
-    private static final Object NAME_MAVEN_METADATA = "maven-metadata.xml";
+    private static final Object NAME_MAVEN_METADATA = "maven-metadata.xml"; //$NON-NLS-1$
 
     private boolean snapshot;
 
@@ -100,7 +100,7 @@ public class ExtendedRemoteRepository extends RemoteRepository implements Extend
         Set<URL> urls = new HashSet<URL>();
         urls.add(toURL(ArtifactUtils.toPath(artifact)));
         urls.add(toURL(ArtifactUtils.toPath(artifact, Constants.POM)));
-        urls.add(toURL(ArtifactUtils.toPath(artifact, "-sources." + artifact.getType())));
+        urls.add(toURL(ArtifactUtils.toPath(artifact, "-sources." + artifact.getType()))); //$NON-NLS-1$
         return urls;
     }
 }

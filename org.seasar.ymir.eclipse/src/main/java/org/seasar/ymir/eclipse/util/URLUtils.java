@@ -5,7 +5,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 public class URLUtils {
-    private static final String PROTOCOL_FILE = "file";
+    private static final String PROTOCOL_FILE = "file"; //$NON-NLS-1$
 
     private URLUtils() {
     }
