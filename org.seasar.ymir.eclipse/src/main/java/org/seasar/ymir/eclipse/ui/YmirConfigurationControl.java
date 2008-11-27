@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.wizards;
+package org.seasar.ymir.eclipse.ui;
 
 import java.text.MessageFormat;
 
@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Text;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
+import org.seasar.ymir.eclipse.wizards.Messages;
 
 public class YmirConfigurationControl {
     private static final String REQUIRED_TEMPLATE = "{0}を指定して下さい。";

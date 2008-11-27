@@ -28,10 +28,10 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.ymir.eclipse.ArtifactPair;
-import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.ViliBehavior;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.ui.ViliProjectPreferencesControl;
+import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well
@@ -40,8 +40,6 @@ import org.seasar.ymir.eclipse.ui.ViliProjectPreferencesControl;
  */
 
 public class NewProjectWizardThirdPage extends WizardPage {
-    private static final int DEFAULT_DATABASE_INDEX = 0;
-
     private static final int SCROLL_UNIT = 16;
 
     private Listener validationListener = new Listener() {
@@ -51,8 +49,6 @@ public class NewProjectWizardThirdPage extends WizardPage {
     };
 
     private ViliProjectPreferences preferences;
-
-    private DatabaseEntry[] entries;
 
     private Composite tabFolderParent;
 

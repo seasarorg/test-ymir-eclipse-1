@@ -67,6 +67,7 @@ import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
+import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
 import org.seasar.ymir.eclipse.util.JdtUtils;
 import org.seasar.ymir.eclipse.util.MapAdapter;
 import org.seasar.ymir.eclipse.util.StreamUtils;
