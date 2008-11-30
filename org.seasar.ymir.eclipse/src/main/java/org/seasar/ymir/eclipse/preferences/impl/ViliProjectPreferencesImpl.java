@@ -11,15 +11,17 @@ import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.ParameterKeys;
+import org.seasar.ymir.eclipse.PlatformDelegate;
 import org.seasar.ymir.eclipse.natures.ViliNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
+import org.seasar.ymir.eclipse.util.MapAdapter;
 
 public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     private ViliProjectPreferencesProvider provider;
 
-    private Boolean projectSpecificTemplateEnabled;
+    private boolean projectSpecificTemplateEnabled;
 
     private String template;
 
@@ -27,39 +29,39 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     private String viewEncoding;
 
-    private Boolean useDatabase;
+    private boolean useDatabase;
 
     private DatabaseEntry databaseEntry;
 
     public ViliProjectPreferencesImpl(ViliProjectPreferencesProvider provider) {
         this.provider = provider;
+
+        projectSpecificTemplateEnabled = provider.isProjectSpecificTemplateEnabled();
+        template = provider.getTemplate();
+        rootPackageName = provider.getRootPackageName();
+        viewEncoding = provider.getViewEncoding();
+        useDatabase = provider.isUseDatabase();
+        databaseEntry = provider.getDatabaseEntry();
     }
 
     public boolean isProjectSpecificTemplateEnabled() {
-        if (projectSpecificTemplateEnabled == null) {
-            return provider.isProjectSpecificTemplateEnabled();
-        }
-        return projectSpecificTemplateEnabled.booleanValue();
+        return projectSpecificTemplateEnabled;
     }
 
     public String getTemplate() {
-        if (template == null) {
-            return provider.getTemplate();
-        }
         return template;
     }
 
     public String getRootPackageName() {
-        if (rootPackageName == null) {
-            return provider.getRootPackageName();
-        }
         return rootPackageName;
     }
 
+    public String getRootPackagePath() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     public String getViewEncoding() {
-        if (viewEncoding == null) {
-            return provider.getViewEncoding();
-        }
         return viewEncoding;
     }
 
@@ -68,16 +70,10 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     }
 
     public boolean isUseDatabase() {
-        if (useDatabase == null) {
-            return Boolean.valueOf(provider.isUseDatabase());
-        }
-        return useDatabase.booleanValue();
+        return useDatabase;
     }
 
     public DatabaseEntry getDatabaseEntry() {
-        if (databaseEntry == null) {
-            return provider.getDatabaseEntry();
-        }
         return databaseEntry;
     }
 
@@ -97,8 +93,8 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         this.viewEncoding = viewEncoding;
     }
 
-    public void setUseDatabase(boolean databaseUsed) {
-        this.useDatabase = Boolean.valueOf(databaseUsed);
+    public void setUseDatabase(boolean useDatabase) {
+        this.useDatabase = useDatabase;
     }
 
     public void setDatabaseEntry(DatabaseEntry databaseEntry) {
@@ -115,31 +111,78 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         }
         MapProperties properties = Activator.getDefault().loadApplicationProperties(project);
 
-        DatabaseEntry entry = getDatabaseEntry();
-        store.putValue(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, entry.getDriverClassName());
-        store.putValue(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
-        store.putValue(ParameterKeys.DATABASE_NAME, entry.getName());
-        store.putValue(ParameterKeys.DATABASE_TYPE, entry.getType());
-        store.putValue(ParameterKeys.DATABASE_URL, entry.getURL());
-        store.putValue(ParameterKeys.USE_DATABASE, String.valueOf(isUseDatabase()));
-        store.putValue(ParameterKeys.DATABASE_USER, entry.getUser());
+        store.putValue(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, databaseEntry.getDriverClassName());
+        store.putValue(ParameterKeys.DATABASE_PASSWORD, databaseEntry.getPassword());
+        store.putValue(ParameterKeys.DATABASE_NAME, databaseEntry.getName());
+        store.putValue(ParameterKeys.DATABASE_TYPE, databaseEntry.getType());
+        store.putValue(ParameterKeys.DATABASE_URL, databaseEntry.getURL());
+        store.putValue(ParameterKeys.USE_DATABASE, String.valueOf(useDatabase));
+        store.putValue(ParameterKeys.DATABASE_USER, databaseEntry.getUser());
         if (isYmirProject) {
-            properties.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, getRootPackageName());
+            properties.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, rootPackageName);
         } else {
-            store.putValue(ParameterKeys.ROOT_PACKAGE_NAME, getRootPackageName());
+            store.putValue(ParameterKeys.ROOT_PACKAGE_NAME, rootPackageName);
         }
         store.putValue(PreferenceConstants.P_TEMPLATE_PROJECTSPECIFICSETTINGSENABLED, String
-                .valueOf(isProjectSpecificTemplateEnabled()));
+                .valueOf(projectSpecificTemplateEnabled));
         if (isProjectSpecificTemplateEnabled()) {
-            store.putValue(PreferenceConstants.P_TEMPLATE, getTemplate());
+            store.putValue(PreferenceConstants.P_TEMPLATE, template);
         } else {
             store.setToDefault(PreferenceConstants.P_TEMPLATE);
         }
-        store.putValue(ParameterKeys.VIEW_ENCODING, getViewEncoding());
+        store.putValue(ParameterKeys.VIEW_ENCODING, viewEncoding);
 
         ((IPersistentPreferenceStore) store).save();
         if (isYmirProject) {
             Activator.getDefault().saveApplicationProperties(project, properties);
         }
+    }
+
+    public String getSlash() {
+        return provider.getSlash();
+    }
+
+    public String getDollar() {
+        return provider.getDollar();
+    }
+
+    public String getProjectName() {
+        return provider.getProjectName();
+    }
+
+    public String getGroupId() {
+        return provider.getGroupId();
+    }
+
+    public String getArtifactId() {
+        return provider.getArtifactId();
+    }
+
+    public String getVersion() {
+        return provider.getVersion();
+    }
+
+    public String getJREVersion() {
+        return provider.getJREVersion();
+    }
+
+    public PlatformDelegate getPlatform() {
+        return provider.getPlatform();
+    }
+
+    public String getFieldPrefix() {
+        return provider.getFieldPrefix();
+    }
+
+    public String getFieldSuffix() {
+        return provider.getFieldSuffix();
+    }
+
+    public String getFieldSpecialPrefix() {
+        return provider.getFieldSpecialPrefix();
+    }
+
+    public MapAdapter getYmir() {
+        return provider.getYmir();
     }
 }

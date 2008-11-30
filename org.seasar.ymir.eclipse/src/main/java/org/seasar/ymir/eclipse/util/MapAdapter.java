@@ -16,6 +16,10 @@ public class MapAdapter implements Map<String, String> {
         this.prop = prop;
     }
 
+    public MapProperties getMapProperties() {
+        return prop;
+    }
+
     public void clear() {
         prop.clearProperties();
     }
