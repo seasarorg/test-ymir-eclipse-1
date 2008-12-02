@@ -3,6 +3,7 @@ package org.seasar.ymir.eclipse.preferences;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
 import org.seasar.ymir.eclipse.DatabaseEntry;
 
 public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
@@ -17,6 +18,16 @@ public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
     void setUseDatabase(boolean useDatabase);
 
     void setDatabaseEntry(DatabaseEntry entry);
+
+    void setProjectName(String projectName);
+
+    void setGroupId(String groupId);
+
+    void setArtifactId(String artifactId);
+
+    void setVersion(String version);
+
+    void setJREContainerPath(IPath jreContainerPath);
 
     void save(IProject project) throws IOException;
 }

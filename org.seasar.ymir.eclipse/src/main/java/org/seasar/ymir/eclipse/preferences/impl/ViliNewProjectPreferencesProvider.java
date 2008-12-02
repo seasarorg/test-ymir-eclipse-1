@@ -2,6 +2,7 @@ package org.seasar.ymir.eclipse.preferences.impl;
 
 import java.util.TreeMap;
 
+import org.eclipse.core.runtime.IPath;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.DatabaseEntry;
@@ -9,7 +10,7 @@ import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.JdtUtils;
 import org.seasar.ymir.eclipse.util.MapAdapter;
 
-public class DefaultViliProjectPreferencesProvider extends ViliProjectPreferencesProviderBase {
+public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesProviderBase {
     private static final int DEFAULT_DATABASE_INDEX = 0;
 
     @SuppressWarnings("unchecked")
@@ -55,7 +56,7 @@ public class DefaultViliProjectPreferencesProvider extends ViliProjectPreference
         return "0.0.1-SNAPSHOT";
     }
 
-    public String getJREVersion() {
+    public IPath getJREContainerPath() {
         return null;
     }
 

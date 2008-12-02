@@ -1,9 +1,5 @@
 package org.seasar.ymir.eclipse.preferences.impl;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -16,8 +12,10 @@ import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.DatabaseEntry;
+import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.maven.Dependency;
+import org.seasar.ymir.eclipse.maven.Project;
 import org.seasar.ymir.eclipse.natures.ViliNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.JdtUtils;
@@ -25,10 +23,6 @@ import org.seasar.ymir.eclipse.util.MapAdapter;
 
 public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesProviderBase {
     private static final String PATH_JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER"; //$NON-NLS-1$
-
-    private static final Map<String, String> JRE_VERSION_MAP;
-
-    private static final String DEFAULT_JREVERSION = "1.6";
 
     private IProject project;
 
@@ -39,15 +33,6 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
     private boolean isYmirProject;
 
     private MapAdapter ymir;
-
-    static {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("J2SE-1.3", "1.3"); //$NON-NLS-1$ //$NON-NLS-2$
-        map.put("J2SE-1.4", "1.4"); //$NON-NLS-1$ //$NON-NLS-2$
-        map.put("J2SE-1.5", "1.5"); //$NON-NLS-1$ //$NON-NLS-2$
-        map.put("JavaSE-1.6", "1.6"); //$NON-NLS-1$ //$NON-NLS-2$
-        JRE_VERSION_MAP = Collections.unmodifiableMap(map);
-    }
 
     public ViliProjectPreferencesProviderImpl(IProject project) throws CoreException {
         this.project = project;
@@ -107,36 +92,52 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
     }
 
     public String getGroupId() {
-        // TODO XOMを使ってpom.xmlからgroupIdを取り出すメソッドを作成する。
-        return "";
+        String groupId = null;
+        Project pom = Activator.getDefault().getAsBean(project.getFile(Globals.PATH_POM_XML), Project.class);
+        if (pom != null) {
+            groupId = pom.findGroupId();
+        }
+        if (groupId == null) {
+            groupId = "";
+        }
+        return groupId;
     }
 
     public String getArtifactId() {
-        // TODO
-        return "";
+        String artifactId = null;
+        Project pom = Activator.getDefault().getAsBean(project.getFile(Globals.PATH_POM_XML), Project.class);
+        if (pom != null) {
+            artifactId = pom.findArtifactId();
+        }
+        if (artifactId == null) {
+            artifactId = "";
+        }
+        return artifactId;
     }
 
     public String getVersion() {
-        // TODO
-        return "0.0.1-SNAPSHOT";
+        String version = null;
+        Project pom = Activator.getDefault().getAsBean(project.getFile(Globals.PATH_POM_XML), Project.class);
+        if (pom != null) {
+            version = pom.findVersion();
+        }
+        if (version == null) {
+            version = "";
+        }
+        return version;
     }
 
-    public String getJREVersion() {
+    public IPath getJREContainerPath() {
         try {
             for (IClasspathEntry entry : javaProject.getRawClasspath()) {
                 IPath path = entry.getPath();
                 if (entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER && PATH_JRE_CONTAINER.equals(path.segment(0))) {
-                    String version = JRE_VERSION_MAP.get(path.lastSegment());
-                    if (version != null) {
-                        return version;
-                    } else {
-                        return DEFAULT_JREVERSION;
-                    }
+                    return path;
                 }
             }
         } catch (JavaModelException ignore) {
         }
-        return DEFAULT_JREVERSION;
+        return null;
     }
 
     public String getFieldPrefix() {

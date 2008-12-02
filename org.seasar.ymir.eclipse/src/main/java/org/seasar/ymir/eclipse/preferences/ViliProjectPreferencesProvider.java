@@ -1,5 +1,6 @@
 package org.seasar.ymir.eclipse.preferences;
 
+import org.eclipse.core.runtime.IPath;
 import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.PlatformDelegate;
 import org.seasar.ymir.eclipse.util.MapAdapter;
@@ -19,13 +20,7 @@ public interface ViliProjectPreferencesProvider {
 
     DatabaseEntry getDatabaseEntry();
 
-    String getSlash();
-
-    String getDollar();
-
     String getProjectName();
-
-    String getRootPackagePath();
 
     String getGroupId();
 
@@ -33,7 +28,7 @@ public interface ViliProjectPreferencesProvider {
 
     String getVersion();
 
-    String getJREVersion();
+    IPath getJREContainerPath();
 
     PlatformDelegate getPlatform();
 

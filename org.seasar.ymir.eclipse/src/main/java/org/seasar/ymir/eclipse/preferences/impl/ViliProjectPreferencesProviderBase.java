@@ -28,23 +28,6 @@ abstract public class ViliProjectPreferencesProviderBase implements ViliProjectP
         return databaseEntries;
     }
 
-    public String getSlash() {
-        return "/";
-    }
-
-    public String getDollar() {
-        return "$";
-    }
-
-    public String getRootPackagePath() {
-        String rootPackageName = getRootPackageName();
-        if (rootPackageName == null) {
-            return null;
-        } else {
-            return rootPackageName.replace('.', '/');
-        }
-    }
-
     public PlatformDelegate getPlatform() {
         return platformDelegate;
     }

@@ -1,9 +1,13 @@
 package org.seasar.ymir.eclipse.preferences.impl;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.seasar.kvasir.util.collection.MapProperties;
@@ -19,6 +23,10 @@ import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
 import org.seasar.ymir.eclipse.util.MapAdapter;
 
 public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
+    private static final Map<String, String> JRE_VERSION_MAP;
+
+    private static final String DEFAULT_JREVERSION = "1.6";
+
     private ViliProjectPreferencesProvider provider;
 
     private boolean projectSpecificTemplateEnabled;
@@ -27,21 +35,49 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     private String rootPackageName;
 
+    private String rootPackagePath;
+
     private String viewEncoding;
 
     private boolean useDatabase;
 
     private DatabaseEntry databaseEntry;
 
+    private String projectName;
+
+    private String groupId;
+
+    private String artifactId;
+
+    private String version;
+
+    private IPath jreContainerPath;
+
+    private String jreVersion;
+
+    static {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("J2SE-1.3", "1.3"); //$NON-NLS-1$ //$NON-NLS-2$
+        map.put("J2SE-1.4", "1.4"); //$NON-NLS-1$ //$NON-NLS-2$
+        map.put("J2SE-1.5", "1.5"); //$NON-NLS-1$ //$NON-NLS-2$
+        map.put("JavaSE-1.6", "1.6"); //$NON-NLS-1$ //$NON-NLS-2$
+        JRE_VERSION_MAP = Collections.unmodifiableMap(map);
+    }
+
     public ViliProjectPreferencesImpl(ViliProjectPreferencesProvider provider) {
         this.provider = provider;
 
         projectSpecificTemplateEnabled = provider.isProjectSpecificTemplateEnabled();
         template = provider.getTemplate();
-        rootPackageName = provider.getRootPackageName();
+        setRootPackageName(provider.getRootPackageName());
         viewEncoding = provider.getViewEncoding();
         useDatabase = provider.isUseDatabase();
         databaseEntry = provider.getDatabaseEntry();
+        projectName = provider.getProjectName();
+        groupId = provider.getGroupId();
+        artifactId = provider.getArtifactId();
+        version = provider.getVersion();
+        setJREContainerPath(provider.getJREContainerPath());
     }
 
     public boolean isProjectSpecificTemplateEnabled() {
@@ -57,8 +93,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     }
 
     public String getRootPackagePath() {
-        // TODO Auto-generated method stub
-        return null;
+        return rootPackagePath;
     }
 
     public String getViewEncoding() {
@@ -87,6 +122,11 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     public void setRootPackageName(String rootPackageName) {
         this.rootPackageName = rootPackageName;
+        if (this.rootPackageName == null) {
+            rootPackagePath = null;
+        } else {
+            rootPackagePath = this.rootPackageName.replace('.', '/');
+        }
     }
 
     public void setViewEncoding(String viewEncoding) {
@@ -139,31 +179,63 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     }
 
     public String getSlash() {
-        return provider.getSlash();
+        return "/";
     }
 
     public String getDollar() {
-        return provider.getDollar();
+        return "$";
     }
 
     public String getProjectName() {
-        return provider.getProjectName();
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 
     public String getGroupId() {
-        return provider.getGroupId();
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     public String getArtifactId() {
-        return provider.getArtifactId();
+        return artifactId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
     }
 
     public String getVersion() {
-        return provider.getVersion();
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public String getJREVersion() {
-        return provider.getJREVersion();
+        return jreVersion;
+    }
+
+    public IPath getJREContainerPath() {
+        return jreContainerPath;
+    }
+
+    public void setJREContainerPath(IPath jreContainerPath) {
+        this.jreContainerPath = jreContainerPath;
+        if (this.jreContainerPath == null) {
+            jreVersion = DEFAULT_JREVERSION;
+        } else {
+            jreVersion = JRE_VERSION_MAP.get(this.jreContainerPath.lastSegment());
+            if (jreVersion == null) {
+                jreVersion = DEFAULT_JREVERSION;
+            }
+        }
     }
 
     public PlatformDelegate getPlatform() {

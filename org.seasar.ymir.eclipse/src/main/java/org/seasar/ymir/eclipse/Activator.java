@@ -63,7 +63,7 @@ import org.seasar.ymir.eclipse.natures.ViliNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
-import org.seasar.ymir.eclipse.preferences.impl.DefaultViliProjectPreferencesProvider;
+import org.seasar.ymir.eclipse.preferences.impl.ViliNewProjectPreferencesProvider;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesImpl;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesProviderImpl;
 import org.seasar.ymir.eclipse.util.CascadeMap;
@@ -563,6 +563,28 @@ public class Activator extends AbstractUIPlugin {
         return parser;
     }
 
+    public <T> T getAsBean(IFile file, Class<T> clazz) {
+        if (!file.exists()) {
+            return null;
+        }
+
+        try {
+            return mapper.toBean(parser.parse(new InputStreamReader(file.getContents(), "UTF-8")).getRootElement(),
+                    clazz);
+        } catch (ValidationException ex) {
+            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex));
+        } catch (IllegalSyntaxException ex) {
+            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex));
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException("Can't happen!", ex);
+        } catch (IOException ex) {
+            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex));
+        } catch (CoreException ex) {
+            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex));
+        }
+        return null;
+    }
+
     public ArtifactResolver getArtifactResolver() {
         return artifactResolver;
     }
@@ -690,7 +712,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public ViliProjectPreferences newViliProjectPreferences() {
-        return new ViliProjectPreferencesImpl(new DefaultViliProjectPreferencesProvider());
+        return new ViliProjectPreferencesImpl(new ViliNewProjectPreferencesProvider());
     }
 
     public ViliProjectPreferences getViliProjectPreferences(IProject project) {
@@ -699,7 +721,7 @@ public class Activator extends AbstractUIPlugin {
             provider = new ViliProjectPreferencesProviderImpl(project);
         } catch (CoreException ex) {
             getLog().log(ex.getStatus());
-            provider = new DefaultViliProjectPreferencesProvider();
+            provider = new ViliNewProjectPreferencesProvider();
         }
         return new ViliProjectPreferencesImpl(provider);
     }
