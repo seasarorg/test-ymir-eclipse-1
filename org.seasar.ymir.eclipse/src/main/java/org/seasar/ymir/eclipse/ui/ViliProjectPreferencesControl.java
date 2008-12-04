@@ -26,7 +26,9 @@ public class ViliProjectPreferencesControl {
 
     private ViliProjectPreferences preferences;
 
-    private boolean isJavaProject;
+    private boolean isWebProject;
+
+    private boolean isDatabaseProject;
 
     private DatabaseEntry[] entries;
 
@@ -62,10 +64,12 @@ public class ViliProjectPreferencesControl {
 
     private Text databasePasswordField;
 
-    public ViliProjectPreferencesControl(Composite parent, ViliProjectPreferences preferences, boolean isJavaProject) {
+    public ViliProjectPreferencesControl(Composite parent, ViliProjectPreferences preferences, boolean isWebProject,
+            boolean isDatabaseProject) {
         this.parent = parent;
         this.preferences = preferences;
-        this.isJavaProject = isJavaProject;
+        this.isWebProject = isWebProject;
+        this.isDatabaseProject = isDatabaseProject;
 
         entries = preferences.getDatabaseEntries();
     }
@@ -76,10 +80,13 @@ public class ViliProjectPreferencesControl {
         composite.setLayout(new GridLayout());
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        if (isJavaProject) {
+        if (isWebProject) {
             createViewParametersControl(composite);
+        }
+        if (isDatabaseProject) {
             createDatabaseParametersControl(composite);
-        } else {
+        }
+        if (!isWebProject && !isDatabaseProject) {
             new Label(composite, SWT.NULL).setText(Messages.getString("ViliProjectPreferencesControl.1")); //$NON-NLS-1$
         }
 
@@ -102,6 +109,11 @@ public class ViliProjectPreferencesControl {
         data.widthHint = 250;
         viewEncodingField.setLayoutData(data);
         viewEncodingField.addListener(SWT.Modify, validationListener);
+        viewEncodingField.addListener(SWT.Modify, new Listener() {
+            public void handleEvent(Event event) {
+                preferences.setViewEncoding(viewEncodingField.getText().trim());
+            }
+        });
     }
 
     void createDatabaseParametersControl(Composite parent) {
@@ -121,6 +133,11 @@ public class ViliProjectPreferencesControl {
                 databaseUserField.setEnabled(enabled);
                 databasePasswordLabel.setEnabled(enabled);
                 databasePasswordField.setEnabled(enabled);
+            }
+        });
+        useDatabaseField.addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event event) {
+                preferences.setUseDatabase(useDatabaseField.getSelection());
             }
         });
 
@@ -148,10 +165,17 @@ public class ViliProjectPreferencesControl {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 int idx = databaseCombo.getSelectionIndex();
+                DatabaseEntry entry = preferences.getDatabaseEntry();
+                entry.setName(entries[idx].getName());
+                entry.setType(entries[idx].getType());
                 databaseDriverClassNameField.setText(entries[idx].getDriverClassName());
+                entry.setDriverClassName(entries[idx].getDriverClassName());
                 databaseURLField.setText(entries[idx].getURL());
+                entry.setURL(entries[idx].getURL());
                 databaseUserField.setText(entries[idx].getUser());
+                entry.setUser(entries[idx].getUser());
                 databasePasswordField.setText(entries[idx].getPassword());
+                entry.setPassword(entries[idx].getPassword());
 
                 setPageComplete(validatePage());
             }
@@ -170,7 +194,15 @@ public class ViliProjectPreferencesControl {
                 if (!databaseDriverClassNameField.getText().equals(
                         entries[databaseCombo.getSelectionIndex()].getDriverClassName())) {
                     databaseCombo.setText(databaseCombo.getItem(entries.length - 1));
+                    DatabaseEntry entry = preferences.getDatabaseEntry();
+                    entry.setName(entries[entries.length - 1].getName());
+                    entry.setType(entries[entries.length - 1].getType());
                 }
+            }
+        });
+        databaseDriverClassNameField.addListener(SWT.Modify, new Listener() {
+            public void handleEvent(Event event) {
+                preferences.getDatabaseEntry().setDriverClassName(databaseDriverClassNameField.getText().trim());
             }
         });
 
@@ -182,6 +214,11 @@ public class ViliProjectPreferencesControl {
         data.widthHint = 250;
         databaseURLField.setLayoutData(data);
         databaseURLField.addListener(SWT.Modify, validationListener);
+        databaseURLField.addListener(SWT.Modify, new Listener() {
+            public void handleEvent(Event event) {
+                preferences.getDatabaseEntry().setURL(databaseURLField.getText().trim());
+            }
+        });
 
         databaseUserLabel = new Label(databaseGroup, SWT.NONE);
         databaseUserLabel.setText(Messages.getString("ViliProjectPreferencesControl.9")); //$NON-NLS-1$
@@ -190,6 +227,11 @@ public class ViliProjectPreferencesControl {
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.widthHint = 250;
         databaseUserField.setLayoutData(data);
+        databaseUserField.addListener(SWT.Modify, new Listener() {
+            public void handleEvent(Event event) {
+                preferences.getDatabaseEntry().setUser(databaseUserField.getText().trim());
+            }
+        });
 
         databasePasswordLabel = new Label(databaseGroup, SWT.NONE);
         databasePasswordLabel.setText(Messages.getString("ViliProjectPreferencesControl.10")); //$NON-NLS-1$
@@ -198,6 +240,11 @@ public class ViliProjectPreferencesControl {
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.widthHint = 250;
         databasePasswordField.setLayoutData(data);
+        databasePasswordField.addListener(SWT.Modify, new Listener() {
+            public void handleEvent(Event event) {
+                preferences.getDatabaseEntry().setPassword(databasePasswordField.getText().trim());
+            }
+        });
     }
 
     public void setVisible(boolean visible) {
@@ -207,8 +254,10 @@ public class ViliProjectPreferencesControl {
     }
 
     public void setDefaultValues() {
-        if (isJavaProject) {
+        if (isWebProject) {
             viewEncodingField.setText(preferences.getViewEncoding());
+        }
+        if (isDatabaseProject) {
             useDatabaseField.setSelection(preferences.isUseDatabase());
 
             DatabaseEntry entry = preferences.getDatabaseEntry();
@@ -232,18 +281,23 @@ public class ViliProjectPreferencesControl {
     }
 
     public boolean validatePage() {
-        if (isJavaProject) {
+        if (isWebProject) {
             if (getViewEncoding().length() == 0) {
-                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("ViliProjectPreferencesControl.3"))); //$NON-NLS-1$
+                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages
+                        .getString("ViliProjectPreferencesControl.3"))); //$NON-NLS-1$
                 return false;
             }
+        }
+        if (isDatabaseProject) {
             if (isUseDatabase()) {
                 if (getDatabaseDriverClassName().length() == 0) {
-                    setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("ViliProjectPreferencesControl.7"))); //$NON-NLS-1$
+                    setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages
+                            .getString("ViliProjectPreferencesControl.7"))); //$NON-NLS-1$
                     return false;
                 }
                 if (getDatabaseURL().length() == 0) {
-                    setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("ViliProjectPreferencesControl.8"))); //$NON-NLS-1$
+                    setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages
+                            .getString("ViliProjectPreferencesControl.8"))); //$NON-NLS-1$
                     return false;
                 }
             }
@@ -264,14 +318,8 @@ public class ViliProjectPreferencesControl {
         this.isPageComplete = isPageComplete;
     }
 
-    public void populateViliProjectPreferences() {
-        preferences.setViewEncoding(getViewEncoding());
-        preferences.setUseDatabase(isUseDatabase());
-        preferences.setDatabaseEntry(getDatabaseEntry());
-    }
-
     private String getViewEncoding() {
-        if (isJavaProject) {
+        if (isWebProject) {
             return viewEncodingField.getText();
         } else {
             return ""; //$NON-NLS-1$
@@ -279,11 +327,11 @@ public class ViliProjectPreferencesControl {
     }
 
     private boolean isUseDatabase() {
-        return isJavaProject && useDatabaseField.getSelection();
+        return isDatabaseProject && useDatabaseField.getSelection();
     }
 
     private DatabaseEntry getDatabaseEntry() {
-        if (isJavaProject) {
+        if (isDatabaseProject) {
             int idx = databaseCombo.getSelectionIndex();
             return new DatabaseEntry(entries[idx].getName(), entries[idx].getType(), getDatabaseDriverClassName(),
                     getDatabaseURL(), getDatabaseUser(), getDatabasePassword(), entries[idx].getDependency());

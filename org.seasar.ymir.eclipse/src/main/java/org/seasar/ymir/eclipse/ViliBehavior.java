@@ -2,16 +2,20 @@ package org.seasar.ymir.eclipse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.seasar.kvasir.util.LocaleUtils;
 import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.kvasir.util.collection.MapProperties;
+import org.seasar.ymir.eclipse.maven.Project;
 import org.seasar.ymir.eclipse.util.AntPathPatterns;
 import org.seasar.ymir.eclipse.util.ArrayUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
@@ -51,13 +55,13 @@ public class ViliBehavior {
 
     private static final String TYPE = "type"; //$NON-NLS-1$
 
-    private static final String ISNONYMIRPROJECT = "isNonYmirProject"; //$NON-NLS-1$
-
-    private static final String ISNONJAVAPROJECT = "isNonJavaProject"; //$NON-NLS-1$
+    private static final String PROJECTTYPE = "projectType"; //$NON-NLS-1$
 
     private Artifact artifact;
 
     private MapProperties properties;
+
+    private Project pom;
 
     private AntPathPatterns expansionExcludes;
 
@@ -71,6 +75,8 @@ public class ViliBehavior {
 
     private String[] templateParameters;
 
+    private EnumSet<ProjectType> projectTypeSet;
+
     private Pair[] templateEncodingPairs = new Pair[0];
 
     public ViliBehavior(URL url) throws IOException {
@@ -82,12 +88,13 @@ public class ViliBehavior {
     public ViliBehavior(Artifact artifact) throws IOException {
         this.artifact = artifact;
         properties = readProperties(artifact);
+        pom = readPom(artifact);
 
         initialize(properties);
     }
 
     private MapProperties readProperties(URL url) throws IOException {
-        @SuppressWarnings("unchecked") //$NON-NLS-1$
+        @SuppressWarnings("unchecked")//$NON-NLS-1$
         MapProperties properties = new MapProperties(new LinkedHashMap());
         InputStream is = url.openStream();
         try {
@@ -101,7 +108,7 @@ public class ViliBehavior {
     private MapProperties readProperties(Artifact artifact) throws IOException {
         Activator activator = Activator.getDefault();
 
-        @SuppressWarnings("unchecked") //$NON-NLS-1$
+        @SuppressWarnings("unchecked")//$NON-NLS-1$
         MapProperties properties = new MapProperties(new LinkedHashMap());
         JarFile jarFile = activator.getJarFile(artifact);
         try {
@@ -121,7 +128,7 @@ public class ViliBehavior {
                     if (entry == null) {
                         continue;
                     }
-                    @SuppressWarnings("unchecked") //$NON-NLS-1$
+                    @SuppressWarnings("unchecked")//$NON-NLS-1$
                     MapProperties newProperties = new MapProperties(new LinkedHashMap(), properties);
                     properties = newProperties;
                     is = jarFile.getInputStream(entry);
@@ -135,6 +142,24 @@ public class ViliBehavior {
             return properties;
         } finally {
             StreamUtils.close(jarFile);
+        }
+    }
+
+    private Project readPom(Artifact artifact) throws IOException {
+        Activator activator = Activator.getDefault();
+        try {
+            String text = activator.getResourceAsString(artifact, Globals.PATH_POM_XML, Globals.ENCODING,
+                    new NullProgressMonitor());
+            if (text != null) {
+                return activator.getXOMapper().toBean(
+                        activator.getXMLParser().parse(new StringReader(text)).getRootElement(), Project.class);
+            } else {
+                return new Project();
+            }
+        } catch (Throwable t) {
+            IOException ioe = new IOException("Can't read " + Globals.PATH_POM_XML + " in " + artifact); //$NON-NLS-1$ //$NON-NLS-2$
+            ioe.initCause(t);
+            throw ioe;
         }
     }
 
@@ -153,6 +178,8 @@ public class ViliBehavior {
                         .newInstance(properties.getProperty(name)), name.substring(PREFIX_TEMPLATE_ENCODING.length())));
             }
         }
+
+        projectTypeSet = ProjectType.createEnumSet(properties.getProperty(PROJECTTYPE));
     }
 
     public AntPathPatterns getExpansionExcludes() {
@@ -209,14 +236,6 @@ public class ViliBehavior {
         return properties.getProperty(DESCRIPTION, ""); //$NON-NLS-1$
     }
 
-    public boolean isYmirProject() {
-        return !PropertyUtils.valueOf(properties.getProperty(ISNONYMIRPROJECT), false) && isJavaProject();
-    }
-
-    public boolean isJavaProject() {
-        return !PropertyUtils.valueOf(properties.getProperty(ISNONJAVAPROJECT), false);
-    }
-
     public ArtifactType getArtifactType() {
         return ArtifactType.enumOf(properties.getProperty(TYPE));
     }
@@ -247,5 +266,13 @@ public class ViliBehavior {
         public String getValue() {
             return value;
         }
+    }
+
+    public boolean isProjectOf(ProjectType type) {
+        return projectTypeSet.contains(type);
+    }
+
+    public Project getPom() {
+        return pom;
     }
 }

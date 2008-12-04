@@ -4,7 +4,8 @@ import java.io.IOException;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
-import org.seasar.ymir.eclipse.DatabaseEntry;
+import org.seasar.kvasir.util.collection.MapProperties;
+import org.seasar.ymir.eclipse.PlatformDelegate;
 
 public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
     void setProjectSpecificTemplateEnabled(boolean projectSpecificTemplateEnabled);
@@ -17,8 +18,6 @@ public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
 
     void setUseDatabase(boolean useDatabase);
 
-    void setDatabaseEntry(DatabaseEntry entry);
-
     void setProjectName(String projectName);
 
     void setGroupId(String groupId);
@@ -29,5 +28,17 @@ public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
 
     void setJREContainerPath(IPath jreContainerPath);
 
+    void setApplicationProperties(MapProperties applicationProperties);
+
     void save(IProject project) throws IOException;
+
+    String getSlash();
+
+    String getDollar();
+
+    String getJREVersion();
+
+    String getRootPackagePath();
+
+    PlatformDelegate getPlatform();
 }

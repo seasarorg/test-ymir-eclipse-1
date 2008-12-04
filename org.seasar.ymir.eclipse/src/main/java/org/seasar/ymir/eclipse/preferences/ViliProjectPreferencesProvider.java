@@ -1,9 +1,8 @@
 package org.seasar.ymir.eclipse.preferences;
 
 import org.eclipse.core.runtime.IPath;
+import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.DatabaseEntry;
-import org.seasar.ymir.eclipse.PlatformDelegate;
-import org.seasar.ymir.eclipse.util.MapAdapter;
 
 public interface ViliProjectPreferencesProvider {
     boolean isProjectSpecificTemplateEnabled();
@@ -30,13 +29,11 @@ public interface ViliProjectPreferencesProvider {
 
     IPath getJREContainerPath();
 
-    PlatformDelegate getPlatform();
-
     String getFieldPrefix();
 
     String getFieldSuffix();
 
     String getFieldSpecialPrefix();
 
-    MapAdapter getYmir();
+    MapProperties getApplicationProperties();
 }

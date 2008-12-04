@@ -1,7 +1,6 @@
 package org.seasar.ymir.eclipse.preferences.impl;
 
 import org.seasar.ymir.eclipse.DatabaseEntry;
-import org.seasar.ymir.eclipse.PlatformDelegate;
 import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
 
@@ -22,14 +21,8 @@ abstract public class ViliProjectPreferencesProviderBase implements ViliProjectP
                             "8.3-603.jdbc4", "runtime")), //$NON-NLS-1$ //$NON-NLS-2$
             new DatabaseEntry(Messages.getString("ViliProjectPreferencesProviderBase.0"), "", "", "", "", "", null), }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 
-    private PlatformDelegate platformDelegate = new PlatformDelegate();
-
     public DatabaseEntry[] getDatabaseEntries() {
         return databaseEntries;
-    }
-
-    public PlatformDelegate getPlatform() {
-        return platformDelegate;
     }
 
     public String getFieldSpecialPrefix() {

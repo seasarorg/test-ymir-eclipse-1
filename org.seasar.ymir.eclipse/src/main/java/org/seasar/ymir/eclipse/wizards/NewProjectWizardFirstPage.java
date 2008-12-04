@@ -42,6 +42,7 @@ import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
+import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
@@ -53,6 +54,8 @@ import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class NewProjectWizardFirstPage extends WizardPage {
     protected static final long WAIT_RESOLVE_SKELETON_ARTIFACT = 1000L;
+
+    private ViliProjectPreferences preferences;
 
     private boolean initialized;
 
@@ -122,11 +125,14 @@ public class NewProjectWizardFirstPage extends WizardPage {
 
     /**
      * Constructor for SampleNewWizardPage.
+     * @param preferences 
      * 
      * @param pageName
      */
-    public NewProjectWizardFirstPage() {
+    public NewProjectWizardFirstPage(ViliProjectPreferences preferences) {
         super("NewProjectWizardFirstPage"); //$NON-NLS-1$
+
+        this.preferences = preferences;
 
         setTitle(Messages.getString("NewProjectWizardFirstPage.1")); //$NON-NLS-1$
         setDescription(Messages.getString("NewProjectWizardFirstPage.2")); //$NON-NLS-1$
@@ -555,7 +561,16 @@ public class NewProjectWizardFirstPage extends WizardPage {
 
     private void updateArchiveListTable() {
         archiveListTable.removeAll();
-        for (ArtifactPair pair : getSkeletonAndFragments()) {
+        ArtifactPair[] pairs;
+        ArtifactPair[] fragments = getFragments();
+        if (skeleton != null) {
+            pairs = new ArtifactPair[1 + fragments.length];
+            pairs[0] = skeleton;
+            System.arraycopy(fragments, 0, pairs, 1, fragments.length);
+        } else {
+            pairs = fragments;
+        }
+        for (ArtifactPair pair : pairs) {
             TableItem item = new TableItem(archiveListTable, SWT.NULL);
             Artifact artifact = pair.getArtifact();
             String version = artifact.getVersion();
@@ -816,12 +831,8 @@ public class NewProjectWizardFirstPage extends WizardPage {
         }
     }
 
-    public ArtifactPair[] getSkeletonAndFragments() {
+    public ArtifactPair[] getFragments() {
         Map<String, ArtifactPair> map = new LinkedHashMap<String, ArtifactPair>();
-
-        if (skeleton != null) {
-            map.put(ArtifactUtils.getUniqueId(skeleton.getArtifact()), skeleton);
-        }
 
         for (ArtifactPair fragment : fragmentTemplateArtifacts) {
             if (fragment != null) {
@@ -834,7 +845,11 @@ public class NewProjectWizardFirstPage extends WizardPage {
         return map.values().toArray(new ArtifactPair[0]);
     }
 
-    void setSkeleton(ArtifactPair skeleton, ArtifactPair[] fragments) {
+    public ArtifactPair getSkeleton() {
+        return skeleton;
+    }
+
+    void setSkeletonAndFragments(ArtifactPair skeleton, ArtifactPair[] fragments) {
         this.skeleton = skeleton;
         if (!isChosenSkeletonFromTemplate()) {
             customSkeletonDescriptionText.setText(skeleton.getBehavior().getDescription());

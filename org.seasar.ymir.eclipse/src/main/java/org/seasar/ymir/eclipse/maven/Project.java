@@ -11,6 +11,10 @@ public class Project {
 
     private String version;
 
+    private Repositories repositories;
+
+    private Dependencies dependencies;
+
     public Parent getParent() {
         return parent;
     }
@@ -69,5 +73,23 @@ public class Project {
         } else {
             return version;
         }
+    }
+
+    public Repositories getRepositories() {
+        return repositories;
+    }
+
+    @Child(order = 5)
+    public void setRepositories(Repositories repositories) {
+        this.repositories = repositories;
+    }
+
+    public Dependencies getDependencies() {
+        return dependencies;
+    }
+
+    @Child(order = 6)
+    public void setDependencies(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 }

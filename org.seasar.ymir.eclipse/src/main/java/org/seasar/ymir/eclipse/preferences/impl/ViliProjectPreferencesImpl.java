@@ -55,6 +55,18 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     private String jreVersion;
 
+    private PlatformDelegate platformDelegate = new PlatformDelegate();
+
+    private MapProperties applicationProperties;
+
+    private MapAdapter ymir;
+
+    private String fieldPrefix;
+
+    private String fieldSuffix;
+
+    private String fieldSpecialPrefix;
+
     static {
         Map<String, String> map = new HashMap<String, String>();
         map.put("J2SE-1.3", "1.3"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -78,6 +90,10 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         artifactId = provider.getArtifactId();
         version = provider.getVersion();
         setJREContainerPath(provider.getJREContainerPath());
+        fieldPrefix = provider.getFieldPrefix();
+        fieldSuffix = provider.getFieldSuffix();
+        fieldSpecialPrefix = provider.getFieldSpecialPrefix();
+        applicationProperties = provider.getApplicationProperties();
     }
 
     public boolean isProjectSpecificTemplateEnabled() {
@@ -137,10 +153,6 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         this.useDatabase = useDatabase;
     }
 
-    public void setDatabaseEntry(DatabaseEntry databaseEntry) {
-        this.databaseEntry = databaseEntry;
-    }
-
     public void save(IProject project) throws IOException {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore(project);
         boolean isYmirProject;
@@ -149,7 +161,6 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         } catch (CoreException ex) {
             isYmirProject = false;
         }
-        MapProperties properties = Activator.getDefault().loadApplicationProperties(project);
 
         store.putValue(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, databaseEntry.getDriverClassName());
         store.putValue(ParameterKeys.DATABASE_PASSWORD, databaseEntry.getPassword());
@@ -159,7 +170,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         store.putValue(ParameterKeys.USE_DATABASE, String.valueOf(useDatabase));
         store.putValue(ParameterKeys.DATABASE_USER, databaseEntry.getUser());
         if (isYmirProject) {
-            properties.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, rootPackageName);
+            applicationProperties.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, rootPackageName);
         } else {
             store.putValue(ParameterKeys.ROOT_PACKAGE_NAME, rootPackageName);
         }
@@ -174,7 +185,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
         ((IPersistentPreferenceStore) store).save();
         if (isYmirProject) {
-            Activator.getDefault().saveApplicationProperties(project, properties);
+            Activator.getDefault().saveApplicationProperties(project, applicationProperties, true);
         }
     }
 
@@ -239,22 +250,31 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     }
 
     public PlatformDelegate getPlatform() {
-        return provider.getPlatform();
+        return platformDelegate;
     }
 
     public String getFieldPrefix() {
-        return provider.getFieldPrefix();
+        return fieldPrefix;
     }
 
     public String getFieldSuffix() {
-        return provider.getFieldSuffix();
+        return fieldSuffix;
     }
 
     public String getFieldSpecialPrefix() {
-        return provider.getFieldSpecialPrefix();
+        return fieldSpecialPrefix;
     }
 
     public MapAdapter getYmir() {
-        return provider.getYmir();
+        return ymir;
+    }
+
+    public MapProperties getApplicationProperties() {
+        return applicationProperties;
+    }
+
+    public void setApplicationProperties(MapProperties applicationProperties) {
+        this.applicationProperties = applicationProperties;
+        ymir = new MapAdapter(this.applicationProperties);
     }
 }

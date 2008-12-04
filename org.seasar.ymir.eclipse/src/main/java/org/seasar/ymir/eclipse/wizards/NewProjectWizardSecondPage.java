@@ -5,7 +5,6 @@ import static org.seasar.ymir.eclipse.wizards.NewProjectWizard.REQUIRED_TEMPLATE
 import java.io.File;
 import java.text.MessageFormat;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jface.dialogs.IDialogPage;
@@ -25,6 +24,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
+import org.seasar.ymir.eclipse.ProjectType;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.wizards.jre.BuildJREDescriptor;
 import org.seasar.ymir.eclipse.wizards.jre.JREsComboBlock;
@@ -98,8 +98,8 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
         findProjectNameFieldAndLocationPathField(composite);
         projectNameField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
+                String projectName = projectNameField.getText().trim();
                 if (!locationPathField.isEnabled()) {
-                    String projectName = projectNameField.getText().trim();
                     String locationPath;
                     if (projectName.length() == 0) {
                         locationPath = initialLocationPath;
@@ -112,6 +112,8 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
                 if (useProjectNameAsProjectArtifactIdField.getSelection()) {
                     projectArtifactIdField.setText(projectNameField.getText().trim());
                 }
+
+                preferences.setProjectName(projectName);
             }
         });
 
@@ -137,6 +139,8 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
                 } else {
                     setErrorMessage(status.getMessage());
                 }
+
+                preferences.setJREContainerPath(jreBlock.getPath());
             }
         });
 
@@ -164,8 +168,13 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
                 String rootPackageName = rootPackageNameField.getText().trim();
                 if (useRootPackageNameAsProjectGroupIdField.getSelection()) {
                     projectGroupIdField.setText(rootPackageName);
+                    preferences.setGroupId(rootPackageName);
                 }
-                preferences.setRootPackageName(rootPackageName);
+            }
+        });
+        rootPackageNameField.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                preferences.setRootPackageName(rootPackageNameField.getText().trim());
             }
         });
 
@@ -177,6 +186,11 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
         data.widthHint = 250;
         projectGroupIdField.setLayoutData(data);
         projectGroupIdField.addModifyListener(validationListener);
+        projectGroupIdField.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                preferences.setGroupId(projectGroupIdField.getText().trim());
+            }
+        });
 
         new Label(group, SWT.NONE);
         useRootPackageNameAsProjectGroupIdField = new Button(group, SWT.CHECK | SWT.LEFT);
@@ -200,6 +214,11 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
         data.widthHint = 250;
         projectArtifactIdField.setLayoutData(data);
         projectArtifactIdField.addModifyListener(validationListener);
+        projectArtifactIdField.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                preferences.setArtifactId(projectArtifactIdField.getText().trim());
+            }
+        });
 
         new Label(group, SWT.NONE);
         useProjectNameAsProjectArtifactIdField = new Button(group, SWT.CHECK | SWT.LEFT);
@@ -223,6 +242,11 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
         data.widthHint = 250;
         projectVersionField.setLayoutData(data);
         projectVersionField.addModifyListener(validationListener);
+        projectVersionField.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                preferences.setVersion(projectVersionField.getText().trim());
+            }
+        });
     }
 
     private boolean findProjectNameFieldAndLocationPathField(Composite composite) {
@@ -252,19 +276,19 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
             return false;
         }
 
-        if (javaProject && getRootPackageName().length() == 0) {
+        if (javaProject && rootPackageNameField.getText().length() == 0) {
             setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardSecondPage.4"))); //$NON-NLS-1$
             return false;
         }
-        if (getProjectGroupId().length() == 0) {
+        if (projectGroupIdField.getText().length() == 0) {
             setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardSecondPage.5"))); //$NON-NLS-1$
             return false;
         }
-        if (getProjectArtifactId().length() == 0) {
+        if (projectArtifactIdField.getText().length() == 0) {
             setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardSecondPage.7"))); //$NON-NLS-1$
             return false;
         }
-        if (getProjectVersion().length() == 0) {
+        if (projectVersionField.getText().length() == 0) {
             setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardSecondPage.9"))); //$NON-NLS-1$
             return false;
         }
@@ -278,8 +302,8 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
         super.setVisible(visible);
         if (visible) {
             if (!conrtolsPrepared) {
-                javaProject = ((NewProjectWizard) getWizard()).getSkeletonAndFragments()[0].getBehavior()
-                        .isJavaProject();
+                javaProject = ((NewProjectWizard) getWizard()).getSkeleton().getBehavior()
+                        .isProjectOf(ProjectType.JAVA);
                 prepareForControls();
 
                 setPageComplete(validatePage());
@@ -316,25 +340,5 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
         projectVersionField.setText("0.0.1-SNAPSHOT"); //$NON-NLS-1$
 
         setPageComplete(validatePage());
-    }
-
-    public IPath getJREContainerPath() {
-        return jreBlock.getPath();
-    }
-
-    private String getRootPackageName() {
-        return rootPackageNameField.getText();
-    }
-
-    public String getProjectGroupId() {
-        return projectGroupIdField.getText();
-    }
-
-    public String getProjectArtifactId() {
-        return projectArtifactIdField.getText();
-    }
-
-    public String getProjectVersion() {
-        return projectVersionField.getText();
     }
 }

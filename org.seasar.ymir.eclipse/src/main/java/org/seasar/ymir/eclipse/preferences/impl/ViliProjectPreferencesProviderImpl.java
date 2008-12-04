@@ -19,7 +19,6 @@ import org.seasar.ymir.eclipse.maven.Project;
 import org.seasar.ymir.eclipse.natures.ViliNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.JdtUtils;
-import org.seasar.ymir.eclipse.util.MapAdapter;
 
 public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesProviderBase {
     private static final String PATH_JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER"; //$NON-NLS-1$
@@ -32,7 +31,7 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
 
     private boolean isYmirProject;
 
-    private MapAdapter ymir;
+    private MapProperties applicationProperties;
 
     public ViliProjectPreferencesProviderImpl(IProject project) throws CoreException {
         this.project = project;
@@ -40,9 +39,9 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
         this.store = Activator.getDefault().getPreferenceStore(project);
         isYmirProject = project.hasNature(ViliNature.ID);
         if (isYmirProject) {
-            ymir = new MapAdapter(Activator.getDefault().loadApplicationProperties(project));
+            applicationProperties = Activator.getDefault().loadApplicationProperties(project);
         } else {
-            ymir = new MapAdapter(new MapProperties());
+            applicationProperties = new MapProperties();
         }
     }
 
@@ -56,7 +55,7 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
 
     public String getRootPackageName() {
         if (isYmirProject) {
-            return ymir.get(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME);
+            return applicationProperties.getProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME);
         } else {
             return store.getString(ParameterKeys.ROOT_PACKAGE_NAME);
         }
@@ -148,7 +147,7 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
         return JdtUtils.getFieldSuffix(project);
     }
 
-    public MapAdapter getYmir() {
-        return ymir;
+    public MapProperties getApplicationProperties() {
+        return applicationProperties;
     }
 }

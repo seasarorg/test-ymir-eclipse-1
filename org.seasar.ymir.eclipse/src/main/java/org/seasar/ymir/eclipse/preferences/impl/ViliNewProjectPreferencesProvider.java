@@ -8,13 +8,12 @@ import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.JdtUtils;
-import org.seasar.ymir.eclipse.util.MapAdapter;
 
 public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesProviderBase {
     private static final int DEFAULT_DATABASE_INDEX = 0;
 
     @SuppressWarnings("unchecked")
-    private MapAdapter ymir = new MapAdapter(new MapProperties(new TreeMap()));
+    private MapProperties applicationProperties = new MapProperties(new TreeMap());
 
     public boolean isProjectSpecificTemplateEnabled() {
         return false;
@@ -37,7 +36,7 @@ public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesPro
     }
 
     public DatabaseEntry getDatabaseEntry() {
-        return databaseEntries[DEFAULT_DATABASE_INDEX];
+        return (DatabaseEntry) databaseEntries[DEFAULT_DATABASE_INDEX].clone();
     }
 
     public String getProjectName() {
@@ -68,7 +67,7 @@ public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesPro
         return JdtUtils.getFieldSuffix();
     }
 
-    public MapAdapter getYmir() {
-        return ymir;
+    public MapProperties getApplicationProperties() {
+        return applicationProperties;
     }
 }

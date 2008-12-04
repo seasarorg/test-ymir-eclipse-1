@@ -84,7 +84,7 @@ public class SkeletonArtifactResolver implements Runnable {
                 if (!failed) {
                     ArtifactPair pair = ArtifactPair.newInstance(skeleton);
                     if (pair.getBehavior().getArtifactType() == ArtifactType.SKELETON) {
-                        page.setSkeleton(pair, fragmentList.toArray(new ArtifactPair[0]));
+                        page.setSkeletonAndFragments(pair, fragmentList.toArray(new ArtifactPair[0]));
                         errorMessage = null;
                     } else {
                         errorMessage = Messages.getString("SkeletonArtifactResolver.0"); //$NON-NLS-1$

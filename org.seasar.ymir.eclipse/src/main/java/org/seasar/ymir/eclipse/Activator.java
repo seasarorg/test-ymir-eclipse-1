@@ -14,9 +14,13 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -42,12 +46,16 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -59,6 +67,13 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
+import org.seasar.ymir.eclipse.maven.Dependencies;
+import org.seasar.ymir.eclipse.maven.Dependency;
+import org.seasar.ymir.eclipse.maven.ExtendedContext;
+import org.seasar.ymir.eclipse.maven.Project;
+import org.seasar.ymir.eclipse.maven.Repositories;
+import org.seasar.ymir.eclipse.maven.Repository;
+import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.natures.ViliNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
@@ -66,9 +81,12 @@ import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
 import org.seasar.ymir.eclipse.preferences.impl.ViliNewProjectPreferencesProvider;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesImpl;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesProviderImpl;
+import org.seasar.ymir.eclipse.util.BeanMap;
 import org.seasar.ymir.eclipse.util.CascadeMap;
+import org.seasar.ymir.eclipse.util.MavenUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.eclipse.util.URLUtils;
+import org.seasar.ymir.eclipse.wizards.Messages;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import freemarker.cache.TemplateLoader;
@@ -82,7 +100,6 @@ import freemarker.template.TemplateException;
  * The activator class controls the plug-in life cycle
  */
 public class Activator extends AbstractUIPlugin {
-
     // The plug-in ID
     public static final String PLUGIN_ID = "org.seasar.ymir.eclipse"; //$NON-NLS-1$
 
@@ -91,6 +108,8 @@ public class Activator extends AbstractUIPlugin {
     private static final String EXTENSION_PROPERTIES = "properties"; //$NON-NLS-1$
 
     private static final String EXTENSION_XPROPERTIES = "xproperties"; //$NON-NLS-1$
+
+    private static final String PATH_JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER"; //$NON-NLS-1$
 
     // The shared instance
     private static Activator plugin;
@@ -226,7 +245,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     @SuppressWarnings("unchecked")//$NON-NLS-1$
-    public void expandSkeleton(IProject project, ArtifactPair pair, Map<String, Object> parameterMap,
+    public void expandArtifact(IProject project, ArtifactPair pair, ViliProjectPreferences preferences,
             IProgressMonitor monitor) throws IOException, CoreException {
         monitor.beginTask(Messages.getString("Activator.15"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
         try {
@@ -255,7 +274,7 @@ public class Activator extends AbstractUIPlugin {
 
                 ViliBehavior behavior = pair.getBehavior();
                 Map<String, Object> actualParameterMap = new CascadeMap<String, Object>(pair.getParameterMap(),
-                        parameterMap);
+                        new BeanMap(preferences));
 
                 for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
                     JarEntry entry = enm.nextElement();
@@ -758,29 +777,197 @@ public class Activator extends AbstractUIPlugin {
         return properties;
     }
 
-    public void saveApplicationProperties(IProject project, MapProperties properties) throws IOException {
-        boolean isViliProject;
+    public void saveApplicationProperties(IProject project, MapProperties properties, boolean merge) throws IOException {
+        boolean isYmirProject;
         try {
-            isViliProject = project.hasNature(ViliNature.ID);
+            isYmirProject = project.hasNature(ViliNature.ID);
         } catch (CoreException ex) {
-            isViliProject = false;
+            isYmirProject = false;
         }
-        if (isViliProject) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        if (!isYmirProject) {
+            return;
+        }
+
+        if (merge) {
+            MapProperties base = loadApplicationProperties(project);
+            for (Enumeration<?> enm = properties.propertyNames(); enm.hasMoreElements();) {
+                String name = (String) enm.nextElement();
+                base.setProperty(name, properties.getProperty(name));
+            }
+            properties = base;
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            properties.store(baos);
+        } catch (IOException ex) {
+            getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, "Can't happen!", ex)); //$NON-NLS-1$
+            return;
+        }
+        try {
+            writeFile(project.getFile(Globals.PATH_APP_PROPERTIES), new ByteArrayInputStream(baos.toByteArray()),
+                    new NullProgressMonitor());
+        } catch (CoreException ex) {
+            IOException ioe = new IOException();
+            ioe.initCause(ex);
+            throw ioe;
+        }
+    }
+
+    public void addFragments(IProject project, ViliProjectPreferences preferences, ArtifactPair[] fragments,
+            IProgressMonitor monitor) throws CoreException {
+        monitor.beginTask("Add fragments to project", fragments.length + 3);
+        try {
+            Project pom = new Project();
+            Repositories repositories = new Repositories();
+            Dependencies dependencies = new Dependencies();
+
+            Dependency databaseDependency = preferences.getDatabaseEntry().getDependency();
+            if (databaseDependency != null) {
+                dependencies.addDependency(databaseDependency);
+            }
+
+            for (ArtifactPair fragment : fragments) {
+                try {
+                    expandArtifact(project, fragment, preferences, new SubProgressMonitor(monitor, 1));
+                } catch (IOException ex) {
+                    throwCoreException(Messages.getString("NewProjectWizard.13"), ex); //$NON-NLS-1$
+                    return;
+                }
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
+                Project fPom = fragment.getBehavior().getPom();
+                if (fPom.getRepositories() != null) {
+                    for (Repository fRepository : fPom.getRepositories().getRepositories()) {
+                        repositories.addRepository(fRepository);
+                    }
+                }
+                if (fPom.getDependencies() != null) {
+                    for (Dependency fDependency : fPom.getDependencies().getDependencies()) {
+                        dependencies.addDependency(fDependency);
+                    }
+                }
+
+                monitor.worked(1);
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+            }
+
+            MavenUtils.addToPom(project.getFile(Globals.PATH_POM_XML), pom, new SubProgressMonitor(monitor, 1));
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
+
+            if (project.hasNature(Globals.NATURE_ID_JAVA)) {
+                IJavaProject javaProject = JavaCore.create(project);
+
+                IPath[] dependencyPaths = copyDependencies(project, dependencies.getDependencies(),
+                        new SubProgressMonitor(monitor, 1));
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
+                addDependenciesToClasspath(javaProject, dependencyPaths, new SubProgressMonitor(monitor, 1));
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+            }
+        } finally {
+            monitor.done();
+        }
+    }
+
+    private IPath[] copyDependencies(IProject project, Dependency[] dependencies, IProgressMonitor monitor) {
+        monitor.beginTask(Messages.getString("NewProjectWizard.1"), dependencies.length); //$NON-NLS-1$
+        try {
+            if (libsAreManagedAutomatically()) {
+                return new IPath[0];
+            }
+
+            ExtendedContext context = artifactResolver.newContext(false);
+            List<IPath> list = new ArrayList<IPath>();
+            for (Dependency dependency : dependencies) {
+                IPath dependencyPath = copyDependency(project, context, dependency, new SubProgressMonitor(monitor, 1));
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                if (dependencyPath != null) {
+                    list.add(dependencyPath);
+                }
+            }
+            return list.toArray(new IPath[0]);
+        } finally {
+            monitor.done();
+        }
+    }
+
+    private IPath copyDependency(IProject project, ExtendedContext context, Dependency dependency,
+            IProgressMonitor monitor) {
+        monitor.beginTask(Messages.getString("NewProjectWizard.1"), 2); //$NON-NLS-1$
+        try {
+            IPath path = null;
             try {
-                properties.store(baos);
-            } catch (IOException ex) {
-                getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, "Can't happen!", ex)); //$NON-NLS-1$
+                Artifact artifact = artifactResolver.resolve(context, dependency.getGroupId(), dependency
+                        .getArtifactId(), dependency.getVersion());
+                monitor.worked(1);
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
+                URL url = artifactResolver.getURL(artifact);
+                IFile file = project.getFile(Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB
+                        + "/" + ArtifactUtils.getFileName(artifact)); //$NON-NLS-1$ 
+                InputStream is = null;
+                try {
+                    writeFile(file, url.openStream(), new SubProgressMonitor(monitor, 1));
+                } finally {
+                    StreamUtils.close(is);
+                }
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
+                path = file.getFullPath();
+            } catch (Throwable ignore) {
+            }
+
+            return path;
+        } finally {
+            monitor.done();
+        }
+    }
+
+    public void addDependenciesToClasspath(IJavaProject javaProject, IPath[] dependencyPaths, IProgressMonitor monitor)
+            throws CoreException {
+        monitor.beginTask(Messages.getString("NewProjectWizard.23"), 1); //$NON-NLS-1$
+        try {
+            if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null
+                    || Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
                 return;
             }
-            try {
-                writeFile(project.getFile(Globals.PATH_APP_PROPERTIES), new ByteArrayInputStream(baos.toByteArray()),
-                        new NullProgressMonitor());
-            } catch (CoreException ex) {
-                IOException ioe = new IOException();
-                ioe.initCause(ex);
-                throw ioe;
+
+            Set<String> existsSet = new HashSet<String>();
+            List<IClasspathEntry> newEntryList = new ArrayList<IClasspathEntry>();
+            for (IClasspathEntry entry : javaProject.getRawClasspath()) {
+                if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+                    existsSet.add(ArtifactUtils.getArtifactId(entry.getPath().toPortableString()));
+                }
+                newEntryList.add(entry);
             }
+
+            for (IPath dependencyPath : dependencyPaths) {
+                if (!existsSet.contains(ArtifactUtils.getArtifactId(dependencyPath.toPortableString()))) {
+                    newEntryList.add(JavaCore.newLibraryEntry(dependencyPath, null, null));
+                }
+            }
+
+            javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]),
+                    new SubProgressMonitor(monitor, 1));
+        } finally {
+            monitor.done();
         }
     }
 }

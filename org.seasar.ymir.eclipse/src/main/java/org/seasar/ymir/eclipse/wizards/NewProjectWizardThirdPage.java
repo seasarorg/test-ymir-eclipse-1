@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.ymir.eclipse.ArtifactPair;
+import org.seasar.ymir.eclipse.ProjectType;
 import org.seasar.ymir.eclipse.ViliBehavior;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.ui.ViliProjectPreferencesControl;
@@ -110,7 +111,8 @@ public class NewProjectWizardThirdPage extends WizardPage {
         genericTabContent.setLayout(new GridLayout());
         genericTabItem.setControl(genericTabContent);
 
-        preferencesControl = new ViliProjectPreferencesControl(genericTabContent, preferences, behavior.isJavaProject()) {
+        preferencesControl = new ViliProjectPreferencesControl(genericTabContent, preferences, behavior
+                .isProjectOf(ProjectType.WEB), behavior.isProjectOf(ProjectType.DATABASE)) {
             @Override
             public void setErrorMessage(String message) {
                 NewProjectWizardThirdPage.this.setErrorMessage(message);
@@ -136,7 +138,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
             scroll.setMinHeight(skeletonTabContent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
         }
 
-        if (behavior.isYmirProject()) {
+        if (behavior.isProjectOf(ProjectType.YMIR)) {
             CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
             ymirConfigurationTabItem.setText(Messages.getString("NewProjectWizardThirdPage.0")); //$NON-NLS-1$
 
@@ -260,8 +262,13 @@ public class NewProjectWizardThirdPage extends WizardPage {
         super.setVisible(visible);
         if (visible) {
             if (!tabPrepared) {
-                skeletonAndFragments = ((NewProjectWizard) getWizard()).getSkeletonAndFragments();
-                behavior = skeletonAndFragments[0].getBehavior();
+                NewProjectWizard wizard = (NewProjectWizard) getWizard();
+                ArtifactPair skeleton = wizard.getSkeleton();
+                ArtifactPair[] fragments = wizard.getFragments();
+                skeletonAndFragments = new ArtifactPair[1 + fragments.length];
+                skeletonAndFragments[0] = skeleton;
+                System.arraycopy(fragments, 0, skeletonAndFragments, 1, fragments.length);
+                behavior = skeleton.getBehavior();
                 createTabFolder();
                 tabPrepared = true;
 
@@ -347,10 +354,6 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     public YmirConfigurationControl getYmirConfigurationControl() {
         return ymirConfigurationControl;
-    }
-
-    public void populateViliProjectPreferences() {
-        preferencesControl.populateViliProjectPreferences();
     }
 
     static interface ParameterModel {

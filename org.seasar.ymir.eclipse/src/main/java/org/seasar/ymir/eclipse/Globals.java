@@ -41,9 +41,9 @@ public interface Globals {
 
     String NATURE_ID_WEBLAUNCHER = BUNDLENAME_WEBLAUNCHER + ".nature"; //$NON-NLS-1$
 
-    String PREFIX_VILI = "vili-"; //$NON-NLS-1$
+    String NATURE_ID_JAVA = "org.eclipse.jdt.core.javanature";
 
-    String VILI_DEPENDENCIES_XML = PREFIX_VILI + "dependencies.xml"; //$NON-NLS-1$
+    String PREFIX_VILI = "vili-"; //$NON-NLS-1$
 
     String VILI_BEHAVIOR_PROPERTIES = PREFIX_VILI + "behavior.properties"; //$NON-NLS-1$
 

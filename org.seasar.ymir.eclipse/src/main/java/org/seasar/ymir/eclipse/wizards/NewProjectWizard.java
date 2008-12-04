@@ -1,26 +1,17 @@
 package org.seasar.ymir.eclipse.wizards;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
-import net.skirnir.xom.ValidationException;
-import net.skirnir.xom.XMLParser;
-import net.skirnir.xom.XOMapper;
 
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
@@ -31,7 +22,6 @@ import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -55,24 +45,14 @@ import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.ArtifactPair;
-import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
-import org.seasar.ymir.eclipse.ParameterKeys;
-import org.seasar.ymir.eclipse.PlatformDelegate;
+import org.seasar.ymir.eclipse.ProjectType;
 import org.seasar.ymir.eclipse.ViliBehavior;
-import org.seasar.ymir.eclipse.maven.ArtifactResolver;
-import org.seasar.ymir.eclipse.maven.Dependencies;
-import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
-import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
 import org.seasar.ymir.eclipse.util.JdtUtils;
-import org.seasar.ymir.eclipse.util.MapAdapter;
-import org.seasar.ymir.eclipse.util.StreamUtils;
-
-import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class NewProjectWizard extends Wizard implements INewWizard {
     private static final char PACKAGE_DELIMITER = '.';
@@ -84,8 +64,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     private static final String TEMPLATEPATH_SUPERCLASS = "templates/Superclass.java.ftl"; //$NON-NLS-1$
 
     private static final String PATH_JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER"; //$NON-NLS-1$
-
-    private static final Map<String, String> JRE_VERSION_MAP;
 
     private static final String PATH_JDT_CORE_PREFS = ".settings/org.eclipse.jdt.core.prefs"; //$NON-NLS-1$
 
@@ -104,15 +82,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     private ViliProjectPreferences preferences;
 
     private ExtendedContext nonTransitiveContext;
-
-    static {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("J2SE-1.3", "1.3"); //$NON-NLS-1$ //$NON-NLS-2$
-        map.put("J2SE-1.4", "1.4"); //$NON-NLS-1$ //$NON-NLS-2$
-        map.put("J2SE-1.5", "1.5"); //$NON-NLS-1$ //$NON-NLS-2$
-        map.put("JavaSE-1.6", "1.6"); //$NON-NLS-1$ //$NON-NLS-2$
-        JRE_VERSION_MAP = Collections.unmodifiableMap(map);
-    }
 
     /**
      * Constructor for NewProjectWizard.
@@ -140,7 +109,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
      */
 
     public void addPages() {
-        firstPage = new NewProjectWizardFirstPage();
+        firstPage = new NewProjectWizardFirstPage(preferences);
         addPage(firstPage);
         secondPage = new NewProjectWizardSecondPage(preferences);
         addPage(secondPage);
@@ -163,22 +132,22 @@ public class NewProjectWizard extends Wizard implements INewWizard {
      * using wizard as execution context.
      */
     public boolean performFinish() {
-        thirdPage.populateViliProjectPreferences();
         thirdPage.populateSkeletonParameters();
         try {
-            final ArtifactPair[] skeletonAndFragments = firstPage.getSkeletonAndFragments();
+            final ArtifactPair skeleton = firstPage.getSkeleton();
+            final ArtifactPair[] fragments = firstPage.getFragments();
             final IProject project = secondPage.getProjectHandle();
             final IPath locationPath = secondPage.getLocationPath();
-            final IPath jreContainerPath = secondPage.getJREContainerPath();
-            final Dependency[] dependencies = createDependencies(preferences.getDatabaseEntry().getDependency(),
-                    skeletonAndFragments);
-            final MapProperties applicationProperties = createApplicationProperties();
-            final Map<String, Object> parameterMap = createParameterMap(dependencies, applicationProperties);
+            final IPath jreContainerPath = preferences.getJREContainerPath();
+            preferences.setApplicationProperties(createApplicationProperties());
             IRunnableWithProgress op = new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
+                    monitor.beginTask("Create project", 2);
                     try {
-                        createProject(project, locationPath, jreContainerPath, skeletonAndFragments, parameterMap,
-                                dependencies, applicationProperties, monitor);
+                        createProject(project, locationPath, jreContainerPath, skeleton, new SubProgressMonitor(
+                                monitor, 1));
+                        Activator.getDefault().addFragments(project, preferences, fragments,
+                                new SubProgressMonitor(monitor, 1));
                     } catch (CoreException e) {
                         throw new InvocationTargetException(e);
                     } finally {
@@ -223,152 +192,60 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         return true;
     }
 
-    private Dependency[] createDependencies(Dependency databaseDependency, ArtifactPair[] skeletonAndFragments)
-            throws CoreException {
-        Activator activator = Activator.getDefault();
-        XOMapper mapper = activator.getXOMapper();
-        XMLParser parser = activator.getXMLParser();
-
-        Map<Dependency, Dependency> map = new LinkedHashMap<Dependency, Dependency>();
-
-        if (databaseDependency != null) {
-            add(map, databaseDependency);
-        }
-
-        // フラグメントだけを対象にするため1から始めている。
-        for (int i = 1; i < skeletonAndFragments.length; i++) {
-            String text = activator.getResourceAsString(skeletonAndFragments[i].getArtifact(),
-                    Globals.VILI_DEPENDENCIES_XML, Globals.ENCODING, new NullProgressMonitor());
-            if (text != null) {
-                Dependencies dependencies;
-                try {
-                    dependencies = mapper.toBean(parser.parse(new StringReader(text)).getRootElement(),
-                            Dependencies.class);
-                } catch (Throwable t) {
-                    throwCoreException(
-                            "Can't read " + Globals.VILI_DEPENDENCIES_XML + " in " + skeletonAndFragments[i], t); //$NON-NLS-1$ //$NON-NLS-2$
-                    return null;
-                }
-                for (Dependency dep : dependencies.getDependencies()) {
-                    add(map, dep);
-                }
-            }
-        }
-
-        return map.values().toArray(new Dependency[0]);
-    }
-
-    private void add(Map<Dependency, Dependency> map, Dependency dep) {
-        Dependency d = map.get(dep);
-        if (d == null || ArtifactUtils.compareVersions(d.getVersion(), dep.getVersion()) < 0) {
-            map.put(dep, dep);
-        }
-    }
-
-    private Map<String, Object> createParameterMap(Dependency[] dependencies, MapProperties applicationProperties) {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(ParameterKeys.SLASH, "/"); //$NON-NLS-1$
-        map.put(ParameterKeys.DOLLAR, "$"); //$NON-NLS-1$
-        map.put(ParameterKeys.PROJECT_NAME, secondPage.getProjectName());
-        map.put(ParameterKeys.ROOT_PACKAGE_NAME, preferences.getRootPackageName());
-        map.put(ParameterKeys.ROOT_PACKAGE_PATH, preferences.getRootPackageName().replace('.', '/'));
-        map.put(ParameterKeys.GROUP_ID, secondPage.getProjectGroupId());
-        map.put(ParameterKeys.ARTIFACT_ID, secondPage.getProjectArtifactId());
-        map.put(ParameterKeys.VERSION, secondPage.getProjectVersion());
-        map.put(ParameterKeys.JRE_VERSION, getJREVersion(secondPage.getJREContainerPath()));
-        map.put(ParameterKeys.VIEW_ENCODING, preferences.getViewEncoding());
-        map.put(ParameterKeys.USE_DATABASE, preferences.isUseDatabase());
-        DatabaseEntry entry = preferences.getDatabaseEntry();
-        map.put(ParameterKeys.DATABASE_TYPE, entry.getType());
-        map.put(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, entry.getDriverClassName());
-        map.put(ParameterKeys.DATABASE_URL, entry.getURL());
-        map.put(ParameterKeys.DATABASE_USER, entry.getUser());
-        map.put(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
-        map.put(ParameterKeys.DEPENDENCIES, getDependenciesString(dependencies));
-        map.put(ParameterKeys.PLATFORM, new PlatformDelegate());
-        map.put(ParameterKeys.FIELD_PREFIX, JdtUtils.getFieldPrefix());
-        map.put(ParameterKeys.FIELD_SUFFIX, JdtUtils.getFieldSuffix());
-        map.put(ParameterKeys.FIELD_SPECIAL_PREFIX, JdtUtils.getFieldSpecialPrefix());
-        // テンプレートから参照しやすいように、Ymirプロジェクトでない場合も空のMapをセットしておく。
-        map.put(ParameterKeys.YMIR, applicationProperties != null ? new MapAdapter(applicationProperties)
-                : new HashMap<String, String>());
-
-        return map;
-    }
-
-    private String getDependenciesString(Dependency[] dependencies) {
-        XOMapper mapper = Activator.getDefault().getXOMapper();
-        StringBuilder sb = new StringBuilder();
-        for (Dependency dependency : dependencies) {
-            StringWriter sw = new StringWriter();
-            try {
-                mapper.toXML(dependency, sw);
-            } catch (ValidationException ex) {
-                throw new RuntimeException("May logic error", ex); //$NON-NLS-1$
-            } catch (IOException ex) {
-                throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
-            }
-            sb.append(sw.toString());
-        }
-        return sb.toString();
-    }
-
     private MapProperties createApplicationProperties() throws CoreException {
-        YmirConfigurationControl ymirConfig = thirdPage.getYmirConfigurationControl();
-        if (ymirConfig == null) {
-            return null;
-        }
-
         MapProperties prop = new MapProperties(new TreeMap<String, String>());
-        prop.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, preferences.getRootPackageName());
-        String value = ymirConfig.getSuperclass();
-        if (value.length() > 0) {
-            prop.setProperty(ApplicationPropertiesKeys.SUPERCLASS, value);
-        }
-        prop.setProperty(ApplicationPropertiesKeys.SOURCECREATOR_ENABLE, String.valueOf(ymirConfig
-                .isAutoGenerationEnabled()));
-        prop.setProperty(ApplicationPropertiesKeys.FIELDPREFIX, JdtUtils.getFieldPrefix());
-        prop.setProperty(ApplicationPropertiesKeys.FIELDSUFFIX, JdtUtils.getFieldSuffix());
-        prop.setProperty(ApplicationPropertiesKeys.FIELDSPECIALPREFIX, JdtUtils.getFieldSpecialPrefix());
-        prop.setProperty(ApplicationPropertiesKeys.ENABLEINPLACEEDITOR, String.valueOf(ymirConfig
-                .isInplaceEditorEnabled()));
-        prop.setProperty(ApplicationPropertiesKeys.ENABLECONTROLPANEL, String.valueOf(ymirConfig
-                .isControlPanelEnabled()));
-        prop.setProperty(ApplicationPropertiesKeys.USING_FREYJA_RENDER_CLASS, String.valueOf(ymirConfig
-                .isUsingFreyjaRenderClass()));
-        prop.setProperty(ApplicationPropertiesKeys.BEANTABLE_ENABLED, String.valueOf(ymirConfig.isBeantableEnabled()));
-        prop.setProperty(ApplicationPropertiesKeys.FORM_DTO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
-                .isFormDtoCreationFeatureEnabled()));
-        prop.setProperty(ApplicationPropertiesKeys.CONVERTER_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
-                .isConverterCreationFeatureEnabled()));
-        prop.setProperty(ApplicationPropertiesKeys.DAO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
-                .isDaoCreationFeatureEnabled()));
-        prop.setProperty(ApplicationPropertiesKeys.DXO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
-                .isDxoCreationFeatureEnabled()));
-
-        boolean eclipseEnabled = ymirConfig.isEclipseEnabled();
-        prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_ENABLED, String.valueOf(eclipseEnabled));
-        if (eclipseEnabled) {
-            value = ymirConfig.getResourceSynchronizerURL();
+        YmirConfigurationControl ymirConfig = thirdPage.getYmirConfigurationControl();
+        if (ymirConfig != null) {
+            prop.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, preferences.getRootPackageName());
+            String value = ymirConfig.getSuperclass();
             if (value.length() > 0) {
-                prop.setProperty(ApplicationPropertiesKeys.RESOURCE_SYNCHRONIZER_URL, value);
+                prop.setProperty(ApplicationPropertiesKeys.SUPERCLASS, value);
             }
-            prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_PROJECTNAME, secondPage.getProjectName());
-        }
+            prop.setProperty(ApplicationPropertiesKeys.SOURCECREATOR_ENABLE, String.valueOf(ymirConfig
+                    .isAutoGenerationEnabled()));
+            prop.setProperty(ApplicationPropertiesKeys.FIELDPREFIX, JdtUtils.getFieldPrefix());
+            prop.setProperty(ApplicationPropertiesKeys.FIELDSUFFIX, JdtUtils.getFieldSuffix());
+            prop.setProperty(ApplicationPropertiesKeys.FIELDSPECIALPREFIX, JdtUtils.getFieldSpecialPrefix());
+            prop.setProperty(ApplicationPropertiesKeys.ENABLEINPLACEEDITOR, String.valueOf(ymirConfig
+                    .isInplaceEditorEnabled()));
+            prop.setProperty(ApplicationPropertiesKeys.ENABLECONTROLPANEL, String.valueOf(ymirConfig
+                    .isControlPanelEnabled()));
+            prop.setProperty(ApplicationPropertiesKeys.USING_FREYJA_RENDER_CLASS, String.valueOf(ymirConfig
+                    .isUsingFreyjaRenderClass()));
+            prop.setProperty(ApplicationPropertiesKeys.BEANTABLE_ENABLED, String.valueOf(ymirConfig
+                    .isBeantableEnabled()));
+            prop.setProperty(ApplicationPropertiesKeys.FORM_DTO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
+                    .isFormDtoCreationFeatureEnabled()));
+            prop.setProperty(ApplicationPropertiesKeys.CONVERTER_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
+                    .isConverterCreationFeatureEnabled()));
+            prop.setProperty(ApplicationPropertiesKeys.DAO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
+                    .isDaoCreationFeatureEnabled()));
+            prop.setProperty(ApplicationPropertiesKeys.DXO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
+                    .isDxoCreationFeatureEnabled()));
 
-        prop.setProperty(ApplicationPropertiesKeys.S2CONTAINER_CLASSLOADING_DISABLEHOTDEPLOY, String.valueOf(ymirConfig
-                .getHotdeployType() != HotdeployType.S2));
-        prop.setProperty(ApplicationPropertiesKeys.S2CONTAINER_COMPONENTREGISTRATION_DISABLEDYNAMIC, String
-                .valueOf(ymirConfig.getHotdeployType() == HotdeployType.VOID));
-        prop.setProperty(ApplicationPropertiesKeys.HOTDEPLOY_TYPE, ymirConfig.getHotdeployType().getName());
+            boolean eclipseEnabled = ymirConfig.isEclipseEnabled();
+            prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_ENABLED, String.valueOf(eclipseEnabled));
+            if (eclipseEnabled) {
+                value = ymirConfig.getResourceSynchronizerURL();
+                if (value.length() > 0) {
+                    prop.setProperty(ApplicationPropertiesKeys.RESOURCE_SYNCHRONIZER_URL, value);
+                }
+                prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_PROJECTNAME, secondPage.getProjectName());
+            }
+
+            prop.setProperty(ApplicationPropertiesKeys.S2CONTAINER_CLASSLOADING_DISABLEHOTDEPLOY, String
+                    .valueOf(ymirConfig.getHotdeployType() != HotdeployType.S2));
+            prop.setProperty(ApplicationPropertiesKeys.S2CONTAINER_COMPONENTREGISTRATION_DISABLEDYNAMIC, String
+                    .valueOf(ymirConfig.getHotdeployType() == HotdeployType.VOID));
+            prop.setProperty(ApplicationPropertiesKeys.HOTDEPLOY_TYPE, ymirConfig.getHotdeployType().getName());
+        }
 
         return prop;
     }
 
-    private void createProject(IProject project, IPath locationPath, IPath jreContainerPath,
-            ArtifactPair[] skeletonAndFragments, Map<String, Object> parameterMap, Dependency[] dependencies,
-            MapProperties applicationProperties, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 8 + skeletonAndFragments.length); //$NON-NLS-1$
+    private void createProject(IProject project, IPath locationPath, IPath jreContainerPath, ArtifactPair skeleton,
+            IProgressMonitor monitor) throws CoreException {
+        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 9); //$NON-NLS-1$
         try {
             if (!project.exists()) {
                 IProjectDescription description = project.getWorkspace().newProjectDescription(project.getName());
@@ -389,29 +266,20 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 throw new OperationCanceledException();
             }
 
-            ViliBehavior behavior = skeletonAndFragments[0].getBehavior();
-
-            for (ArtifactPair pair : skeletonAndFragments) {
-                try {
-                    Activator.getDefault().expandSkeleton(project, pair, parameterMap,
-                            new SubProgressMonitor(monitor, 1));
-                } catch (IOException ex) {
-                    throwCoreException(Messages.getString("NewProjectWizard.13"), ex); //$NON-NLS-1$
-                    return;
-                }
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
+            ViliBehavior behavior = skeleton.getBehavior();
+            try {
+                Activator.getDefault().expandArtifact(project, skeleton, preferences,
+                        new SubProgressMonitor(monitor, 1));
+            } catch (IOException ex) {
+                throwCoreException(Messages.getString("NewProjectWizard.13"), ex); //$NON-NLS-1$
+                return;
             }
-
-            IPath[] dependencyPaths = copyDependencies(project, dependencies, new SubProgressMonitor(monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
 
-            if (behavior.isJavaProject()) {
-                setUpJRECompliance(project, (String) parameterMap.get(ParameterKeys.JRE_VERSION),
-                        new SubProgressMonitor(monitor, 1));
+            if (behavior.isProjectOf(ProjectType.JAVA)) {
+                setUpJRECompliance(project, preferences.getJREVersion(), new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -419,7 +287,9 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 monitor.worked(1);
             }
 
-            if (applicationProperties != null) {
+            if (behavior.isProjectOf(ProjectType.YMIR)) {
+                MapProperties applicationProperties = preferences.getApplicationProperties();
+
                 updateApplicationProperties(project, applicationProperties, new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
@@ -434,10 +304,10 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                 monitor.worked(2);
             }
 
-            if (behavior.isJavaProject()) {
+            if (behavior.isProjectOf(ProjectType.JAVA)) {
                 IJavaProject javaProject = JavaCore.create(project);
 
-                setUpClasspath(javaProject, jreContainerPath, dependencyPaths, new SubProgressMonitor(monitor, 1));
+                setUpClasspath(javaProject, jreContainerPath, new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -446,67 +316,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             } else {
                 monitor.worked(2);
             }
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private IPath[] copyDependencies(IProject project, Dependency[] dependencies, IProgressMonitor monitor) {
-        monitor.beginTask(Messages.getString("NewProjectWizard.1"), dependencies.length); //$NON-NLS-1$
-        try {
-            if (Activator.getDefault().libsAreManagedAutomatically()) {
-                return new IPath[0];
-            }
-
-            List<IPath> list = new ArrayList<IPath>();
-            for (Dependency dependency : dependencies) {
-                IPath dependencyPath = copyDependency(project, dependency, new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-                if (dependencyPath != null) {
-                    list.add(dependencyPath);
-                }
-            }
-            return list.toArray(new IPath[0]);
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private IPath copyDependency(IProject project, Dependency dependency, IProgressMonitor monitor) {
-        monitor.beginTask(Messages.getString("NewProjectWizard.1"), 2); //$NON-NLS-1$
-        try {
-            Activator activator = Activator.getDefault();
-            ArtifactResolver artifactResolver = activator.getArtifactResolver();
-
-            IPath path = null;
-            try {
-                Artifact artifact = artifactResolver.resolve(getNonTransitiveContext(), dependency.getGroupId(),
-                        dependency.getArtifactId(), dependency.getVersion());
-                monitor.worked(1);
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                URL url = artifactResolver.getURL(artifact);
-                IFile file = project.getFile(Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB
-                        + "/" + ArtifactUtils.getFileName(artifact)); //$NON-NLS-1$ 
-                InputStream is = null;
-                try {
-                    activator.writeFile(file, url.openStream(), new SubProgressMonitor(monitor, 1));
-                } finally {
-                    StreamUtils.close(is);
-                }
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                path = file.getFullPath();
-            } catch (Throwable ignore) {
-            }
-
-            return path;
         } finally {
             monitor.done();
         }
@@ -529,15 +338,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             }
         } finally {
             monitor.done();
-        }
-    }
-
-    private String getJREVersion(IPath jreContainerPath) {
-        String version = JRE_VERSION_MAP.get(jreContainerPath.lastSegment());
-        if (version != null) {
-            return version;
-        } else {
-            return "1.6"; //$NON-NLS-1$
         }
     }
 
@@ -584,15 +384,15 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
     }
 
-    private void setUpClasspath(IJavaProject javaProject, IPath jreContainerPath, IPath[] dependencyPaths,
-            IProgressMonitor monitor) throws CoreException {
+    private void setUpClasspath(IJavaProject javaProject, IPath jreContainerPath, IProgressMonitor monitor)
+            throws CoreException {
         if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null) {
             setUpClasspathForM2Eclipse(javaProject, jreContainerPath, Globals.CLASSPATH_CONTAINER_M2ECLIPSE_LIGHT,
                     monitor);
         } else if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
             setUpClasspathForM2Eclipse(javaProject, jreContainerPath, Globals.CLASSPATH_CONTAINER_M2ECLIPSE, monitor);
         } else {
-            setUpClasspathForNonM2Eclipse(javaProject, jreContainerPath, dependencyPaths, monitor);
+            setUpClasspathForNonM2Eclipse(javaProject, jreContainerPath, monitor);
         }
     }
 
@@ -616,10 +416,9 @@ public class NewProjectWizard extends Wizard implements INewWizard {
     }
 
     private void setUpClasspathForNonM2Eclipse(IJavaProject javaProject, IPath jreContainerPath,
-            IPath[] dependencyPaths, IProgressMonitor monitor) throws JavaModelException {
+            IProgressMonitor monitor) throws JavaModelException {
         monitor.beginTask(Messages.getString("NewProjectWizard.23"), 1); //$NON-NLS-1$
         try {
-            Set<String> existsSet = new HashSet<String>();
             List<IClasspathEntry> newEntryList = new ArrayList<IClasspathEntry>();
             for (IClasspathEntry entry : javaProject.getRawClasspath()) {
                 int kind = entry.getEntryKind();
@@ -630,18 +429,10 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                             || PATH_JRE_CONTAINER.equals(path.segment(0))) {
                         continue;
                     }
-                } else if (kind == IClasspathEntry.CPE_LIBRARY) {
-                    existsSet.add(ArtifactUtils.getArtifactId(path.toPortableString()));
                 }
                 newEntryList.add(entry);
             }
             newEntryList.add(JavaCore.newContainerEntry(jreContainerPath));
-
-            for (IPath dependencyPath : dependencyPaths) {
-                if (!existsSet.contains(ArtifactUtils.getArtifactId(dependencyPath.toPortableString()))) {
-                    newEntryList.add(JavaCore.newLibraryEntry(dependencyPath, null, null));
-                }
-            }
 
             javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]),
                     new SubProgressMonitor(monitor, 1));
@@ -738,7 +529,11 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         thirdPage.notifySkeletonAndFragmentsCleared();
     }
 
-    public ArtifactPair[] getSkeletonAndFragments() {
-        return firstPage.getSkeletonAndFragments();
+    public ArtifactPair getSkeleton() {
+        return firstPage.getSkeleton();
+    }
+
+    public ArtifactPair[] getFragments() {
+        return firstPage.getFragments();
     }
 }
