@@ -146,21 +146,22 @@ public class ViliBehavior {
     }
 
     private Project readPom(Artifact artifact) throws IOException {
-        Activator activator = Activator.getDefault();
-        try {
-            String text = activator.getResourceAsString(artifact, Globals.PATH_POM_XML, Globals.ENCODING,
-                    new NullProgressMonitor());
-            if (text != null) {
-                return activator.getXOMapper().toBean(
-                        activator.getXMLParser().parse(new StringReader(text)).getRootElement(), Project.class);
-            } else {
-                return new Project();
+        if (getArtifactType() == ArtifactType.FRAGMENT) {
+            Activator activator = Activator.getDefault();
+            try {
+                String text = activator.getResourceAsString(artifact, Globals.PATH_POM_XML, Globals.ENCODING,
+                        new NullProgressMonitor());
+                if (text != null) {
+                    return activator.getXOMapper().toBean(
+                            activator.getXMLParser().parse(new StringReader(text)).getRootElement(), Project.class);
+                }
+            } catch (Throwable t) {
+                IOException ioe = new IOException("Can't read " + Globals.PATH_POM_XML + " in " + artifact); //$NON-NLS-1$ //$NON-NLS-2$
+                ioe.initCause(t);
+                throw ioe;
             }
-        } catch (Throwable t) {
-            IOException ioe = new IOException("Can't read " + Globals.PATH_POM_XML + " in " + artifact); //$NON-NLS-1$ //$NON-NLS-2$
-            ioe.initCause(t);
-            throw ioe;
         }
+        return new Project();
     }
 
     private void initialize(MapProperties properties) {
