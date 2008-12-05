@@ -330,16 +330,6 @@ public class ViliProjectPreferencesControl {
         return isDatabaseProject && useDatabaseField.getSelection();
     }
 
-    private DatabaseEntry getDatabaseEntry() {
-        if (isDatabaseProject) {
-            int idx = databaseCombo.getSelectionIndex();
-            return new DatabaseEntry(entries[idx].getName(), entries[idx].getType(), getDatabaseDriverClassName(),
-                    getDatabaseURL(), getDatabaseUser(), getDatabasePassword(), entries[idx].getDependency());
-        } else {
-            return new DatabaseEntry("", "", "", "", "", "", null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-        }
-    }
-
     private String getDatabaseDriverClassName() {
         if (isUseDatabase()) {
             return databaseDriverClassNameField.getText();
@@ -351,22 +341,6 @@ public class ViliProjectPreferencesControl {
     private String getDatabaseURL() {
         if (isUseDatabase()) {
             return databaseURLField.getText();
-        } else {
-            return ""; //$NON-NLS-1$
-        }
-    }
-
-    private String getDatabaseUser() {
-        if (isUseDatabase()) {
-            return databaseUserField.getText();
-        } else {
-            return ""; //$NON-NLS-1$
-        }
-    }
-
-    private String getDatabasePassword() {
-        if (isUseDatabase()) {
-            return databasePasswordField.getText();
         } else {
             return ""; //$NON-NLS-1$
         }

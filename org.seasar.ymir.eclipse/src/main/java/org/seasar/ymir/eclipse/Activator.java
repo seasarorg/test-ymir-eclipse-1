@@ -86,7 +86,6 @@ import org.seasar.ymir.eclipse.util.CascadeMap;
 import org.seasar.ymir.eclipse.util.MavenUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.eclipse.util.URLUtils;
-import org.seasar.ymir.eclipse.wizards.Messages;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import freemarker.cache.TemplateLoader;
@@ -108,8 +107,6 @@ public class Activator extends AbstractUIPlugin {
     private static final String EXTENSION_PROPERTIES = "properties"; //$NON-NLS-1$
 
     private static final String EXTENSION_XPROPERTIES = "xproperties"; //$NON-NLS-1$
-
-    private static final String PATH_JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER"; //$NON-NLS-1$
 
     // The shared instance
     private static Activator plugin;
@@ -588,18 +585,18 @@ public class Activator extends AbstractUIPlugin {
         }
 
         try {
-            return mapper.toBean(parser.parse(new InputStreamReader(file.getContents(), "UTF-8")).getRootElement(),
+            return mapper.toBean(parser.parse(new InputStreamReader(file.getContents(), "UTF-8")).getRootElement(), //$NON-NLS-1$
                     clazz);
         } catch (ValidationException ex) {
-            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex));
+            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex)); //$NON-NLS-1$
         } catch (IllegalSyntaxException ex) {
-            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex));
+            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex)); //$NON-NLS-1$
         } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException("Can't happen!", ex);
+            throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
         } catch (IOException ex) {
-            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex));
+            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex)); //$NON-NLS-1$
         } catch (CoreException ex) {
-            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex));
+            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex)); //$NON-NLS-1$
         }
         return null;
     }
@@ -816,7 +813,7 @@ public class Activator extends AbstractUIPlugin {
 
     public void addFragments(IProject project, ViliProjectPreferences preferences, ArtifactPair[] fragments,
             IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask("Add fragments to project", fragments.length + 3);
+        monitor.beginTask(Messages.getString("Activator.8"), fragments.length + 3); //$NON-NLS-1$
         try {
             Project pom = new Project();
             Repositories repositories = new Repositories();
@@ -831,7 +828,7 @@ public class Activator extends AbstractUIPlugin {
                 try {
                     expandArtifact(project, fragment, preferences, new SubProgressMonitor(monitor, 1));
                 } catch (IOException ex) {
-                    throwCoreException(Messages.getString("NewProjectWizard.13"), ex); //$NON-NLS-1$
+                    throwCoreException("Failed to add fragments", ex); //$NON-NLS-1$
                     return;
                 }
                 if (monitor.isCanceled()) {
@@ -881,7 +878,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private IPath[] copyDependencies(IProject project, Dependency[] dependencies, IProgressMonitor monitor) {
-        monitor.beginTask(Messages.getString("NewProjectWizard.1"), dependencies.length); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("Activator.5"), dependencies.length); //$NON-NLS-1$
         try {
             if (libsAreManagedAutomatically()) {
                 return new IPath[0];
@@ -906,7 +903,7 @@ public class Activator extends AbstractUIPlugin {
 
     private IPath copyDependency(IProject project, ExtendedContext context, Dependency dependency,
             IProgressMonitor monitor) {
-        monitor.beginTask(Messages.getString("NewProjectWizard.1"), 2); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("Activator.5"), 2); //$NON-NLS-1$
         try {
             IPath path = null;
             try {
@@ -942,7 +939,7 @@ public class Activator extends AbstractUIPlugin {
 
     public void addDependenciesToClasspath(IJavaProject javaProject, IPath[] dependencyPaths, IProgressMonitor monitor)
             throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.23"), 1); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("Activator.4"), 1); //$NON-NLS-1$
         try {
             if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null
                     || Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {

@@ -50,6 +50,7 @@ import org.seasar.ymir.eclipse.HotdeployType;
 import org.seasar.ymir.eclipse.ProjectType;
 import org.seasar.ymir.eclipse.ViliBehavior;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
+import org.seasar.ymir.eclipse.natures.ViliNature;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
 import org.seasar.ymir.eclipse.util.JdtUtils;
@@ -245,7 +246,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     private void createProject(IProject project, IPath locationPath, IPath jreContainerPath, ArtifactPair skeleton,
             IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 9); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 10); //$NON-NLS-1$
         try {
             if (!project.exists()) {
                 IProjectDescription description = project.getWorkspace().newProjectDescription(project.getName());
@@ -312,10 +313,19 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                     throw new OperationCanceledException();
                 }
 
-                setUpProjectDescription(project, new SubProgressMonitor(monitor, 1));
+                setUpProjectDescription(project, behavior.isProjectOf(ProjectType.YMIR), new SubProgressMonitor(
+                        monitor, 1));
             } else {
                 monitor.worked(2);
             }
+
+            try {
+                preferences.save(project);
+            } catch (IOException ex) {
+                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                        "Can't save project preferences", ex));
+            }
+            monitor.worked(1);
         } finally {
             monitor.done();
         }
@@ -441,7 +451,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         }
     }
 
-    private void setUpProjectDescription(IProject project, IProgressMonitor monitor) throws CoreException {
+    private void setUpProjectDescription(IProject project, boolean isYmirProject, IProgressMonitor monitor)
+            throws CoreException {
         monitor.beginTask(Messages.getString("NewProjectWizard.19"), 1); //$NON-NLS-1$
         try {
             IProjectDescription description = project.getDescription();
@@ -470,6 +481,11 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             if (Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null) {
                 newNatureList.add(Globals.NATURE_ID_MAVEN2ADDITIONAL);
             }
+
+            if (isYmirProject) {
+                newNatureList.add(ViliNature.ID);
+            }
+
             addNatures(description, newNatureList);
             addBuilders(description, newBuilderList);
 

@@ -55,8 +55,6 @@ import werkzeugkasten.mvnhack.repository.Artifact;
 public class NewProjectWizardFirstPage extends WizardPage {
     protected static final long WAIT_RESOLVE_SKELETON_ARTIFACT = 1000L;
 
-    private ViliProjectPreferences preferences;
-
     private boolean initialized;
 
     private volatile boolean visible;
@@ -131,8 +129,6 @@ public class NewProjectWizardFirstPage extends WizardPage {
      */
     public NewProjectWizardFirstPage(ViliProjectPreferences preferences) {
         super("NewProjectWizardFirstPage"); //$NON-NLS-1$
-
-        this.preferences = preferences;
 
         setTitle(Messages.getString("NewProjectWizardFirstPage.1")); //$NON-NLS-1$
         setDescription(Messages.getString("NewProjectWizardFirstPage.2")); //$NON-NLS-1$
