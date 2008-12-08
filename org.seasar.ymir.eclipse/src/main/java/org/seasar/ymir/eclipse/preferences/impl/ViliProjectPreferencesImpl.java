@@ -93,7 +93,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         fieldPrefix = provider.getFieldPrefix();
         fieldSuffix = provider.getFieldSuffix();
         fieldSpecialPrefix = provider.getFieldSpecialPrefix();
-        applicationProperties = provider.getApplicationProperties();
+        setApplicationProperties(provider.getApplicationProperties());
     }
 
     public boolean isProjectSpecificTemplateEnabled() {
