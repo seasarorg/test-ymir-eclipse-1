@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.util;
+package org.seasar.ymir.eclipse.maven.util;
 
 import java.beans.Introspector;
 import java.io.InputStreamReader;
@@ -18,6 +18,10 @@ import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.maven.Project;
 import org.seasar.ymir.eclipse.maven.Repositories;
 import org.seasar.ymir.eclipse.maven.Repository;
+import org.seasar.ymir.eclipse.maven.util.MavenUtils;
+import org.seasar.ymir.eclipse.maven.util.PomExpressionEvaluator;
+import org.seasar.ymir.eclipse.maven.util.PomTagEvaluator;
+import org.seasar.ymir.eclipse.maven.util.PomTemplateContext;
 
 public class MavenUtilsTest extends TestCase {
     @Override
