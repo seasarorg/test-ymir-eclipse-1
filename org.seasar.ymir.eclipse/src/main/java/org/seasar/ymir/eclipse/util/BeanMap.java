@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,8 +46,17 @@ public class BeanMap implements Map<String, Object> {
         throw new UnsupportedOperationException();
     }
 
-    public Set<java.util.Map.Entry<String, Object>> entrySet() {
-        throw new UnsupportedOperationException();
+    public Set<Entry<String, Object>> entrySet() {
+        Set<Entry<String, Object>> entrySet = new HashSet<Entry<String, Object>>();
+        for (String key : keySet()) {
+            entrySet.add(new EntryImpl<String, Object>(key, null) {
+                @Override
+                public Object getValue() {
+                    return get(getKey());
+                }
+            });
+        }
+        return entrySet;
     }
 
     public Object get(Object key) {
@@ -67,7 +77,7 @@ public class BeanMap implements Map<String, Object> {
     }
 
     public Set<String> keySet() {
-        throw new UnsupportedOperationException();
+        return readMethodMap.keySet();
     }
 
     public Object put(String key, Object value) {

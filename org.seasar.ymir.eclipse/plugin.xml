@@ -56,7 +56,8 @@
       </page>
    </extension>
    <extension
-         id="id1"
+         id="org.seasar.ymir.eclipse.viliNature"
+         name="Vili Project Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run

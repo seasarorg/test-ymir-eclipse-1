@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.util;
+package org.seasar.ymir.eclipse.maven.util;
 
 import java.util.Properties;
 

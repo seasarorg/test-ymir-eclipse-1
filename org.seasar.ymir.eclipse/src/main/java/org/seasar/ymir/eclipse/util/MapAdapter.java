@@ -35,7 +35,7 @@ public class MapAdapter implements Map<String, String> {
         if (value == null) {
             return false;
         }
-        for (@SuppressWarnings("unchecked") //$NON-NLS-1$
+        for (@SuppressWarnings("unchecked")//$NON-NLS-1$
         Enumeration enm = prop.propertyNames(); enm.hasMoreElements();) {
             String name = (String) enm.nextElement();
             if (value.equals(prop.getProperty(name))) {
@@ -45,7 +45,7 @@ public class MapAdapter implements Map<String, String> {
         return false;
     }
 
-    @SuppressWarnings("unchecked") //$NON-NLS-1$
+    @SuppressWarnings("unchecked")//$NON-NLS-1$
     public Set entrySet() {
         Set<Map.Entry<String, String>> set = new HashSet<Map.Entry<String, String>>();
         for (Enumeration enm = prop.propertyNames(); enm.hasMoreElements();) {
@@ -66,7 +66,7 @@ public class MapAdapter implements Map<String, String> {
         return prop.size() == 0;
     }
 
-    @SuppressWarnings("unchecked") //$NON-NLS-1$
+    @SuppressWarnings("unchecked")//$NON-NLS-1$
     public Set keySet() {
         Set<String> set = new HashSet<String>();
         for (Enumeration enm = prop.propertyNames(); enm.hasMoreElements();) {
@@ -83,7 +83,7 @@ public class MapAdapter implements Map<String, String> {
 
     public void putAll(Map<? extends String, ? extends String> m) {
         for (Iterator<?> itr = m.entrySet().iterator(); itr.hasNext();) {
-            @SuppressWarnings("unchecked") //$NON-NLS-1$
+            @SuppressWarnings("unchecked")//$NON-NLS-1$
             Map.Entry<? extends String, ? extends String> entry = (Entry<? extends String, ? extends String>) itr
                     .next();
             prop.setProperty(entry.getKey(), entry.getValue());
@@ -105,35 +105,10 @@ public class MapAdapter implements Map<String, String> {
 
     public Collection<String> values() {
         Set<String> set = new HashSet<String>();
-        for (@SuppressWarnings("unchecked") //$NON-NLS-1$
+        for (@SuppressWarnings("unchecked")//$NON-NLS-1$
         Enumeration enm = prop.propertyNames(); enm.hasMoreElements();) {
             set.add(prop.getProperty((String) enm.nextElement()));
         }
         return set;
-    }
-
-    public static class EntryImpl<K, V> implements Map.Entry<K, V> {
-        private K key;
-
-        private V value;
-
-        protected EntryImpl(K key, V value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public K getKey() {
-            return key;
-        }
-
-        public V getValue() {
-            return value;
-        }
-
-        public V setValue(V value) {
-            V old = this.value;
-            this.value = value;
-            return old;
-        }
     }
 }

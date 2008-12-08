@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.util;
+package org.seasar.ymir.eclipse.maven.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

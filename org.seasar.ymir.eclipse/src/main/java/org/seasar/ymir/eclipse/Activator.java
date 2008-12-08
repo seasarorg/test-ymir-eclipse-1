@@ -74,6 +74,7 @@ import org.seasar.ymir.eclipse.maven.Project;
 import org.seasar.ymir.eclipse.maven.Repositories;
 import org.seasar.ymir.eclipse.maven.Repository;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
+import org.seasar.ymir.eclipse.maven.util.MavenUtils;
 import org.seasar.ymir.eclipse.natures.ViliNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
@@ -83,7 +84,6 @@ import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesImpl;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesProviderImpl;
 import org.seasar.ymir.eclipse.util.BeanMap;
 import org.seasar.ymir.eclipse.util.CascadeMap;
-import org.seasar.ymir.eclipse.util.MavenUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.eclipse.util.URLUtils;
 
@@ -818,11 +818,8 @@ public class Activator extends AbstractUIPlugin {
             Project pom = new Project();
             Repositories repositories = new Repositories();
             Dependencies dependencies = new Dependencies();
-
-            Dependency databaseDependency = preferences.getDatabaseEntry().getDependency();
-            if (databaseDependency != null) {
-                dependencies.addDependency(databaseDependency);
-            }
+            pom.setRepositories(repositories);
+            pom.setDependencies(dependencies);
 
             for (ArtifactPair fragment : fragments) {
                 try {
@@ -845,11 +842,6 @@ public class Activator extends AbstractUIPlugin {
                     for (Dependency fDependency : fPom.getDependencies().getDependencies()) {
                         dependencies.addDependency(fDependency);
                     }
-                }
-
-                monitor.worked(1);
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
                 }
             }
 

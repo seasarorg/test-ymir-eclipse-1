@@ -277,4 +277,8 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         this.applicationProperties = applicationProperties;
         ymir = new MapAdapter(this.applicationProperties);
     }
+
+    public DatabaseEntry getDatabase() {
+        return getDatabaseEntry();
+    }
 }

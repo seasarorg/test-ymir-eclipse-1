@@ -49,7 +49,11 @@ import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
 import org.seasar.ymir.eclipse.ProjectType;
 import org.seasar.ymir.eclipse.ViliBehavior;
+import org.seasar.ymir.eclipse.maven.Dependencies;
+import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
+import org.seasar.ymir.eclipse.maven.Project;
+import org.seasar.ymir.eclipse.maven.util.MavenUtils;
 import org.seasar.ymir.eclipse.natures.ViliNature;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
@@ -246,7 +250,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     private void createProject(IProject project, IPath locationPath, IPath jreContainerPath, ArtifactPair skeleton,
             IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 10); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 11); //$NON-NLS-1$
         try {
             if (!project.exists()) {
                 IProjectDescription description = project.getWorkspace().newProjectDescription(project.getName());
@@ -278,6 +282,8 @@ public class NewProjectWizard extends Wizard implements INewWizard {
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
+
+            addDatabaseDependenciesToPom(project, new SubProgressMonitor(monitor, 1));
 
             if (behavior.isProjectOf(ProjectType.JAVA)) {
                 setUpJRECompliance(project, preferences.getJREVersion(), new SubProgressMonitor(monitor, 1));
@@ -326,6 +332,22 @@ public class NewProjectWizard extends Wizard implements INewWizard {
                         "Can't save project preferences", ex));
             }
             monitor.worked(1);
+        } finally {
+            monitor.done();
+        }
+    }
+
+    private void addDatabaseDependenciesToPom(IProject project, IProgressMonitor monitor) throws CoreException {
+        monitor.beginTask("Add database dependencies to pom.xml", 1);
+        try {
+            Dependency databaseDependency = preferences.getDatabaseEntry().getDependency();
+            if (databaseDependency != null) {
+                Project pom = new Project();
+                Dependencies dependencies = new Dependencies();
+                dependencies.addDependency(databaseDependency);
+                pom.setDependencies(dependencies);
+                MavenUtils.addToPom(project.getFile(Globals.PATH_POM_XML), pom, monitor);
+            }
         } finally {
             monitor.done();
         }
