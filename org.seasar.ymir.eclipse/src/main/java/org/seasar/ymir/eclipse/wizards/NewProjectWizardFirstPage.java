@@ -534,7 +534,6 @@ public class NewProjectWizardFirstPage extends WizardPage {
                 removeCustomFragmentButton.setEnabled(false);
             }
         });
-
     }
 
     void createAdvancedControl(Composite parent) {

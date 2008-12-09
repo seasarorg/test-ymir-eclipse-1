@@ -65,5 +65,30 @@
          </run>
       </runtime>
    </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="true"
+            id="org.seasar.ymir.eclipse.objectContribution"
+            objectClass="org.eclipse.core.resources.IResource">
+         <menu
+               id="org.seasar.ymir.eclipse.menu"
+               label="%plugin.name"
+               path="additions">
+         </menu>
+         <action
+               class="org.seasar.ymir.eclipse.actions.AddFragmentsAction"
+               id="org.seasar.ymir.eclipse.addFragmentsAction"
+               label="%popup.action.addFragments"
+               menubarPath="org.seasar.ymir.eclipse.menu/group">
+            <enablement>
+               <objectState
+                     name="projectNature"
+                     value="org.seasar.ymir.eclipse.viliNature">
+               </objectState>
+            </enablement>
+         </action>
+      </objectContribution>
+   </extension>
 
 </plugin>
