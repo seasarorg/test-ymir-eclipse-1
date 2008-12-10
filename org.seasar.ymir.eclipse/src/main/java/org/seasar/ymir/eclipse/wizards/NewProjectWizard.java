@@ -54,7 +54,8 @@ import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.eclipse.maven.Project;
 import org.seasar.ymir.eclipse.maven.util.MavenUtils;
-import org.seasar.ymir.eclipse.natures.ViliNature;
+import org.seasar.ymir.eclipse.natures.ViliProjectNature;
+import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
 import org.seasar.ymir.eclipse.util.JdtUtils;
@@ -154,6 +155,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
                         Activator.getDefault().addFragments(project, preferences, fragments,
                                 new SubProgressMonitor(monitor, 1));
                     } catch (CoreException e) {
+                        Activator.getDefault().getLog().log(e.getStatus());
                         throw new InvocationTargetException(e);
                     } finally {
                         monitor.done();
@@ -286,12 +288,25 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
             addDatabaseDependenciesToPom(project, new SubProgressMonitor(monitor, 1));
 
             if (behavior.isProjectOf(ProjectType.JAVA)) {
+                IJavaProject javaProject = JavaCore.create(project);
+
+                setUpProjectDescription(project, behavior.isProjectOf(ProjectType.YMIR), new SubProgressMonitor(
+                        monitor, 1));
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
                 setUpJRECompliance(project, preferences.getJREVersion(), new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
+
+                setUpClasspath(javaProject, jreContainerPath, new SubProgressMonitor(monitor, 1));
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
             } else {
-                monitor.worked(1);
+                monitor.worked(3);
             }
 
             if (behavior.isProjectOf(ProjectType.YMIR)) {
@@ -307,20 +322,6 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
-            } else {
-                monitor.worked(2);
-            }
-
-            if (behavior.isProjectOf(ProjectType.JAVA)) {
-                IJavaProject javaProject = JavaCore.create(project);
-
-                setUpClasspath(javaProject, jreContainerPath, new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                setUpProjectDescription(project, behavior.isProjectOf(ProjectType.YMIR), new SubProgressMonitor(
-                        monitor, 1));
             } else {
                 monitor.worked(2);
             }
@@ -504,8 +505,9 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
                 newNatureList.add(Globals.NATURE_ID_MAVEN2ADDITIONAL);
             }
 
+            newNatureList.add(ViliProjectNature.ID);
             if (isYmirProject) {
-                newNatureList.add(ViliNature.ID);
+                newNatureList.add(YmirProjectNature.ID);
             }
 
             addNatures(description, newNatureList);

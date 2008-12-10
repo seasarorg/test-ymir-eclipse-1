@@ -56,12 +56,12 @@
       </page>
    </extension>
    <extension
-         id="org.seasar.ymir.eclipse.viliNature"
+         id="org.seasar.ymir.eclipse.viliProjectNature"
          name="Vili Project Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
-               class="org.seasar.ymir.eclipse.natures.ViliNature">
+               class="org.seasar.ymir.eclipse.natures.ViliProjectNature">
          </run>
       </runtime>
    </extension>
@@ -84,11 +84,21 @@
             <enablement>
                <objectState
                      name="projectNature"
-                     value="org.seasar.ymir.eclipse.viliNature">
+                     value="org.seasar.ymir.eclipse.viliProjectNature">
                </objectState>
             </enablement>
          </action>
       </objectContribution>
+   </extension>
+   <extension
+         id="org.seasar.ymir.eclipse.ymirProjectNature"
+         name="Ymir Project Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.seasar.ymir.eclipse.natures.YmirProjectNature">
+         </run>
+      </runtime>
    </extension>
 
 </plugin>

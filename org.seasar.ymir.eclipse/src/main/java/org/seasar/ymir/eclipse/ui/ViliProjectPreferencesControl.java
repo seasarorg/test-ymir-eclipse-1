@@ -22,6 +22,8 @@ import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 public class ViliProjectPreferencesControl {
     private static final String REQUIRED_TEMPLATE = Messages.getString("ViliProjectPreferencesControl.0"); //$NON-NLS-1$
 
+    private static final int DEFAULT_DATABASEENTRY_INDEX = 0;
+
     private Composite parent;
 
     private ViliProjectPreferences preferences;
@@ -165,17 +167,14 @@ public class ViliProjectPreferencesControl {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 int idx = databaseCombo.getSelectionIndex();
-                DatabaseEntry entry = preferences.getDatabaseEntry();
-                entry.setName(entries[idx].getName());
-                entry.setType(entries[idx].getType());
                 databaseDriverClassNameField.setText(entries[idx].getDriverClassName());
-                entry.setDriverClassName(entries[idx].getDriverClassName());
                 databaseURLField.setText(entries[idx].getURL());
-                entry.setURL(entries[idx].getURL());
                 databaseUserField.setText(entries[idx].getUser());
-                entry.setUser(entries[idx].getUser());
                 databasePasswordField.setText(entries[idx].getPassword());
-                entry.setPassword(entries[idx].getPassword());
+                DatabaseEntry entry = preferences.getDatabaseEntry();
+                entry.setType(entries[idx].getType());
+                entry.setName(entries[idx].getName());
+                entry.setDependency(entries[idx].getDependency());
 
                 setPageComplete(validatePage());
             }
@@ -255,26 +254,19 @@ public class ViliProjectPreferencesControl {
 
     public void setDefaultValues() {
         if (isWebProject) {
-            viewEncodingField.setText(preferences.getViewEncoding());
+            viewEncodingField.setText("UTF-8");
         }
         if (isDatabaseProject) {
-            useDatabaseField.setSelection(preferences.isUseDatabase());
-
+            useDatabaseField.setSelection(true);
+            databaseCombo.setText(databaseCombo.getItem(DEFAULT_DATABASEENTRY_INDEX));
+            databaseDriverClassNameField.setText(entries[DEFAULT_DATABASEENTRY_INDEX].getDriverClassName());
+            databaseURLField.setText(entries[DEFAULT_DATABASEENTRY_INDEX].getURL());
+            databaseUserField.setText(entries[DEFAULT_DATABASEENTRY_INDEX].getUser());
+            databasePasswordField.setText(entries[DEFAULT_DATABASEENTRY_INDEX].getPassword());
             DatabaseEntry entry = preferences.getDatabaseEntry();
-            String type = entry.getType();
-            int index = entries.length - 1;
-            for (int i = 0; i < entries.length; i++) {
-                if (entries[i].getType().equals(type)) {
-                    index = i;
-                    break;
-                }
-            }
-
-            databaseCombo.setText(databaseCombo.getItem(index));
-            databaseDriverClassNameField.setText(entry.getDriverClassName());
-            databaseURLField.setText(entry.getURL());
-            databaseUserField.setText(entry.getUser());
-            databasePasswordField.setText(entry.getPassword());
+            entry.setName(entries[DEFAULT_DATABASEENTRY_INDEX].getName());
+            entry.setType(entries[DEFAULT_DATABASEENTRY_INDEX].getType());
+            entry.setDependency(entries[DEFAULT_DATABASEENTRY_INDEX].getDependency());
         }
 
         setPageComplete(validatePage());

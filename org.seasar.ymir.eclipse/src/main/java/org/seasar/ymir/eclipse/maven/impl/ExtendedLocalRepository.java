@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.seasar.ymir.eclipse.maven.ExtendedRepository;
 import org.seasar.ymir.eclipse.maven.Metadata;
@@ -12,6 +14,8 @@ import org.seasar.ymir.eclipse.maven.Versioning;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 
+import werkzeugkasten.common.util.UrlUtil;
+import werkzeugkasten.mvnhack.Constants;
 import werkzeugkasten.mvnhack.repository.Artifact;
 import werkzeugkasten.mvnhack.repository.ArtifactBuilder;
 import werkzeugkasten.mvnhack.repository.Context;
@@ -94,5 +98,15 @@ public class ExtendedLocalRepository extends LocalRepository implements Extended
 
         return ExtendedDefaultArtifact
                 .newInstance(super.load(context, groupId, artifactId, version), null, lastUpdated);
+    }
+
+    @Override
+    public Set<URL> getLocation(Artifact artifact) {
+        Set<URL> urls = new HashSet<URL>();
+        urls.add(UrlUtil.toURL(new File(root.getAbsolutePath(), ArtifactUtils.toPath(artifact))));
+        urls.add(UrlUtil.toURL(new File(root.getAbsolutePath(), ArtifactUtils.toPath(artifact, Constants.POM))));
+        urls.add(UrlUtil.toURL(new File(root.getAbsolutePath(), ArtifactUtils.toPath(artifact,
+                "-sources." + artifact.getType())))); //$NON-NLS-1$
+        return urls;
     }
 }

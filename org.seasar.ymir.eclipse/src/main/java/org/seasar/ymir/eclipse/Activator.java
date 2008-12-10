@@ -1,5 +1,7 @@
 package org.seasar.ymir.eclipse;
 
+import static org.seasar.ymir.eclipse.Globals.PATH_POM_XML;
+
 import java.beans.Introspector;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -75,7 +77,7 @@ import org.seasar.ymir.eclipse.maven.Repositories;
 import org.seasar.ymir.eclipse.maven.Repository;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.maven.util.MavenUtils;
-import org.seasar.ymir.eclipse.natures.ViliNature;
+import org.seasar.ymir.eclipse.natures.ViliProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
@@ -439,6 +441,9 @@ public class Activator extends AbstractUIPlugin {
         if (path.startsWith(PATHPREFIX_SRC_MAIN_WEBAPP_LIB) && libsAreManagedAutomatically()) {
             return true;
         }
+        if (path.equals(PATH_POM_XML) && behavior.getArtifactType() == ArtifactType.FRAGMENT) {
+            return true;
+        }
 
         return false;
     }
@@ -746,7 +751,7 @@ public class Activator extends AbstractUIPlugin {
         MapProperties properties = new MapProperties(new TreeMap<String, String>());
         boolean isViliProject;
         try {
-            isViliProject = project.hasNature(ViliNature.ID);
+            isViliProject = project.hasNature(ViliProjectNature.ID);
         } catch (CoreException ex) {
             isViliProject = false;
         }
@@ -777,7 +782,7 @@ public class Activator extends AbstractUIPlugin {
     public void saveApplicationProperties(IProject project, MapProperties properties, boolean merge) throws IOException {
         boolean isYmirProject;
         try {
-            isYmirProject = project.hasNature(ViliNature.ID);
+            isYmirProject = project.hasNature(ViliProjectNature.ID);
         } catch (CoreException ex) {
             isYmirProject = false;
         }

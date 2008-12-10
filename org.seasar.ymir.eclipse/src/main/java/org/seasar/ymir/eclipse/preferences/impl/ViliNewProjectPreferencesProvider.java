@@ -12,7 +12,7 @@ import org.seasar.ymir.eclipse.util.JdtUtils;
 public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesProviderBase {
     private static final int DEFAULT_DATABASE_INDEX = 0;
 
-    @SuppressWarnings("unchecked") //$NON-NLS-1$
+    @SuppressWarnings("unchecked")//$NON-NLS-1$
     private MapProperties applicationProperties = new MapProperties(new TreeMap());
 
     public boolean isProjectSpecificTemplateEnabled() {
@@ -28,7 +28,7 @@ public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesPro
     }
 
     public String getViewEncoding() {
-        return "UTF-8"; //$NON-NLS-1$
+        return ""; //$NON-NLS-1$
     }
 
     public boolean isUseDatabase() {
@@ -36,7 +36,7 @@ public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesPro
     }
 
     public DatabaseEntry getDatabaseEntry() {
-        return (DatabaseEntry) databaseEntries[DEFAULT_DATABASE_INDEX].clone();
+        return new DatabaseEntry("", "", "", "", "", "", null);
     }
 
     public String getProjectName() {

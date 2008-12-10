@@ -38,9 +38,11 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                                 "ymir-skeleton-generic", Messages.getString("PreferenceInitializer.66"), //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("PreferenceInitializer.13"), new FragmentEntry("ymir-fragment-dbflute", "", "")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                         new SkeletonEntry(
-                                "ymir-skeleton-skeleton", Messages.getString("PreferenceInitializer.68"), Messages.getString("PreferenceInitializer.69")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                                "ymir-skeleton-skeleton-generic", Messages.getString("PreferenceInitializer.68"), Messages.getString("PreferenceInitializer.69")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        new SkeletonEntry("ymir-skeleton-skeleton-web", Messages.getString("PreferenceInitializer.74"), //$NON-NLS-1$ //$NON-NLS-2$
+                                Messages.getString("PreferenceInitializer.75")), //$NON-NLS-1$
                         new SkeletonEntry(
-                                "ymir-skeleton-fragment", Messages.getString("PreferenceInitializer.71"), Messages.getString("PreferenceInitializer.72")) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                                "ymir-skeleton-fragment-generic", Messages.getString("PreferenceInitializer.71"), Messages.getString("PreferenceInitializer.72")) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 ));
         defaultTemplateEntry
                 .setFragments(new FragmentEntries(

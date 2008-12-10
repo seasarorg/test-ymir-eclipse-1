@@ -94,4 +94,8 @@ public class DatabaseEntry implements Cloneable {
     public Dependency getDependency() {
         return dependency;
     }
+
+    public void setDependency(Dependency dependency) {
+        this.dependency = dependency;
+    }
 }

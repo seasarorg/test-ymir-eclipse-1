@@ -16,7 +16,7 @@ import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.PlatformDelegate;
-import org.seasar.ymir.eclipse.natures.ViliNature;
+import org.seasar.ymir.eclipse.natures.ViliProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
@@ -42,6 +42,8 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     private boolean useDatabase;
 
     private DatabaseEntry databaseEntry;
+
+    private DatabaseEntry emptyDatabaseEntry;
 
     private String projectName;
 
@@ -85,6 +87,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         viewEncoding = provider.getViewEncoding();
         useDatabase = provider.isUseDatabase();
         databaseEntry = provider.getDatabaseEntry();
+        emptyDatabaseEntry = new DatabaseEntry("", "", "", "", "", "", null);
         projectName = provider.getProjectName();
         groupId = provider.getGroupId();
         artifactId = provider.getArtifactId();
@@ -125,7 +128,11 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     }
 
     public DatabaseEntry getDatabaseEntry() {
-        return databaseEntry;
+        if (isUseDatabase()) {
+            return databaseEntry;
+        } else {
+            return emptyDatabaseEntry;
+        }
     }
 
     public void setProjectSpecificTemplateEnabled(boolean projectSpecificTemplateEnabled) {
@@ -157,18 +164,19 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore(project);
         boolean isYmirProject;
         try {
-            isYmirProject = project.hasNature(ViliNature.ID);
+            isYmirProject = project.hasNature(ViliProjectNature.ID);
         } catch (CoreException ex) {
             isYmirProject = false;
         }
 
-        store.putValue(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, databaseEntry.getDriverClassName());
-        store.putValue(ParameterKeys.DATABASE_PASSWORD, databaseEntry.getPassword());
-        store.putValue(ParameterKeys.DATABASE_NAME, databaseEntry.getName());
-        store.putValue(ParameterKeys.DATABASE_TYPE, databaseEntry.getType());
-        store.putValue(ParameterKeys.DATABASE_URL, databaseEntry.getURL());
+        DatabaseEntry entry = getDatabaseEntry();
+        store.putValue(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, entry.getDriverClassName());
+        store.putValue(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
+        store.putValue(ParameterKeys.DATABASE_NAME, entry.getName());
+        store.putValue(ParameterKeys.DATABASE_TYPE, entry.getType());
+        store.putValue(ParameterKeys.DATABASE_URL, entry.getURL());
         store.putValue(ParameterKeys.USE_DATABASE, String.valueOf(useDatabase));
-        store.putValue(ParameterKeys.DATABASE_USER, databaseEntry.getUser());
+        store.putValue(ParameterKeys.DATABASE_USER, entry.getUser());
         if (isYmirProject) {
             applicationProperties.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, rootPackageName);
         } else {
