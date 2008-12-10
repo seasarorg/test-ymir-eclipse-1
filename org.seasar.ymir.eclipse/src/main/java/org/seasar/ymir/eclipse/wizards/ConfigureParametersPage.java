@@ -4,8 +4,10 @@ import static org.seasar.ymir.eclipse.wizards.NewProjectWizard.REQUIRED_TEMPLATE
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.IDialogPage;
@@ -40,7 +42,7 @@ import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
  * OR with the extension that matches the expected one (mpe).
  */
 
-public class NewProjectWizardThirdPage extends WizardPage {
+public class ConfigureParametersPage extends WizardPage {
     private static final int SCROLL_UNIT = 16;
 
     private Listener validationListener = new Listener() {
@@ -63,7 +65,9 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     private boolean tabPrepared;
 
-    private ArtifactPair[] skeletonAndFragments;
+    private ArtifactPair skeleton;
+
+    private ArtifactPair[] fragments;
 
     private ViliBehavior behavior;
 
@@ -73,7 +77,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     private YmirConfigurationControl ymirConfigurationControl;
 
-    public NewProjectWizardThirdPage(ViliProjectPreferences preferences) {
+    public ConfigureParametersPage(ViliProjectPreferences preferences) {
         super("NewProjectWizardThirdPage"); //$NON-NLS-1$
 
         this.preferences = preferences;
@@ -99,26 +103,34 @@ public class NewProjectWizardThirdPage extends WizardPage {
     }
 
     void createTabFolder() {
-        tabFolder = new CTabFolder(tabFolderParent, SWT.NULL);
-        tabFolder.setLayout(new FillLayout());
-        tabFolder.setSimple(false);
-        tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
+        boolean skeletonParameterExists = skeletonParameterExists();
 
-        CTabItem genericTabItem = new CTabItem(tabFolder, SWT.NONE);
-        genericTabItem.setText(Messages.getString("NewProjectWizardThirdPage.11")); //$NON-NLS-1$
+        if (skeleton != null || skeletonParameterExists) {
+            tabFolder = new CTabFolder(tabFolderParent, SWT.NULL);
+            tabFolder.setLayout(new FillLayout());
+            tabFolder.setSimple(false);
+            tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
+        } else {
+            new Label(tabFolderParent, SWT.NULL).setText("設定可能な項目はありません。");
+        }
 
-        Composite genericTabContent = new Composite(tabFolder, SWT.NULL);
-        genericTabContent.setLayout(new GridLayout());
-        genericTabItem.setControl(genericTabContent);
+        if (skeleton != null) {
+            CTabItem genericTabItem = new CTabItem(tabFolder, SWT.NONE);
+            genericTabItem.setText(Messages.getString("NewProjectWizardThirdPage.11")); //$NON-NLS-1$
 
-        preferencesControl = new ViliProjectPreferencesControl(genericTabContent, preferences, behavior
-                .isProjectOf(ProjectType.WEB), behavior.isProjectOf(ProjectType.DATABASE)) {
-            @Override
-            public void setErrorMessage(String message) {
-                NewProjectWizardThirdPage.this.setErrorMessage(message);
-            }
-        };
-        preferencesControl.createControl();
+            Composite genericTabContent = new Composite(tabFolder, SWT.NULL);
+            genericTabContent.setLayout(new GridLayout());
+            genericTabItem.setControl(genericTabContent);
+
+            preferencesControl = new ViliProjectPreferencesControl(genericTabContent, preferences, behavior
+                    .isProjectOf(ProjectType.WEB), behavior.isProjectOf(ProjectType.DATABASE)) {
+                @Override
+                public void setErrorMessage(String message) {
+                    ConfigureParametersPage.this.setErrorMessage(message);
+                }
+            };
+            preferencesControl.createControl();
+        }
 
         if (skeletonParameterExists()) {
             CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
@@ -138,38 +150,40 @@ public class NewProjectWizardThirdPage extends WizardPage {
             scroll.setMinHeight(skeletonTabContent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
         }
 
-        if (behavior.isProjectOf(ProjectType.YMIR)) {
-            CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
-            ymirConfigurationTabItem.setText(Messages.getString("NewProjectWizardThirdPage.0")); //$NON-NLS-1$
+        if (skeleton != null) {
+            if (behavior.isProjectOf(ProjectType.YMIR)) {
+                CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
+                ymirConfigurationTabItem.setText(Messages.getString("NewProjectWizardThirdPage.0")); //$NON-NLS-1$
 
-            final ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
-            scroll.setLayout(new FillLayout());
-            scroll.setExpandHorizontal(true); // ←君の意味を勘違いしていたせいで8時間を無駄にしたよ... orz 2008-09-20
-            scroll.setExpandVertical(true);
-            scroll.getVerticalBar().addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (e.detail == SWT.ARROW_UP) {
-                        scroll.getVerticalBar().setIncrement(-SCROLL_UNIT);
-                    } else if (e.detail == SWT.ARROW_DOWN) {
-                        scroll.getVerticalBar().setIncrement(SCROLL_UNIT);
+                final ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
+                scroll.setLayout(new FillLayout());
+                scroll.setExpandHorizontal(true); // ←君の意味を勘違いしていたせいで8時間を無駄にしたよ... orz 2008-09-20
+                scroll.setExpandVertical(true);
+                scroll.getVerticalBar().addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (e.detail == SWT.ARROW_UP) {
+                            scroll.getVerticalBar().setIncrement(-SCROLL_UNIT);
+                        } else if (e.detail == SWT.ARROW_DOWN) {
+                            scroll.getVerticalBar().setIncrement(SCROLL_UNIT);
+                        }
                     }
-                }
-            });
-            ymirConfigurationTabItem.setControl(scroll);
+                });
+                ymirConfigurationTabItem.setControl(scroll);
 
-            ymirConfigurationTabContent = new Composite(scroll, SWT.NONE);
-            ymirConfigurationTabContent.setLayout(new GridLayout());
-            scroll.setContent(ymirConfigurationTabContent);
+                ymirConfigurationTabContent = new Composite(scroll, SWT.NONE);
+                ymirConfigurationTabContent.setLayout(new GridLayout());
+                scroll.setContent(ymirConfigurationTabContent);
 
-            ymirConfigurationControl = new YmirConfigurationControl(ymirConfigurationTabContent, preferences) {
-                @Override
-                public void setErrorMessage(String message) {
-                    NewProjectWizardThirdPage.this.setErrorMessage(message);
-                }
-            };
-            ymirConfigurationControl.createControl();
-            scroll.setMinHeight(ymirConfigurationTabContent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+                ymirConfigurationControl = new YmirConfigurationControl(ymirConfigurationTabContent, preferences) {
+                    @Override
+                    public void setErrorMessage(String message) {
+                        ConfigureParametersPage.this.setErrorMessage(message);
+                    }
+                };
+                ymirConfigurationControl.createControl();
+                scroll.setMinHeight(ymirConfigurationTabContent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+            }
         }
 
         tabFolderParent.layout();
@@ -179,23 +193,35 @@ public class NewProjectWizardThirdPage extends WizardPage {
 
     private boolean skeletonParameterExists() {
         int count = 0;
-        for (ArtifactPair pair : skeletonAndFragments) {
+        for (ArtifactPair pair : getArtifactPairs()) {
             count += pair.getBehavior().getTemplateParameters().length;
         }
         return count > 0;
     }
 
+    private ArtifactPair[] getArtifactPairs() {
+        List<ArtifactPair> pairList = new ArrayList<ArtifactPair>();
+        if (skeleton != null) {
+            pairList.add(skeleton);
+        }
+        if (fragments != null) {
+            pairList.addAll(Arrays.asList(fragments));
+        }
+        return pairList.toArray(new ArtifactPair[0]);
+    }
+
     @SuppressWarnings("unchecked")//$NON-NLS-1$
     void createSkeletonParametersControl(Composite parent) {
-        parameterModelMaps = new Map[skeletonAndFragments.length];
+        ArtifactPair[] pairs = getArtifactPairs();
+        parameterModelMaps = new Map[pairs.length];
         java.util.List<ParameterModel> requiredList = new ArrayList<ParameterModel>();
 
         int count = 0;
-        for (int i = 0; i < skeletonAndFragments.length; i++) {
+        for (int i = 0; i < pairs.length; i++) {
             Map<String, ParameterModel> modelMap = new HashMap<String, ParameterModel>();
             parameterModelMaps[i] = modelMap;
 
-            ArtifactPair pair = skeletonAndFragments[i];
+            ArtifactPair pair = pairs[i];
             ViliBehavior behavior = pair.getBehavior();
             String[] names = behavior.getTemplateParameters();
             count += names.length;
@@ -262,18 +288,21 @@ public class NewProjectWizardThirdPage extends WizardPage {
         super.setVisible(visible);
         if (visible) {
             if (!tabPrepared) {
-                NewProjectWizard wizard = (NewProjectWizard) getWizard();
-                ArtifactPair skeleton = wizard.getSkeleton();
-                ArtifactPair[] fragments = wizard.getFragments();
-                skeletonAndFragments = new ArtifactPair[1 + fragments.length];
-                skeletonAndFragments[0] = skeleton;
-                System.arraycopy(fragments, 0, skeletonAndFragments, 1, fragments.length);
-                behavior = skeleton.getBehavior();
+                ISelectArtifactWizard wizard = (ISelectArtifactWizard) getWizard();
+                skeleton = wizard.getSkeleton();
+                if (skeleton != null) {
+                    behavior = skeleton.getBehavior();
+                }
+                fragments = wizard.getFragments();
                 createTabFolder();
                 tabPrepared = true;
 
-                tabFolder.setSelection(0);
-                preferencesControl.setVisible(true);
+                if (tabFolder != null) {
+                    tabFolder.setSelection(0);
+                }
+                if (preferencesControl != null) {
+                    preferencesControl.setVisible(true);
+                }
 
                 setPageComplete(validatePage());
             }
@@ -287,8 +316,30 @@ public class NewProjectWizardThirdPage extends WizardPage {
     }
 
     public void notifySkeletonAndFragmentsCleared() {
-        skeletonAndFragments = null;
+        skeleton = null;
         behavior = null;
+        fragments = null;
+
+        if (tabFolder != null) {
+            tabFolder.dispose();
+            tabFolder = null;
+        }
+        tabPrepared = false;
+
+        skeletonTabContent = null;
+        parameterModelMaps = null;
+        requiredParameterModels = new ParameterModel[0];
+
+        preferencesControl = null;
+
+        ymirConfigurationTabContent = null;
+        ymirConfigurationControl = null;
+
+        setPageComplete(false);
+    }
+
+    public void notifyFragmentsChanged() {
+        fragments = null;
 
         if (tabFolder != null) {
             tabFolder.dispose();
@@ -309,7 +360,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
     }
 
     boolean validatePage() {
-        if (!preferencesControl.validatePage()) {
+        if (preferencesControl != null && !preferencesControl.validatePage()) {
             return false;
         }
 
@@ -329,11 +380,15 @@ public class NewProjectWizardThirdPage extends WizardPage {
     }
 
     void setDefaultValues() {
-        preferencesControl.setDefaultValues();
+        if (preferencesControl != null) {
+            preferencesControl.setDefaultValues();
+        }
         if (ymirConfigurationControl != null) {
             ymirConfigurationControl.setDefaultValues();
         }
-        tabFolder.setSelection(0);
+        if (tabFolder != null) {
+            tabFolder.setSelection(0);
+        }
     }
 
     public void populateSkeletonParameters() {
@@ -341,6 +396,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
             return;
         }
 
+        ArtifactPair[] pairs = getArtifactPairs();
         for (int i = 0; i < parameterModelMaps.length; i++) {
             Map<String, ParameterModel> modelMap = parameterModelMaps[i];
             Map<String, Object> parameterMap = new HashMap<String, Object>();
@@ -348,7 +404,7 @@ public class NewProjectWizardThirdPage extends WizardPage {
                 Map.Entry<String, ParameterModel> entry = itr.next();
                 parameterMap.put(entry.getKey(), entry.getValue().getObject());
             }
-            skeletonAndFragments[i].setParameterMap(parameterMap);
+            pairs[i].setParameterMap(parameterMap);
         }
     }
 

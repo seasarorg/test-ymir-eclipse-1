@@ -42,18 +42,13 @@ import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
-/**
- * The "New" wizard page allows setting the container for the new file as well
- * as the file name. The page will only accept file name without the extension
- * OR with the extension that matches the expected one (mpe).
- */
-
-public class NewProjectWizardFirstPage extends WizardPage {
+public class SelectArtifactPage extends WizardPage {
     protected static final long WAIT_RESOLVE_SKELETON_ARTIFACT = 1000L;
+
+    private boolean showSkeletonTab;
 
     private boolean initialized;
 
@@ -121,17 +116,13 @@ public class NewProjectWizardFirstPage extends WizardPage {
 
     private volatile ArtifactPair[] fragmentTemplateArtifacts;
 
-    /**
-     * Constructor for SampleNewWizardPage.
-     * @param preferences 
-     * 
-     * @param pageName
-     */
-    public NewProjectWizardFirstPage(ViliProjectPreferences preferences) {
+    private ExtendedContext context;
+
+    public SelectArtifactPage(ExtendedContext context, boolean showSkeletonTab) {
         super("NewProjectWizardFirstPage"); //$NON-NLS-1$
 
-        setTitle(Messages.getString("NewProjectWizardFirstPage.1")); //$NON-NLS-1$
-        setDescription(Messages.getString("NewProjectWizardFirstPage.2")); //$NON-NLS-1$
+        this.showSkeletonTab = showSkeletonTab;
+        this.context = context;
     }
 
     /**
@@ -155,14 +146,16 @@ public class NewProjectWizardFirstPage extends WizardPage {
         tabFolder.setSimple(false);
         tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
 
-        CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
-        skeletonTabItem.setText(Messages.getString("NewProjectWizardFirstPage.11")); //$NON-NLS-1$
+        if (showSkeletonTab) {
+            CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
+            skeletonTabItem.setText(Messages.getString("NewProjectWizardFirstPage.11")); //$NON-NLS-1$
 
-        Composite skeletonTabContent = new Composite(tabFolder, SWT.NULL);
-        skeletonTabContent.setLayout(new GridLayout());
-        skeletonTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
-        skeletonTabItem.setControl(skeletonTabContent);
-        createSkeletonSelectionControl(skeletonTabContent);
+            Composite skeletonTabContent = new Composite(tabFolder, SWT.NULL);
+            skeletonTabContent.setLayout(new GridLayout());
+            skeletonTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
+            skeletonTabItem.setControl(skeletonTabContent);
+            createSkeletonSelectionControl(skeletonTabContent);
+        }
 
         CTabItem fragmentTabItem = new CTabItem(tabFolder, SWT.NONE);
         fragmentTabItem.setText(Messages.getString("NewProjectWizardFirstPage.12")); //$NON-NLS-1$
@@ -338,7 +331,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
                             } else {
                                 fragmentTemplateArtifacts[i] = null;
                             }
-                            updateArchiveListTable();
+                            update();
                             break;
                         }
                     }
@@ -471,7 +464,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
                         if (!useLatestFragmentVersionField.getSelection()) {
                             customFragmentVersionField.setText(""); //$NON-NLS-1$
                         }
-                        updateArchiveListTable();
+                        update();
                     } else {
                         setErrorMessage(Messages.getString("NewProjectWizardFirstPage.22")); //$NON-NLS-1$
                     }
@@ -554,6 +547,13 @@ public class NewProjectWizardFirstPage extends WizardPage {
         column.setWidth(140);
     }
 
+    private void update() {
+        updateArchiveListTable();
+        setPageComplete(validatePage());
+
+        ((ISelectArtifactWizard) getWizard()).notifyFragmentsChanged();
+    }
+
     private void updateArchiveListTable() {
         archiveListTable.removeAll();
         ArtifactPair[] pairs;
@@ -608,9 +608,16 @@ public class NewProjectWizardFirstPage extends WizardPage {
     }
 
     boolean validatePage() {
-        if (skeleton == null) {
-            return false;
+        if (showSkeletonTab) {
+            if (skeleton == null) {
+                return false;
+            }
+        } else {
+            if (getFragments().length == 0) {
+                return false;
+            }
         }
+
         setErrorMessage(null);
         return true;
     }
@@ -632,21 +639,21 @@ public class NewProjectWizardFirstPage extends WizardPage {
     void setDefaultValues() {
         tabFolder.setSelection(0);
 
-        // IDialogSettings section = getDialogSettings().getSection(NewProjectWizard.DS_SECTION);
+        if (showSkeletonTab) {
+            chooseSkeletonFromTemplatesField.setSelection(true);
+            skeletonTemplateListField.setSelection(0, 0);
+            skeletonTemplateDescriptionText.setText(entries[0].getDescription());
+            customSkeletonGroupIdLabel.setEnabled(false);
+            customSkeletonGroupIdField.setEnabled(false);
+            customSkeletonArtifactIdLabel.setEnabled(false);
+            customSkeletonArtifactIdField.setEnabled(false);
+            customSkeletonVersionLabel.setEnabled(false);
+            customSkeletonVersionField.setEnabled(false);
+            useLatestSkeletonVersionField.setEnabled(false);
+            useLatestSkeletonVersionField.setSelection(true);
 
-        chooseSkeletonFromTemplatesField.setSelection(true);
-        skeletonTemplateListField.setSelection(0, 0);
-        skeletonTemplateDescriptionText.setText(entries[0].getDescription());
-        customSkeletonGroupIdLabel.setEnabled(false);
-        customSkeletonGroupIdField.setEnabled(false);
-        customSkeletonArtifactIdLabel.setEnabled(false);
-        customSkeletonArtifactIdField.setEnabled(false);
-        customSkeletonVersionLabel.setEnabled(false);
-        customSkeletonVersionField.setEnabled(false);
-        useLatestSkeletonVersionField.setEnabled(false);
-        useLatestSkeletonVersionField.setSelection(true);
-
-        resolveSkeletonArtifact();
+            resolveSkeletonArtifact();
+        }
 
         customFragmentVersionLabel.setEnabled(false);
         customFragmentVersionField.setEnabled(false);
@@ -694,7 +701,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
 
         SkeletonEntry entry = getSkeletonEntry();
         if (entry != null) {
-            skeletonArtifactResolver = new SkeletonArtifactResolver(this, entry, wait);
+            skeletonArtifactResolver = new SkeletonArtifactResolver(this, context, entry, wait);
             skeletonArtifactResolver.start();
         }
     }
@@ -703,7 +710,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
         skeleton = null;
         customSkeletonDescriptionText.setText(""); //$NON-NLS-1$
 
-        ((NewProjectWizard) getWizard()).notifySkeletonCleared();
+        ((ISelectArtifactWizard) getWizard()).notifySkeletonCleared();
     }
 
     private void clearFragments() {
@@ -749,22 +756,17 @@ public class NewProjectWizardFirstPage extends WizardPage {
         try {
             ArtifactResolver artifactResolver = Activator.getDefault().getArtifactResolver();
             if (version == null) {
-                version = artifactResolver.getLatestVersion(getNonTransitiveContext(), groupId, artifactId,
-                        useFragmentSnapshot);
+                version = artifactResolver.getLatestVersion(context, groupId, artifactId, useFragmentSnapshot);
                 if (version == null) {
                     return null;
                 }
             }
             monitor.worked(1);
 
-            return artifactResolver.resolve(getNonTransitiveContext(), groupId, artifactId, version);
+            return artifactResolver.resolve(context, groupId, artifactId, version);
         } finally {
             monitor.done();
         }
-    }
-
-    private ExtendedContext getNonTransitiveContext() {
-        return ((NewProjectWizard) getWizard()).getNonTransitiveContext();
     }
 
     private SkeletonEntry getSkeletonEntry() {
@@ -874,8 +876,7 @@ public class NewProjectWizardFirstPage extends WizardPage {
             }
         }
 
-        updateArchiveListTable();
-        setPageComplete(validatePage());
+        update();
     }
 
     boolean useSkeletonSnapshot() {

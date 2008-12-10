@@ -77,7 +77,7 @@
                path="additions">
          </menu>
          <action
-               class="org.seasar.ymir.eclipse.actions.AddFragmentsAction"
+               class="org.seasar.ymir.eclipse.popup.actions.AddFragmentsAction"
                id="org.seasar.ymir.eclipse.addFragmentsAction"
                label="%popup.action.addFragments"
                menubarPath="org.seasar.ymir.eclipse.menu/group">

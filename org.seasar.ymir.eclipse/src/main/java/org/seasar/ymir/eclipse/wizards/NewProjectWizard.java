@@ -59,7 +59,7 @@ import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
 import org.seasar.ymir.eclipse.util.JdtUtils;
 
-public class NewProjectWizard extends Wizard implements INewWizard {
+public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtifactWizard {
     private static final char PACKAGE_DELIMITER = '.';
 
     private static final String CREATESUPERCLASS_KEY_PACKAGENAME = "packageName"; //$NON-NLS-1$
@@ -78,15 +78,15 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     static final String DS_SECTION = "NewProjectWizard"; //$NON-NLS-1$
 
-    private NewProjectWizardFirstPage firstPage;
-
-    private NewProjectWizardSecondPage secondPage;
-
-    private NewProjectWizardThirdPage thirdPage;
-
     private ViliProjectPreferences preferences;
 
     private ExtendedContext nonTransitiveContext;
+
+    private SelectArtifactPage firstPage;
+
+    private ConfigureProjectPage secondPage;
+
+    private ConfigureParametersPage thirdPage;
 
     /**
      * Constructor for NewProjectWizard.
@@ -97,6 +97,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         setWindowTitle(Messages.getString("NewProjectWizard.11")); //$NON-NLS-1$
         setDefaultPageImageDescriptor(Activator.getDefault().getImageRegistry().getDescriptor(Globals.IMAGE_YMIR));
 
+        preferences = Activator.getDefault().newViliProjectPreferences();
         nonTransitiveContext = Activator.getDefault().getArtifactResolver().newContext(false);
 
         IDialogSettings settings = Activator.getDefault().getDialogSettings();
@@ -105,8 +106,6 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         if (section == null) {
             section = settings.addNewSection(DS_SECTION);
         }
-
-        preferences = Activator.getDefault().newViliProjectPreferences();
     }
 
     /**
@@ -114,11 +113,13 @@ public class NewProjectWizard extends Wizard implements INewWizard {
      */
 
     public void addPages() {
-        firstPage = new NewProjectWizardFirstPage(preferences);
+        firstPage = new SelectArtifactPage(nonTransitiveContext, true);
+        firstPage.setTitle(Messages.getString("NewProjectWizardFirstPage.1")); //$NON-NLS-1$
+        firstPage.setDescription(Messages.getString("NewProjectWizardFirstPage.2")); //$NON-NLS-1$
         addPage(firstPage);
-        secondPage = new NewProjectWizardSecondPage(preferences);
+        secondPage = new ConfigureProjectPage(preferences);
         addPage(secondPage);
-        thirdPage = new NewProjectWizardThirdPage(preferences);
+        thirdPage = new ConfigureParametersPage(preferences);
         addPage(thirdPage);
     }
 
@@ -573,5 +574,9 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 
     public ArtifactPair[] getFragments() {
         return firstPage.getFragments();
+    }
+
+    public void notifyFragmentsChanged() {
+        thirdPage.notifyFragmentsChanged();
     }
 }

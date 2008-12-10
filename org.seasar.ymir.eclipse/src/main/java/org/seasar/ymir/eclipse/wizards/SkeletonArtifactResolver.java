@@ -15,21 +15,21 @@ import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class SkeletonArtifactResolver implements Runnable {
-    private NewProjectWizardFirstPage page;
+    private SelectArtifactPage page;
 
     private SkeletonEntry entry;
 
     private long wait;
 
-    private ExtendedContext nonTransitiveContext;
+    private ExtendedContext context;
 
     private Thread thread;
 
     private volatile boolean cancelled;
 
-    public SkeletonArtifactResolver(NewProjectWizardFirstPage page, SkeletonEntry entry, long wait) {
+    public SkeletonArtifactResolver(SelectArtifactPage page, ExtendedContext context, SkeletonEntry entry, long wait) {
         this.page = page;
-        nonTransitiveContext = ((NewProjectWizard) page.getWizard()).getNonTransitiveContext();
+        this.context = context;
         this.entry = entry;
         this.wait = wait;
     }
@@ -104,12 +104,12 @@ public class SkeletonArtifactResolver implements Runnable {
         ArtifactResolver artifactResolver = Activator.getDefault().getArtifactResolver();
         String version = artifact.getVersion();
         if (version == null) {
-            version = artifactResolver.getLatestVersion(nonTransitiveContext, artifact.getGroupId(), artifact
-                    .getArtifactId(), containsSnapshot);
+            version = artifactResolver.getLatestVersion(context, artifact.getGroupId(), artifact.getArtifactId(),
+                    containsSnapshot);
             if (version == null) {
                 return null;
             }
         }
-        return artifactResolver.resolve(nonTransitiveContext, artifact.getGroupId(), artifact.getArtifactId(), version);
+        return artifactResolver.resolve(context, artifact.getGroupId(), artifact.getArtifactId(), version);
     }
 }

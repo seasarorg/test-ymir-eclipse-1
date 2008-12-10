@@ -35,7 +35,7 @@ import org.seasar.ymir.eclipse.wizards.jre.JREsComboBlock;
  * OR with the extension that matches the expected one (mpe).
  */
 
-public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
+public class ConfigureProjectPage extends WizardNewProjectCreationPage {
     private ModifyListener validationListener = new ModifyListener() {
         public void modifyText(ModifyEvent e) {
             setPageComplete(validatePage());
@@ -74,7 +74,7 @@ public class NewProjectWizardSecondPage extends WizardNewProjectCreationPage {
 
     private Text projectVersionField;
 
-    public NewProjectWizardSecondPage(ViliProjectPreferences preferences) {
+    public ConfigureProjectPage(ViliProjectPreferences preferences) {
         super("NewProjectWizardSecondPage"); //$NON-NLS-1$
 
         this.preferences = preferences;
