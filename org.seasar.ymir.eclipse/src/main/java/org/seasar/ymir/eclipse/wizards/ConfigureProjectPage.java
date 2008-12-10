@@ -75,12 +75,12 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
     private Text projectVersionField;
 
     public ConfigureProjectPage(ViliProjectPreferences preferences) {
-        super("NewProjectWizardSecondPage"); //$NON-NLS-1$
+        super("ConfigureProjectPage"); //$NON-NLS-1$
 
         this.preferences = preferences;
 
-        setTitle(Messages.getString("NewProjectWizardSecondPage.1")); //$NON-NLS-1$
-        setDescription(Messages.getString("NewProjectWizardSecondPage.2")); //$NON-NLS-1$
+        setTitle(Messages.getString("ConfigureProjectPage.1")); //$NON-NLS-1$
+        setDescription(Messages.getString("ConfigureProjectPage.2")); //$NON-NLS-1$
     }
 
     /**
@@ -127,7 +127,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
     private void createJREControl(Composite parent) {
         jreBlock = new JREsComboBlock();
         jreBlock.setDefaultJREDescriptor(new BuildJREDescriptor());
-        jreBlock.setTitle(Messages.getString("NewProjectWizardSecondPage.0")); //$NON-NLS-1$
+        jreBlock.setTitle(Messages.getString("ConfigureProjectPage.0")); //$NON-NLS-1$
         jreBlock.createControl(parent);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         jreBlock.getControl().setLayoutData(data);
@@ -153,10 +153,10 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
         layout.numColumns = 2;
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText(Messages.getString("NewProjectWizardSecondPage.3")); //$NON-NLS-1$
+        group.setText(Messages.getString("ConfigureProjectPage.3")); //$NON-NLS-1$
 
         rootPackageNameLabel = new Label(group, SWT.NONE);
-        rootPackageNameLabel.setText(Messages.getString("NewProjectWizardSecondPage.4")); //$NON-NLS-1$
+        rootPackageNameLabel.setText(Messages.getString("ConfigureProjectPage.4")); //$NON-NLS-1$
 
         rootPackageNameField = new Text(group, SWT.BORDER);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
@@ -179,7 +179,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
         });
 
         projectGroupIdLabel = new Label(group, SWT.NONE);
-        projectGroupIdLabel.setText(Messages.getString("NewProjectWizardSecondPage.5")); //$NON-NLS-1$
+        projectGroupIdLabel.setText(Messages.getString("ConfigureProjectPage.5")); //$NON-NLS-1$
 
         projectGroupIdField = new Text(group, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -194,7 +194,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
 
         new Label(group, SWT.NONE);
         useRootPackageNameAsProjectGroupIdField = new Button(group, SWT.CHECK | SWT.LEFT);
-        useRootPackageNameAsProjectGroupIdField.setText(Messages.getString("NewProjectWizardSecondPage.6")); //$NON-NLS-1$
+        useRootPackageNameAsProjectGroupIdField.setText(Messages.getString("ConfigureProjectPage.6")); //$NON-NLS-1$
         useRootPackageNameAsProjectGroupIdField.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
                 boolean enabled = !useRootPackageNameAsProjectGroupIdField.getSelection();
@@ -207,7 +207,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
         });
 
         projectArtifactIdLabel = new Label(group, SWT.NONE);
-        projectArtifactIdLabel.setText(Messages.getString("NewProjectWizardSecondPage.7")); //$NON-NLS-1$
+        projectArtifactIdLabel.setText(Messages.getString("ConfigureProjectPage.7")); //$NON-NLS-1$
 
         projectArtifactIdField = new Text(group, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -222,7 +222,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
 
         new Label(group, SWT.NONE);
         useProjectNameAsProjectArtifactIdField = new Button(group, SWT.CHECK | SWT.LEFT);
-        useProjectNameAsProjectArtifactIdField.setText(Messages.getString("NewProjectWizardSecondPage.8")); //$NON-NLS-1$
+        useProjectNameAsProjectArtifactIdField.setText(Messages.getString("ConfigureProjectPage.8")); //$NON-NLS-1$
         useProjectNameAsProjectArtifactIdField.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
                 boolean enabled = !useProjectNameAsProjectArtifactIdField.getSelection();
@@ -235,7 +235,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
         });
 
         Label projectVersionLabel = new Label(group, SWT.NONE);
-        projectVersionLabel.setText(Messages.getString("NewProjectWizardSecondPage.9")); //$NON-NLS-1$
+        projectVersionLabel.setText(Messages.getString("ConfigureProjectPage.9")); //$NON-NLS-1$
 
         projectVersionField = new Text(group, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -277,19 +277,19 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
         }
 
         if (javaProject && rootPackageNameField.getText().length() == 0) {
-            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardSecondPage.4"))); //$NON-NLS-1$
+            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("ConfigureProjectPage.4"))); //$NON-NLS-1$
             return false;
         }
         if (projectGroupIdField.getText().length() == 0) {
-            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardSecondPage.5"))); //$NON-NLS-1$
+            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("ConfigureProjectPage.5"))); //$NON-NLS-1$
             return false;
         }
         if (projectArtifactIdField.getText().length() == 0) {
-            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardSecondPage.7"))); //$NON-NLS-1$
+            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("ConfigureProjectPage.7"))); //$NON-NLS-1$
             return false;
         }
         if (projectVersionField.getText().length() == 0) {
-            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("NewProjectWizardSecondPage.9"))); //$NON-NLS-1$
+            setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("ConfigureProjectPage.9"))); //$NON-NLS-1$
             return false;
         }
 

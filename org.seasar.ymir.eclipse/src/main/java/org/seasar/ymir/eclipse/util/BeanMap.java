@@ -24,7 +24,7 @@ public class BeanMap implements Map<String, Object> {
         try {
             beanInfo = Introspector.getBeanInfo(obj.getClass());
         } catch (IntrospectionException ex) {
-            throw new RuntimeException("Can't introspect: " + obj.getClass().getName(), ex);
+            throw new RuntimeException("Can't introspect: " + obj.getClass().getName(), ex); //$NON-NLS-1$
         }
 
         for (PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {

@@ -97,7 +97,7 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
             groupId = pom.findGroupId();
         }
         if (groupId == null) {
-            groupId = "";
+            groupId = ""; //$NON-NLS-1$
         }
         return groupId;
     }
@@ -109,7 +109,7 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
             artifactId = pom.findArtifactId();
         }
         if (artifactId == null) {
-            artifactId = "";
+            artifactId = ""; //$NON-NLS-1$
         }
         return artifactId;
     }
@@ -121,7 +121,7 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
             version = pom.findVersion();
         }
         if (version == null) {
-            version = "";
+            version = ""; //$NON-NLS-1$
         }
         return version;
     }

@@ -62,7 +62,7 @@ public class Repository {
 
     @Override
     public String toString() {
-        return "id=" + id + ", url=" + url;
+        return "id=" + id + ", url=" + url; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public String getId() {
@@ -89,7 +89,7 @@ public class Repository {
 
     @Child(order = 3)
     public void setUrl(String url) {
-        if (url != null && url.endsWith("/")) {
+        if (url != null && url.endsWith("/")) { //$NON-NLS-1$
             url = url.substring(0, url.length() - 1);
         }
         this.url = url;

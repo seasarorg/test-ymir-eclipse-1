@@ -119,7 +119,7 @@ public class SelectArtifactPage extends WizardPage {
     private ExtendedContext context;
 
     public SelectArtifactPage(ExtendedContext context, boolean showSkeletonTab) {
-        super("NewProjectWizardFirstPage"); //$NON-NLS-1$
+        super("SelectArtifactPage"); //$NON-NLS-1$
 
         this.showSkeletonTab = showSkeletonTab;
         this.context = context;
@@ -148,7 +148,7 @@ public class SelectArtifactPage extends WizardPage {
 
         if (showSkeletonTab) {
             CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
-            skeletonTabItem.setText(Messages.getString("NewProjectWizardFirstPage.11")); //$NON-NLS-1$
+            skeletonTabItem.setText(Messages.getString("SelectArtifactPage.11")); //$NON-NLS-1$
 
             Composite skeletonTabContent = new Composite(tabFolder, SWT.NULL);
             skeletonTabContent.setLayout(new GridLayout());
@@ -158,7 +158,7 @@ public class SelectArtifactPage extends WizardPage {
         }
 
         CTabItem fragmentTabItem = new CTabItem(tabFolder, SWT.NONE);
-        fragmentTabItem.setText(Messages.getString("NewProjectWizardFirstPage.12")); //$NON-NLS-1$
+        fragmentTabItem.setText(Messages.getString("SelectArtifactPage.12")); //$NON-NLS-1$
 
         Composite fragmentTabContent = new Composite(tabFolder, SWT.NULL);
         fragmentTabContent.setLayout(new GridLayout());
@@ -167,7 +167,7 @@ public class SelectArtifactPage extends WizardPage {
         createFragmentSelectionControl(fragmentTabContent);
 
         CTabItem advancedTabItem = new CTabItem(tabFolder, SWT.NONE);
-        advancedTabItem.setText(Messages.getString("NewProjectWizardFirstPage.24")); //$NON-NLS-1$
+        advancedTabItem.setText(Messages.getString("SelectArtifactPage.24")); //$NON-NLS-1$
 
         Composite advancedTabContent = new Composite(tabFolder, SWT.NULL);
         advancedTabContent.setLayout(new GridLayout());
@@ -179,7 +179,7 @@ public class SelectArtifactPage extends WizardPage {
     void createSkeletonSelectionControl(Composite parent) {
         chooseSkeletonFromTemplatesField = new Button(parent, SWT.CHECK | SWT.LEFT);
         chooseSkeletonFromTemplatesField.setLayoutData(new GridData());
-        chooseSkeletonFromTemplatesField.setText(Messages.getString("NewProjectWizardFirstPage.6")); //$NON-NLS-1$
+        chooseSkeletonFromTemplatesField.setText(Messages.getString("SelectArtifactPage.6")); //$NON-NLS-1$
         chooseSkeletonFromTemplatesField.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
                 boolean enabled = chooseSkeletonFromTemplatesField.getSelection();
@@ -200,7 +200,7 @@ public class SelectArtifactPage extends WizardPage {
         });
 
         templateListLabel = new Label(parent, SWT.NONE);
-        templateListLabel.setText(Messages.getString("NewProjectWizardFirstPage.5")); //$NON-NLS-1$
+        templateListLabel.setText(Messages.getString("SelectArtifactPage.5")); //$NON-NLS-1$
 
         Composite composite = new Composite(parent, SWT.NULL);
         composite.setFont(parent.getFont());
@@ -243,7 +243,7 @@ public class SelectArtifactPage extends WizardPage {
         skeletonComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         customSkeletonGroupIdLabel = new Label(skeletonComposite, SWT.NONE);
-        customSkeletonGroupIdLabel.setText(Messages.getString("NewProjectWizardFirstPage.7")); //$NON-NLS-1$
+        customSkeletonGroupIdLabel.setText(Messages.getString("SelectArtifactPage.7")); //$NON-NLS-1$
 
         customSkeletonGroupIdField = new Text(skeletonComposite, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -256,7 +256,7 @@ public class SelectArtifactPage extends WizardPage {
         });
 
         customSkeletonArtifactIdLabel = new Label(skeletonComposite, SWT.NONE);
-        customSkeletonArtifactIdLabel.setText(Messages.getString("NewProjectWizardFirstPage.8")); //$NON-NLS-1$
+        customSkeletonArtifactIdLabel.setText(Messages.getString("SelectArtifactPage.8")); //$NON-NLS-1$
 
         customSkeletonArtifactIdField = new Text(skeletonComposite, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -269,7 +269,7 @@ public class SelectArtifactPage extends WizardPage {
         });
 
         customSkeletonVersionLabel = new Label(skeletonComposite, SWT.NONE);
-        customSkeletonVersionLabel.setText(Messages.getString("NewProjectWizardFirstPage.9")); //$NON-NLS-1$
+        customSkeletonVersionLabel.setText(Messages.getString("SelectArtifactPage.9")); //$NON-NLS-1$
 
         customSkeletonVersionField = new Text(skeletonComposite, SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
@@ -284,7 +284,7 @@ public class SelectArtifactPage extends WizardPage {
         new Label(skeletonComposite, SWT.NONE);
 
         useLatestSkeletonVersionField = new Button(skeletonComposite, SWT.CHECK | SWT.LEFT);
-        useLatestSkeletonVersionField.setText(Messages.getString("NewProjectWizardFirstPage.10")); //$NON-NLS-1$
+        useLatestSkeletonVersionField.setText(Messages.getString("SelectArtifactPage.10")); //$NON-NLS-1$
         useLatestSkeletonVersionField.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 boolean enabled = useLatestSkeletonVersionField.getSelection();
@@ -324,7 +324,7 @@ public class SelectArtifactPage extends WizardPage {
                                         .newInstance(resolveFragmentArtifact(fragmentTemplateEntries[i]));
                                 if (fragmentTemplateArtifacts[i] == null) {
                                     items[i].setChecked(false);
-                                    setErrorMessage(Messages.getString("NewProjectWizardFirstPage.13")); //$NON-NLS-1$
+                                    setErrorMessage(Messages.getString("SelectArtifactPage.13")); //$NON-NLS-1$
                                 }
                                 fragmentTemplateTable.setSelection(i);
                                 updateDescriptionText(i);
@@ -370,7 +370,7 @@ public class SelectArtifactPage extends WizardPage {
         data = new GridData();
         data.horizontalSpan = 2;
         customFragmentListLabel.setLayoutData(data);
-        customFragmentListLabel.setText(Messages.getString("NewProjectWizardFirstPage.14")); //$NON-NLS-1$
+        customFragmentListLabel.setText(Messages.getString("SelectArtifactPage.14")); //$NON-NLS-1$
 
         Composite leftComposite = new Composite(composite, SWT.NULL);
         leftComposite.setFont(composite.getFont());
@@ -385,7 +385,7 @@ public class SelectArtifactPage extends WizardPage {
         rightComposite.setLayoutData(data);
 
         Label fragmentGroupIdLabel = new Label(leftComposite, SWT.NONE);
-        fragmentGroupIdLabel.setText(Messages.getString("NewProjectWizardFirstPage.7")); //$NON-NLS-1$
+        fragmentGroupIdLabel.setText(Messages.getString("SelectArtifactPage.7")); //$NON-NLS-1$
 
         customFragmentGroupIdField = new Text(leftComposite, SWT.BORDER);
         customFragmentGroupIdField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -398,7 +398,7 @@ public class SelectArtifactPage extends WizardPage {
         });
 
         Label fragmentArtifactIdLabel = new Label(leftComposite, SWT.NONE);
-        fragmentArtifactIdLabel.setText(Messages.getString("NewProjectWizardFirstPage.8")); //$NON-NLS-1$
+        fragmentArtifactIdLabel.setText(Messages.getString("SelectArtifactPage.8")); //$NON-NLS-1$
 
         customFragmentArtifactIdField = new Text(leftComposite, SWT.BORDER);
         customFragmentArtifactIdField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -411,7 +411,7 @@ public class SelectArtifactPage extends WizardPage {
         });
 
         customFragmentVersionLabel = new Label(leftComposite, SWT.NONE);
-        customFragmentVersionLabel.setText(Messages.getString("NewProjectWizardFirstPage.9")); //$NON-NLS-1$
+        customFragmentVersionLabel.setText(Messages.getString("SelectArtifactPage.9")); //$NON-NLS-1$
 
         customFragmentVersionField = new Text(leftComposite, SWT.BORDER);
         customFragmentVersionField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -426,7 +426,7 @@ public class SelectArtifactPage extends WizardPage {
         new Label(leftComposite, SWT.NONE);
 
         useLatestFragmentVersionField = new Button(leftComposite, SWT.CHECK | SWT.LEFT);
-        useLatestFragmentVersionField.setText(Messages.getString("NewProjectWizardFirstPage.10")); //$NON-NLS-1$
+        useLatestFragmentVersionField.setText(Messages.getString("SelectArtifactPage.10")); //$NON-NLS-1$
         useLatestFragmentVersionField.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 setErrorMessage(null);
@@ -440,7 +440,7 @@ public class SelectArtifactPage extends WizardPage {
         });
 
         addCustomFragmentButton = new Button(leftComposite, SWT.PUSH);
-        addCustomFragmentButton.setText(Messages.getString("NewProjectWizardFirstPage.15")); //$NON-NLS-1$
+        addCustomFragmentButton.setText(Messages.getString("SelectArtifactPage.15")); //$NON-NLS-1$
         data = new GridData();
         data.horizontalSpan = 2;
         data.horizontalAlignment = SWT.RIGHT;
@@ -466,10 +466,10 @@ public class SelectArtifactPage extends WizardPage {
                         }
                         update();
                     } else {
-                        setErrorMessage(Messages.getString("NewProjectWizardFirstPage.22")); //$NON-NLS-1$
+                        setErrorMessage(Messages.getString("SelectArtifactPage.22")); //$NON-NLS-1$
                     }
                 } else {
-                    setErrorMessage(Messages.getString("NewProjectWizardFirstPage.19")); //$NON-NLS-1$
+                    setErrorMessage(Messages.getString("SelectArtifactPage.19")); //$NON-NLS-1$
                 }
                 addCustomFragmentButton.setEnabled(false);
             }
@@ -507,7 +507,7 @@ public class SelectArtifactPage extends WizardPage {
         customFragmentDescriptionText.setLayoutData(data);
 
         removeCustomFragmentButton = new Button(rightButtonsComposite, SWT.PUSH);
-        removeCustomFragmentButton.setText(Messages.getString("NewProjectWizardFirstPage.20")); //$NON-NLS-1$
+        removeCustomFragmentButton.setText(Messages.getString("SelectArtifactPage.20")); //$NON-NLS-1$
         removeCustomFragmentButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -530,20 +530,20 @@ public class SelectArtifactPage extends WizardPage {
     }
 
     void createAdvancedControl(Composite parent) {
-        new Label(parent, SWT.NONE).setText(Messages.getString("NewProjectWizardFirstPage.25")); //$NON-NLS-1$
+        new Label(parent, SWT.NONE).setText(Messages.getString("SelectArtifactPage.25")); //$NON-NLS-1$
 
         archiveListTable = new Table(parent, SWT.BORDER);
         archiveListTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         archiveListTable.setHeaderVisible(true);
         archiveListTable.setLinesVisible(true);
         TableColumn column = new TableColumn(archiveListTable, SWT.LEFT);
-        column.setText(Messages.getString("NewProjectWizardFirstPage.7")); //$NON-NLS-1$
+        column.setText(Messages.getString("SelectArtifactPage.7")); //$NON-NLS-1$
         column.setWidth(200);
         column = new TableColumn(archiveListTable, SWT.LEFT);
-        column.setText(Messages.getString("NewProjectWizardFirstPage.8")); //$NON-NLS-1$
+        column.setText(Messages.getString("SelectArtifactPage.8")); //$NON-NLS-1$
         column.setWidth(200);
         column = new TableColumn(archiveListTable, SWT.LEFT);
-        column.setText(Messages.getString("NewProjectWizardFirstPage.9")); //$NON-NLS-1$
+        column.setText(Messages.getString("SelectArtifactPage.9")); //$NON-NLS-1$
         column.setWidth(140);
     }
 
@@ -575,7 +575,7 @@ public class SelectArtifactPage extends WizardPage {
                     actualVersion = ((ExtendedArtifact) artifact).getActualVersion();
                 }
                 if (actualVersion == null) {
-                    version = version + " (" + Messages.getString("NewProjectWizardFirstPage.27") + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    version = version + " (" + Messages.getString("SelectArtifactPage.27") + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 } else {
                     version = version + " (" //$NON-NLS-1$
                             + actualVersion.substring(version.length() - ArtifactResolver.SNAPSHOT.length()) + ")"; //$NON-NLS-1$
@@ -695,7 +695,7 @@ public class SelectArtifactPage extends WizardPage {
         }
 
         if (isVisible()) {
-            setMessage(Messages.getString("NewProjectWizardFirstPage.0"), IMessageProvider.INFORMATION); //$NON-NLS-1$
+            setMessage(Messages.getString("SelectArtifactPage.0"), IMessageProvider.INFORMATION); //$NON-NLS-1$
             setErrorMessage(null);
         }
 
@@ -752,7 +752,7 @@ public class SelectArtifactPage extends WizardPage {
 
     private Artifact doResolveFragmentArtifact(String groupId, String artifactId, String version,
             boolean useFragmentSnapshot, IProgressMonitor monitor) {
-        monitor.beginTask(Messages.getString("NewProjectWizardFirstPage.21"), 2); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("SelectArtifactPage.21"), 2); //$NON-NLS-1$
         try {
             ArtifactResolver artifactResolver = Activator.getDefault().getArtifactResolver();
             if (version == null) {

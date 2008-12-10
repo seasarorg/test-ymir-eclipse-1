@@ -21,7 +21,7 @@ import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.maven.Project;
 
 public class MavenUtils {
-    private static final String POM_ENCODING = "UTF-8";
+    private static final String POM_ENCODING = "UTF-8"; //$NON-NLS-1$
 
     private static TemplateEvaluator evaluator = new TemplateEvaluatorImpl(new PomTagEvaluator(),
             new PomExpressionEvaluator());
@@ -37,7 +37,7 @@ public class MavenUtils {
     }
 
     public static void addToPom(IFile pomFile, Project project, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask("Add project metadata to pom.xml", 2);
+        monitor.beginTask(Messages.getString("MavenUtils.1"), 2); //$NON-NLS-1$
         try {
             if (!pomFile.exists()) {
                 return;
@@ -51,7 +51,7 @@ public class MavenUtils {
                 is = pomFile.getContents();
                 evaluated = addToPom(new InputStreamReader(is, POM_ENCODING), project);
             } catch (UnsupportedEncodingException ex) {
-                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't happen!", ex));
+                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't happen!", ex)); //$NON-NLS-1$
             } finally {
                 IOUtils.closeQuietly(is);
             }
@@ -60,7 +60,7 @@ public class MavenUtils {
             try {
                 pomFile.setContents(new ByteArrayInputStream(evaluated.getBytes(POM_ENCODING)), true, true, monitor);
             } catch (UnsupportedEncodingException ex) {
-                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't happen!", ex));
+                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't happen!", ex)); //$NON-NLS-1$
             }
             monitor.worked(1);
         } finally {
@@ -84,7 +84,7 @@ public class MavenUtils {
         try {
             elems = evaluator.parse(reader);
         } catch (FreyjaRuntimeException ex) {
-            throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Illegal syntax", ex));
+            throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Illegal syntax", ex)); //$NON-NLS-1$
         }
 
         PomTemplateContext ctx = (PomTemplateContext) evaluator.newContext();

@@ -12,7 +12,7 @@ import org.seasar.ymir.eclipse.util.JdtUtils;
 public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesProviderBase {
     private static final int DEFAULT_DATABASE_INDEX = 0;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
     private MapProperties applicationProperties = new MapProperties(new TreeMap());
 
     public boolean isProjectSpecificTemplateEnabled() {
@@ -40,19 +40,19 @@ public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesPro
     }
 
     public String getProjectName() {
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     public String getGroupId() {
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     public String getArtifactId() {
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     public String getVersion() {
-        return "0.0.1-SNAPSHOT";
+        return "0.0.1-SNAPSHOT"; //$NON-NLS-1$
     }
 
     public IPath getJREContainerPath() {

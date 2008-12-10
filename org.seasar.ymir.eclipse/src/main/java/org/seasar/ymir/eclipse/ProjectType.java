@@ -13,7 +13,7 @@ public enum ProjectType {
 
     static {
         Map<String, String> map = new HashMap<String, String>();
-        map.put("ymir", "java+web+database+ymir");
+        map.put("ymir", "java+web+database+ymir"); //$NON-NLS-1$ //$NON-NLS-2$
         PROJECT_ALIAS_MAP = Collections.unmodifiableMap(map);
     }
 
@@ -24,7 +24,7 @@ public enum ProjectType {
             if (expanded != null) {
                 projectType = expanded;
             }
-            for (StringTokenizer st = new StringTokenizer(projectType, "+"); st.hasMoreTokens();) {
+            for (StringTokenizer st = new StringTokenizer(projectType, "+"); st.hasMoreTokens();) { //$NON-NLS-1$
                 String tkn = st.nextToken().trim();
                 ProjectType enm = enumOf(tkn);
                 if (enm != null) {

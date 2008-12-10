@@ -92,7 +92,6 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
      * Constructor for NewProjectWizard.
      */
     public NewProjectWizard() {
-        super();
         setNeedsProgressMonitor(true);
         setWindowTitle(Messages.getString("NewProjectWizard.11")); //$NON-NLS-1$
         setDefaultPageImageDescriptor(Activator.getDefault().getImageRegistry().getDescriptor(Globals.IMAGE_YMIR));
@@ -114,8 +113,8 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
 
     public void addPages() {
         firstPage = new SelectArtifactPage(nonTransitiveContext, true);
-        firstPage.setTitle(Messages.getString("NewProjectWizardFirstPage.1")); //$NON-NLS-1$
-        firstPage.setDescription(Messages.getString("NewProjectWizardFirstPage.2")); //$NON-NLS-1$
+        firstPage.setTitle(Messages.getString("NewProjectWizard.26")); //$NON-NLS-1$
+        firstPage.setDescription(Messages.getString("NewProjectWizard.27")); //$NON-NLS-1$
         addPage(firstPage);
         secondPage = new ConfigureProjectPage(preferences);
         addPage(secondPage);
@@ -148,7 +147,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
             preferences.setApplicationProperties(createApplicationProperties());
             IRunnableWithProgress op = new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                    monitor.beginTask("Create project", 2);
+                    monitor.beginTask(Messages.getString("NewProjectWizard.1"), 2); //$NON-NLS-1$
                     try {
                         createProject(project, locationPath, jreContainerPath, skeleton, new SubProgressMonitor(
                                 monitor, 1));
@@ -330,7 +329,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
                 preferences.save(project);
             } catch (IOException ex) {
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                        "Can't save project preferences", ex));
+                        "Can't save project preferences", ex)); //$NON-NLS-1$
             }
             monitor.worked(1);
         } finally {
@@ -339,7 +338,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
     }
 
     private void addDatabaseDependenciesToPom(IProject project, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask("Add database dependencies to pom.xml", 1);
+        monitor.beginTask(Messages.getString("NewProjectWizard.28"), 1); //$NON-NLS-1$
         try {
             Dependency databaseDependency = preferences.getDatabaseEntry().getDependency();
             if (databaseDependency != null) {

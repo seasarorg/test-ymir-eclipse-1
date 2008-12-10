@@ -5,7 +5,7 @@ import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
 
 abstract public class ViliProjectPreferencesProviderBase implements ViliProjectPreferencesProvider {
-    private static final String FIELDSPECIALPREFIX = "this.";
+    private static final String FIELDSPECIALPREFIX = "this."; //$NON-NLS-1$
 
     protected final DatabaseEntry[] databaseEntries = new DatabaseEntry[] {
             new DatabaseEntry("H2 Database Engine", "h2", "org.h2.Driver", "jdbc:h2:file:%WEBAPP%/WEB-INF/h2/h2", "sa", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
@@ -26,10 +26,10 @@ abstract public class ViliProjectPreferencesProviderBase implements ViliProjectP
     }
 
     public String getFieldSpecialPrefix() {
-        if (getFieldPrefix().equals("") && getFieldSuffix().equals("")) {
+        if (getFieldPrefix().equals("") && getFieldSuffix().equals("")) { //$NON-NLS-1$ //$NON-NLS-2$
             return FIELDSPECIALPREFIX;
         } else {
-            return "";
+            return ""; //$NON-NLS-1$
         }
     }
 }

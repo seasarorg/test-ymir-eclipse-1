@@ -78,12 +78,12 @@ public class ConfigureParametersPage extends WizardPage {
     private YmirConfigurationControl ymirConfigurationControl;
 
     public ConfigureParametersPage(ViliProjectPreferences preferences) {
-        super("NewProjectWizardThirdPage"); //$NON-NLS-1$
+        super("ConfigureParametersPage"); //$NON-NLS-1$
 
         this.preferences = preferences;
 
-        setTitle(Messages.getString("NewProjectWizardThirdPage.1")); //$NON-NLS-1$
-        setDescription(Messages.getString("NewProjectWizardThirdPage.2")); //$NON-NLS-1$
+        setTitle(Messages.getString("ConfigureParametersPage.1")); //$NON-NLS-1$
+        setDescription(Messages.getString("ConfigureParametersPage.2")); //$NON-NLS-1$
 
         // このページが表示されるまでスケルトンパラメータの取得を遅延させているため、
         // このページに必ず遷移するようこうしている。
@@ -111,12 +111,12 @@ public class ConfigureParametersPage extends WizardPage {
             tabFolder.setSimple(false);
             tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
         } else {
-            new Label(tabFolderParent, SWT.NULL).setText("設定可能な項目はありません。");
+            new Label(tabFolderParent, SWT.NULL).setText(Messages.getString("ConfigureParametersPage.13")); //$NON-NLS-1$
         }
 
         if (skeleton != null) {
             CTabItem genericTabItem = new CTabItem(tabFolder, SWT.NONE);
-            genericTabItem.setText(Messages.getString("NewProjectWizardThirdPage.11")); //$NON-NLS-1$
+            genericTabItem.setText(Messages.getString("ConfigureParametersPage.11")); //$NON-NLS-1$
 
             Composite genericTabContent = new Composite(tabFolder, SWT.NULL);
             genericTabContent.setLayout(new GridLayout());
@@ -134,7 +134,7 @@ public class ConfigureParametersPage extends WizardPage {
 
         if (skeletonParameterExists()) {
             CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
-            skeletonTabItem.setText(Messages.getString("NewProjectWizardThirdPage.12")); //$NON-NLS-1$
+            skeletonTabItem.setText(Messages.getString("ConfigureParametersPage.12")); //$NON-NLS-1$
 
             ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
             scroll.setLayout(new FillLayout());
@@ -153,7 +153,7 @@ public class ConfigureParametersPage extends WizardPage {
         if (skeleton != null) {
             if (behavior.isProjectOf(ProjectType.YMIR)) {
                 CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
-                ymirConfigurationTabItem.setText(Messages.getString("NewProjectWizardThirdPage.0")); //$NON-NLS-1$
+                ymirConfigurationTabItem.setText(Messages.getString("ConfigureParametersPage.0")); //$NON-NLS-1$
 
                 final ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
                 scroll.setLayout(new FillLayout());
@@ -311,7 +311,7 @@ public class ConfigureParametersPage extends WizardPage {
 
     @Override
     public boolean isPageComplete() {
-        return super.isPageComplete() && preferencesControl != null && preferencesControl.isPageComplete()
+        return super.isPageComplete() && (preferencesControl == null || preferencesControl.isPageComplete())
                 && (ymirConfigurationControl == null || ymirConfigurationControl.isPageComplete());
     }
 

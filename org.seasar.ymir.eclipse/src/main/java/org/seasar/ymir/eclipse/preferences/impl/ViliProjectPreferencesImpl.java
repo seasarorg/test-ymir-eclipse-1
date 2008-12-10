@@ -25,7 +25,7 @@ import org.seasar.ymir.eclipse.util.MapAdapter;
 public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     private static final Map<String, String> JRE_VERSION_MAP;
 
-    private static final String DEFAULT_JREVERSION = "1.6";
+    private static final String DEFAULT_JREVERSION = "1.6"; //$NON-NLS-1$
 
     private ViliProjectPreferencesProvider provider;
 
@@ -190,11 +190,11 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     }
 
     public String getSlash() {
-        return "/";
+        return "/"; //$NON-NLS-1$
     }
 
     public String getDollar() {
-        return "$";
+        return "$"; //$NON-NLS-1$
     }
 
     public String getProjectName() {

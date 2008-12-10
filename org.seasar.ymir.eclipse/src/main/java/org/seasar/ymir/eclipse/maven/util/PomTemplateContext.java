@@ -57,7 +57,7 @@ class PomTemplateContext extends TemplateContextImpl {
                 continue;
             }
             TagElement tag = (TagElement) elem;
-            if ("url".equals(tag.getName())) {
+            if ("url".equals(tag.getName())) { //$NON-NLS-1$
                 repository.setUrl(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
             }
         }
@@ -71,9 +71,9 @@ class PomTemplateContext extends TemplateContextImpl {
                 continue;
             }
             TagElement tag = (TagElement) elem;
-            if ("groupId".equals(tag.getName())) {
+            if ("groupId".equals(tag.getName())) { //$NON-NLS-1$
                 dependency.setGroupId(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
-            } else if ("artifactId".equals(tag.getName())) {
+            } else if ("artifactId".equals(tag.getName())) { //$NON-NLS-1$
                 dependency.setArtifactId(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
             }
         }

@@ -41,7 +41,7 @@ public interface Globals {
 
     String NATURE_ID_WEBLAUNCHER = BUNDLENAME_WEBLAUNCHER + ".nature"; //$NON-NLS-1$
 
-    String NATURE_ID_JAVA = "org.eclipse.jdt.core.javanature";
+    String NATURE_ID_JAVA = "org.eclipse.jdt.core.javanature"; //$NON-NLS-1$
 
     String PREFIX_VILI = "vili-"; //$NON-NLS-1$
 
@@ -53,5 +53,5 @@ public interface Globals {
 
     String IMAGE_YMIR = "icons/ymir.gif"; //$NON-NLS-1$
 
-    String PATH_POM_XML = "pom.xml";
+    String PATH_POM_XML = "pom.xml"; //$NON-NLS-1$
 }

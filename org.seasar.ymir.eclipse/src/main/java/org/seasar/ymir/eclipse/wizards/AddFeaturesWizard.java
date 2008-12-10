@@ -12,9 +12,7 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.widgets.Shell;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.Globals;
@@ -40,7 +38,7 @@ public class AddFeaturesWizard extends Wizard implements ISelectArtifactWizard {
         this.project = project;
 
         setNeedsProgressMonitor(true);
-        setWindowTitle("フラグメントの追加");
+        setWindowTitle(Messages.getString("AddFeaturesWizard.1")); //$NON-NLS-1$
         setDefaultPageImageDescriptor(Activator.getDefault().getImageRegistry().getDescriptor(Globals.IMAGE_YMIR));
 
         preferences = Activator.getDefault().getViliProjectPreferences(project);
@@ -60,20 +58,11 @@ public class AddFeaturesWizard extends Wizard implements ISelectArtifactWizard {
 
     public void addPages() {
         firstPage = new SelectArtifactPage(nonTransitiveContext, false);
-        firstPage.setTitle("フラグメントの追加");
-        firstPage.setDescription("プロジェクトにフラグメントを追加します。");
+        firstPage.setTitle(Messages.getString("AddFeaturesWizard.1")); //$NON-NLS-1$
+        firstPage.setDescription(Messages.getString("AddFeaturesWizard.2")); //$NON-NLS-1$
         addPage(firstPage);
         secondPage = new ConfigureParametersPage(preferences);
         addPage(secondPage);
-    }
-
-    @Override
-    public void setContainer(IWizardContainer wizardContainer) {
-        super.setContainer(wizardContainer);
-        Shell shell = getShell();
-        if (shell != null) {
-            shell.setSize(600, shell.getSize().y);
-        }
     }
 
     /**
@@ -87,7 +76,7 @@ public class AddFeaturesWizard extends Wizard implements ISelectArtifactWizard {
             final ArtifactPair[] fragments = firstPage.getFragments();
             IRunnableWithProgress op = new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                    monitor.beginTask("Add fragments", 1);
+                    monitor.beginTask(Messages.getString("AddFeaturesWizard.3"), 1); //$NON-NLS-1$
                     try {
                         Activator.getDefault().addFragments(project, preferences, fragments,
                                 new SubProgressMonitor(monitor, 1));
