@@ -20,7 +20,8 @@ Bundle-ClassPath: .,
  lib/stax-api-1.0.1.jar,
  lib/wstx-asl-3.2.7.jar,
  lib/commons-logging-api-1.0.4.jar,
- lib/freyja-1.0.11.jar
+ lib/freyja-1.0.11.jar,
+ lib/vili-api-0.0.2-SNAPSHOT.jar
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Export-Package: freemarker,

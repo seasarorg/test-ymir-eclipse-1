@@ -69,12 +69,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
-import org.seasar.ymir.eclipse.maven.Dependencies;
-import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
-import org.seasar.ymir.eclipse.maven.Project;
-import org.seasar.ymir.eclipse.maven.Repositories;
-import org.seasar.ymir.eclipse.maven.Repository;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.maven.util.MavenUtils;
 import org.seasar.ymir.eclipse.natures.ViliProjectNature;
@@ -88,6 +83,13 @@ import org.seasar.ymir.eclipse.util.BeanMap;
 import org.seasar.ymir.eclipse.util.CascadeMap;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.eclipse.util.URLUtils;
+import org.seasar.ymir.vili.ArtifactType;
+import org.seasar.ymir.vili.ViliBehavior;
+import org.seasar.ymir.vili.maven.Dependencies;
+import org.seasar.ymir.vili.maven.Dependency;
+import org.seasar.ymir.vili.maven.Project;
+import org.seasar.ymir.vili.maven.Repositories;
+import org.seasar.ymir.vili.maven.Repository;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import freemarker.cache.TemplateLoader;
@@ -178,7 +180,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private void readSystemBehavior() throws IOException {
-        systemBehavior = new ViliBehavior(getClass().getResource(Globals.VILI_BEHAVIOR_PROPERTIES));
+        systemBehavior = new ViliBehaviorImpl(getClass().getResource(Globals.VILI_BEHAVIOR_PROPERTIES));
     }
 
     /*
@@ -244,7 +246,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     @SuppressWarnings("unchecked")//$NON-NLS-1$
-    public void expandArtifact(IProject project, ArtifactPair pair, ViliProjectPreferences preferences,
+    public void expandArtifact(IProject project, ArtifactPair pair, Map<String, Object> parameters,
             IProgressMonitor monitor) throws IOException, CoreException {
         monitor.beginTask(Messages.getString("Activator.15"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
         try {
@@ -272,14 +274,10 @@ public class Activator extends AbstractUIPlugin {
                 cfg.setObjectWrapper(new DefaultObjectWrapper());
 
                 ViliBehavior behavior = pair.getBehavior();
-                Map<String, Object> actualParameterMap = new CascadeMap<String, Object>(pair.getParameterMap(),
-                        new BeanMap(preferences));
-
                 for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
                     JarEntry entry = enm.nextElement();
                     String name = entry.getName();
-                    expand(project, name, cfg, actualParameterMap, jarFile, behavior,
-                            new SubProgressMonitor(monitor, 1));
+                    expand(project, name, cfg, parameters, jarFile, behavior, new SubProgressMonitor(monitor, 1));
                 }
             } finally {
                 jarFile.close();
@@ -816,10 +814,18 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void addFragments(IProject project, ViliProjectPreferences preferences, ArtifactPair[] fragments,
             IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("Activator.8"), fragments.length + 3); //$NON-NLS-1$
         try {
+            IJavaProject javaProject = null;
+            ClassLoader projectClassLoader = null;
+            if (project.hasNature(Globals.NATURE_ID_JAVA)) {
+                javaProject = JavaCore.create(project);
+                projectClassLoader = new ProjectClassLoader(javaProject, getClass().getClassLoader());
+            }
+
             Project pom = new Project();
             Repositories repositories = new Repositories();
             Dependencies dependencies = new Dependencies();
@@ -827,8 +833,23 @@ public class Activator extends AbstractUIPlugin {
             pom.setDependencies(dependencies);
 
             for (ArtifactPair fragment : fragments) {
+                ViliBehavior behavior = fragment.getBehavior();
+                @SuppressWarnings("unchecked")
+                Map<String, Object> parameters = new CascadeMap<String, Object>(fragment.getParameterMap(),
+                        new BeanMap(preferences));
+                Map<String, Object> additionalParameters = null;
+                if (javaProject != null) {
+                    additionalParameters = behavior.newConfigurator(projectClassLoader).createAdditionalParameters(
+                            behavior);
+                    if (additionalParameters != null) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> ps = new CascadeMap<String, Object>(additionalParameters, parameters);
+                        parameters = ps;
+                    }
+                }
+
                 try {
-                    expandArtifact(project, fragment, preferences, new SubProgressMonitor(monitor, 1));
+                    expandArtifact(project, fragment, parameters, new SubProgressMonitor(monitor, 1));
                 } catch (IOException ex) {
                     throwCoreException("Failed to add fragments", ex); //$NON-NLS-1$
                     return;
@@ -855,9 +876,7 @@ public class Activator extends AbstractUIPlugin {
                 throw new OperationCanceledException();
             }
 
-            if (project.hasNature(Globals.NATURE_ID_JAVA)) {
-                IJavaProject javaProject = JavaCore.create(project);
-
+            if (javaProject != null) {
                 IPath[] dependencyPaths = copyDependencies(project, dependencies.getDependencies(),
                         new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {

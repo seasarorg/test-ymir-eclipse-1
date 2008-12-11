@@ -30,11 +30,11 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.ymir.eclipse.ArtifactPair;
-import org.seasar.ymir.eclipse.ProjectType;
-import org.seasar.ymir.eclipse.ViliBehavior;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.ui.ViliProjectPreferencesControl;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
+import org.seasar.ymir.vili.ProjectType;
+import org.seasar.ymir.vili.ViliBehavior;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well

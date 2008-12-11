@@ -10,8 +10,6 @@ import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.JdtUtils;
 
 public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesProviderBase {
-    private static final int DEFAULT_DATABASE_INDEX = 0;
-
     @SuppressWarnings("unchecked")//$NON-NLS-1$
     private MapProperties applicationProperties = new MapProperties(new TreeMap());
 

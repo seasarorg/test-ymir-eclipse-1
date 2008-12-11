@@ -1,62 +1,43 @@
 package org.seasar.ymir.eclipse;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.seasar.kvasir.util.ClassUtils;
 import org.seasar.kvasir.util.LocaleUtils;
 import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.kvasir.util.collection.MapProperties;
-import org.seasar.ymir.eclipse.maven.Project;
-import org.seasar.ymir.eclipse.util.AntPathPatterns;
+import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.util.ArrayUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
+import org.seasar.ymir.vili.ArtifactType;
+import org.seasar.ymir.vili.Configurator;
+import org.seasar.ymir.vili.ParameterType;
+import org.seasar.ymir.vili.ProjectType;
+import org.seasar.ymir.vili.ViliBehavior;
+import org.seasar.ymir.vili.maven.Project;
+import org.seasar.ymir.vili.util.AntPathPatterns;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
-public class ViliBehavior {
-    private static final String EXPANSION_EXCLUDES = "expansion.excludes"; //$NON-NLS-1$
-
-    private static final String EXPANSION_EXCLUDESIFEMPTY = "expansion.excludesIfEmpty"; //$NON-NLS-1$
-
-    private static final String EXPANSION_MERGES = "expansion.merges"; //$NON-NLS-1$
-
-    private static final String TEMPLATE_INCLUDES = "template.includes"; //$NON-NLS-1$
-
-    private static final String TEMPLATE_EXCLUDES = "template.excludes"; //$NON-NLS-1$
-
-    private static final String TEMPLATE_PARAMETERS = "template.parameters"; //$NON-NLS-1$
-
-    private static final String PREFIX_TEMPLATE_ENCODING = "template.encoding."; //$NON-NLS-1$
-
-    private static final String PREFIX_TEMPLATE_PARAMETER = "template.parameter."; //$NON-NLS-1$
-
-    private static final String SUFFIX_TEMPLATE_PARAMETER_TYPE = ".type"; //$NON-NLS-1$
-
-    private static final String SUFFIX_TEMPLATE_PARAMETER_DEFAULT = ".default"; //$NON-NLS-1$
-
-    private static final String SUFFIX_TEMPLATE_PARAMETER_REQUIRED = ".required"; //$NON-NLS-1$
-
-    private static final String SUFFIX_TEMPLATE_PARAMETER_LABEL = ".label"; //$NON-NLS-1$
-
-    private static final String SUFFIX_TEMPLATE_PARAMETER_DESCRIPTION = ".description"; //$NON-NLS-1$
-
-    private static final String LABEL = "label"; //$NON-NLS-1$
-
-    private static final String DESCRIPTION = "description"; //$NON-NLS-1$
-
-    private static final String TYPE = "type"; //$NON-NLS-1$
-
-    private static final String PROJECTTYPE = "projectType"; //$NON-NLS-1$
-
+public class ViliBehaviorImpl implements ViliBehavior {
     private Artifact artifact;
 
     private MapProperties properties;
@@ -79,13 +60,13 @@ public class ViliBehavior {
 
     private Pair[] templateEncodingPairs = new Pair[0];
 
-    public ViliBehavior(URL url) throws IOException {
+    public ViliBehaviorImpl(URL url) throws IOException {
         properties = readProperties(url);
 
         initialize(properties);
     }
 
-    public ViliBehavior(Artifact artifact) throws IOException {
+    public ViliBehaviorImpl(Artifact artifact) throws IOException {
         this.artifact = artifact;
         properties = readProperties(artifact);
         pom = readPom(artifact);
@@ -275,5 +256,98 @@ public class ViliBehavior {
 
     public Project getPom() {
         return pom;
+    }
+
+    public Configurator newConfigurator(ClassLoader projectClassLoader) {
+        String configuratorName = properties.getProperty(CONFIGURATOR);
+        if (configuratorName != null) {
+            ClassLoader classLoader = createViliClassLoader(projectClassLoader);
+            try {
+                return (Configurator) classLoader.loadClass(configuratorName).newInstance();
+            } catch (Throwable t) {
+                Activator.getDefault().getLog().log(
+                        new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create configurator", t));
+            }
+        }
+
+        return new NullConfigurator();
+    }
+
+    ClassLoader createViliClassLoader(ClassLoader parent) {
+        File rootDir;
+        try {
+            rootDir = File.createTempFile("vili-", ".tmp");
+        } catch (IOException ex) {
+            Activator.getDefault().getLog().log(
+                    new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create temp file", ex));
+            return parent;
+        }
+        rootDir.delete();
+        rootDir.mkdirs();
+        rootDir.deleteOnExit();
+
+        File classesDir = new File(rootDir, Globals.VILI_CLASSES);
+        classesDir.mkdir();
+        classesDir.deleteOnExit();
+
+        File libDir = new File(rootDir, Globals.VILI_LIB);
+        libDir.mkdir();
+        libDir.deleteOnExit();
+
+        List<URL> urlList = new ArrayList<URL>();
+        urlList.add(ClassUtils.getURLForURLClassLoader(classesDir));
+
+        JarFile jarFile;
+        try {
+            jarFile = Activator.getDefault().getJarFile(artifact);
+        } catch (IOException ex) {
+            Activator.getDefault().getLog().log(
+                    new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't open jar file: " + artifact, ex));
+            throw new RuntimeException(ex);
+        }
+        try {
+            for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
+                JarEntry entry = enm.nextElement();
+                String name = entry.getName();
+                if (name.endsWith("/")) {
+                    continue;
+                }
+
+                if (name.startsWith(Globals.PREFIX_VILI_CLASSES)) {
+                    expand(classesDir, jarFile, entry);
+                } else if (name.startsWith(Globals.PREFIX_VILI_LIB)) {
+                    urlList.add(ClassUtils.getURLForURLClassLoader(expand(libDir, jarFile, entry)));
+                }
+            }
+        } finally {
+            StreamUtils.close(jarFile);
+        }
+
+        return new URLClassLoader(urlList.toArray(new URL[0]), parent);
+    }
+
+    File expand(File dir, JarFile jarFile, JarEntry entry) {
+        File file = new File(dir, entry.getName());
+        file.getParentFile().mkdirs();
+
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = jarFile.getInputStream(entry);
+            os = new FileOutputStream(file);
+            IOUtils.pipe(is, os, false, false);
+        } catch (IOException ex) {
+            Activator.getDefault().getLog()
+                    .log(
+                            new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't expand " + entry.getName() + " to "
+                                    + dir, ex));
+        } finally {
+            IOUtils.closeQuietly(os);
+            IOUtils.closeQuietly(is);
+        }
+
+        file.deleteOnExit();
+
+        return file;
     }
 }

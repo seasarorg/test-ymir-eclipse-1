@@ -47,18 +47,20 @@ import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
-import org.seasar.ymir.eclipse.ProjectType;
-import org.seasar.ymir.eclipse.ViliBehavior;
-import org.seasar.ymir.eclipse.maven.Dependencies;
-import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
-import org.seasar.ymir.eclipse.maven.Project;
 import org.seasar.ymir.eclipse.maven.util.MavenUtils;
 import org.seasar.ymir.eclipse.natures.ViliProjectNature;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
+import org.seasar.ymir.eclipse.util.BeanMap;
+import org.seasar.ymir.eclipse.util.CascadeMap;
 import org.seasar.ymir.eclipse.util.JdtUtils;
+import org.seasar.ymir.vili.ProjectType;
+import org.seasar.ymir.vili.ViliBehavior;
+import org.seasar.ymir.vili.maven.Dependencies;
+import org.seasar.ymir.vili.maven.Dependency;
+import org.seasar.ymir.vili.maven.Project;
 
 public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtifactWizard {
     private static final char PACKAGE_DELIMITER = '.';
@@ -275,8 +277,11 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
 
             ViliBehavior behavior = skeleton.getBehavior();
             try {
-                Activator.getDefault().expandArtifact(project, skeleton, preferences,
-                        new SubProgressMonitor(monitor, 1));
+                @SuppressWarnings("unchecked")
+                Map<String, Object> parameters = new CascadeMap<String, Object>(skeleton.getParameterMap(),
+                        new BeanMap(preferences));
+                Activator.getDefault()
+                        .expandArtifact(project, skeleton, parameters, new SubProgressMonitor(monitor, 1));
             } catch (IOException ex) {
                 throwCoreException(Messages.getString("NewProjectWizard.13"), ex); //$NON-NLS-1$
                 return;

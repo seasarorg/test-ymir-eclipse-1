@@ -14,9 +14,9 @@ import net.skirnir.xom.ValidationException;
 import net.skirnir.xom.XOMapper;
 
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.maven.Dependency;
-import org.seasar.ymir.eclipse.maven.Project;
-import org.seasar.ymir.eclipse.maven.Repository;
+import org.seasar.ymir.vili.maven.Dependency;
+import org.seasar.ymir.vili.maven.Project;
+import org.seasar.ymir.vili.maven.Repository;
 
 class PomTemplateContext extends TemplateContextImpl {
     private Set<Repository> repositorySet = new HashSet<Repository>();

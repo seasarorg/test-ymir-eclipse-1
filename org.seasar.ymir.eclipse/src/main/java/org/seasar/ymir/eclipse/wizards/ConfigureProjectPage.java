@@ -24,10 +24,10 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
-import org.seasar.ymir.eclipse.ProjectType;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
 import org.seasar.ymir.eclipse.wizards.jre.BuildJREDescriptor;
 import org.seasar.ymir.eclipse.wizards.jre.JREsComboBlock;
+import org.seasar.ymir.vili.ProjectType;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well

@@ -3,6 +3,8 @@ package org.seasar.ymir.eclipse;
 import java.io.IOException;
 import java.util.Map;
 
+import org.seasar.ymir.vili.ViliBehavior;
+
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class ArtifactPair {
@@ -36,7 +38,7 @@ public class ArtifactPair {
     public ViliBehavior getBehavior() {
         if (behavior == null) {
             try {
-                behavior = new ViliBehavior(artifact);
+                behavior = new ViliBehaviorImpl(artifact);
             } catch (IOException ex) {
                 throw new RuntimeException("Can't load vili-behavior: " + artifact, ex); //$NON-NLS-1$
             }

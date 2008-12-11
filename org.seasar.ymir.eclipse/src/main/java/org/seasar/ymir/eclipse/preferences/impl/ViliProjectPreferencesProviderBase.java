@@ -1,8 +1,8 @@
 package org.seasar.ymir.eclipse.preferences.impl;
 
 import org.seasar.ymir.eclipse.DatabaseEntry;
-import org.seasar.ymir.eclipse.maven.Dependency;
 import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
+import org.seasar.ymir.vili.maven.Dependency;
 
 abstract public class ViliProjectPreferencesProviderBase implements ViliProjectPreferencesProvider {
     private static final String FIELDSPECIALPREFIX = "this."; //$NON-NLS-1$

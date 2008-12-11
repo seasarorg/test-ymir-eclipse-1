@@ -1,6 +1,6 @@
 package org.seasar.ymir.eclipse;
 
-import org.seasar.ymir.eclipse.maven.Dependency;
+import org.seasar.ymir.vili.maven.Dependency;
 
 public class DatabaseEntry implements Cloneable {
     private String name;

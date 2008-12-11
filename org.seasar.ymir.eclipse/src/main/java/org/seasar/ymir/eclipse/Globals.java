@@ -51,6 +51,14 @@ public interface Globals {
 
     String TAIL_VILI_BEHAVIOR_PROPERTIES = ".properties"; //$NON-NLS-1$
 
+    String VILI_CLASSES = PREFIX_VILI + "classes"; //$NON-NLS-1$
+
+    String PREFIX_VILI_CLASSES = VILI_CLASSES + "/"; //$NON-NLS-1$
+
+    String VILI_LIB = PREFIX_VILI + "lib"; //$NON-NLS-1$
+
+    String PREFIX_VILI_LIB = VILI_LIB + "/"; //$NON-NLS-1$
+
     String IMAGE_YMIR = "icons/ymir.gif"; //$NON-NLS-1$
 
     String PATH_POM_XML = "pom.xml"; //$NON-NLS-1$
