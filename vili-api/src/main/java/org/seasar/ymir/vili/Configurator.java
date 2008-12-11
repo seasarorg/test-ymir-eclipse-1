@@ -1,5 +1,7 @@
 package org.seasar.ymir.vili;
 
-public class Configurator {
+import java.util.Map;
 
+public interface Configurator {
+    Map<String, Object> createAdditionalParameters(ViliBehavior behavior);
 }

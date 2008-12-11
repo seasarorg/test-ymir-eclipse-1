@@ -9,6 +9,18 @@
   <description>This is an API to communicate with Vili.</description>
   <build>
     <defaultGoal>install</defaultGoal>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <encoding>UTF-8</encoding>
+            <source>1.5</source>
+            <target>1.5</target>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <artifactId>maven-source-plugin</artifactId>
@@ -38,6 +50,16 @@
     </repository>
   </repositories>
   <dependencies>
+    <dependency>
+      <groupId>org.seasar.kvasir</groupId>
+      <artifactId>kvasir-util</artifactId>
+      <version>3.0.0-RC3</version>
+    </dependency>
+    <dependency>
+      <groupId>net.skirnir.xom</groupId>
+      <artifactId>xom</artifactId>
+      <version>0.1.0</version>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
