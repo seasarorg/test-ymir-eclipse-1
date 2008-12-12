@@ -295,8 +295,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
             if (behavior.isProjectOf(ProjectType.JAVA)) {
                 IJavaProject javaProject = JavaCore.create(project);
 
-                setUpProjectDescription(project, behavior.isProjectOf(ProjectType.YMIR), new SubProgressMonitor(
-                        monitor, 1));
+                setUpProjectDescription(project, behavior, new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -479,7 +478,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
         }
     }
 
-    private void setUpProjectDescription(IProject project, boolean isYmirProject, IProgressMonitor monitor)
+    private void setUpProjectDescription(IProject project, ViliBehavior behavior, IProgressMonitor monitor)
             throws CoreException {
         monitor.beginTask(Messages.getString("NewProjectWizard.19"), 1); //$NON-NLS-1$
         try {
@@ -492,11 +491,16 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
             ICommand command = description.newCommand();
             command.setBuilderName(JavaCore.BUILDER_ID);
             newBuilderList.add(command);
-            if (Platform.getBundle(Globals.BUNDLENAME_TOMCATPLUGIN) != null) {
-                newNatureList.add(Globals.NATURE_ID_TOMCAT);
-            }
-            if (Platform.getBundle(Globals.BUNDLENAME_WEBLAUNCHER) != null) {
-                newNatureList.add(Globals.NATURE_ID_WEBLAUNCHER);
+            if (behavior.isProjectOf(ProjectType.WEB)) {
+                if (Platform.getBundle(Globals.BUNDLENAME_TOMCATPLUGIN) != null) {
+                    newNatureList.add(Globals.NATURE_ID_TOMCAT);
+                }
+                if (Platform.getBundle(Globals.BUNDLENAME_WEBLAUNCHER) != null) {
+                    newNatureList.add(Globals.NATURE_ID_WEBLAUNCHER);
+                }
+                if (Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null) {
+                    newNatureList.add(Globals.NATURE_ID_MAVEN2ADDITIONAL);
+                }
             }
             if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null) {
                 newNatureList.add(Globals.NATURE_ID_M2ECLIPSE_LIGHT);
@@ -506,12 +510,9 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
                 command.setBuilderName(Globals.BUILDER_ID_M2ECLIPSE);
                 newBuilderList.add(command);
             }
-            if (Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null) {
-                newNatureList.add(Globals.NATURE_ID_MAVEN2ADDITIONAL);
-            }
 
             newNatureList.add(ViliProjectNature.ID);
-            if (isYmirProject) {
+            if (behavior.isProjectOf(ProjectType.YMIR)) {
                 newNatureList.add(YmirProjectNature.ID);
             }
 

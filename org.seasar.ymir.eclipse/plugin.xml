@@ -5,10 +5,10 @@
    <extension
          point="org.eclipse.ui.newWizards">
       <wizard
-            category="org.eclipse.jdt.ui.java"
+            category="org.seasar.ymir.eclipse.viliCategory"
             class="org.seasar.ymir.eclipse.wizards.NewProjectWizard"
             finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
-            icon="icons/newYmirProject.gif"
+            icon="icons/newViliProject.gif"
             id="org.seasar.ymir.eclipse.wizards.NewProjectWizard"
             name="%newWizard.name"
             project="true">
@@ -16,6 +16,10 @@
             %newWizard.description
          </description>
       </wizard>
+      <category
+            id="org.seasar.ymir.eclipse.viliCategory"
+            name="%newWizard.category.name">
+      </category>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">

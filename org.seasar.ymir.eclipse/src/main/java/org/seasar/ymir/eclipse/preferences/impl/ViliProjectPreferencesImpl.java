@@ -1,21 +1,27 @@
 package org.seasar.ymir.eclipse.preferences.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.seasar.kvasir.util.collection.MapProperties;
+import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
+import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.PlatformDelegateImpl;
-import org.seasar.ymir.eclipse.natures.ViliProjectNature;
+import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.MapAdapter;
 import org.seasar.ymir.vili.DatabaseEntry;
@@ -70,6 +76,8 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     private String fieldSpecialPrefix;
 
+    private String viliVersion;
+
     static {
         Map<String, String> map = new HashMap<String, String>();
         map.put("J2SE-1.3", "1.3"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -98,6 +106,25 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         fieldSuffix = provider.getFieldSuffix();
         fieldSpecialPrefix = provider.getFieldSpecialPrefix();
         setApplicationProperties(provider.getApplicationProperties());
+        viliVersion = readViliVersion();
+    }
+
+    String readViliVersion() {
+        InputStream is = getClass().getClassLoader().getResourceAsStream(Globals.PATH_VILI_API_POM_PROPERTIES);
+        if (is != null) {
+            try {
+                Properties prop = new Properties();
+                prop.load(is);
+                return prop.getProperty(Globals.KEY_VERSION);
+            } catch (IOException ex) {
+                Activator.getDefault().getLog().log(
+                        new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read "
+                                + Globals.PATH_VILI_API_POM_PROPERTIES, ex));
+            } finally {
+                IOUtils.closeQuietly(is);
+            }
+        }
+        return "";
     }
 
     public boolean isProjectSpecificTemplateEnabled() {
@@ -165,7 +192,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore(project);
         boolean isYmirProject;
         try {
-            isYmirProject = project.hasNature(ViliProjectNature.ID);
+            isYmirProject = project.hasNature(YmirProjectNature.ID);
         } catch (CoreException ex) {
             isYmirProject = false;
         }
@@ -289,5 +316,9 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     public DatabaseEntry getDatabase() {
         return getDatabaseEntry();
+    }
+
+    public String getViliVersion() {
+        return viliVersion;
     }
 }

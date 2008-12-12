@@ -62,4 +62,8 @@ public interface Globals {
     String IMAGE_YMIR = "icons/ymir.gif"; //$NON-NLS-1$
 
     String PATH_POM_XML = "pom.xml"; //$NON-NLS-1$
+
+    String PATH_VILI_API_POM_PROPERTIES = "META-INF/maven/org.seasar.ymir.vili/vili-api/pom.properties";
+
+    String KEY_VERSION = "version";
 }

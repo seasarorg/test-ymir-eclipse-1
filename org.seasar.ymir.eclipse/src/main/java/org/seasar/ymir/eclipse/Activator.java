@@ -72,7 +72,7 @@ import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.maven.util.MavenUtils;
-import org.seasar.ymir.eclipse.natures.ViliProjectNature;
+import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.preferences.impl.ViliNewProjectPreferencesProvider;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesImpl;
@@ -747,13 +747,13 @@ public class Activator extends AbstractUIPlugin {
 
     public MapProperties loadApplicationProperties(IProject project) {
         MapProperties properties = new MapProperties(new TreeMap<String, String>());
-        boolean isViliProject;
+        boolean isYmirProject;
         try {
-            isViliProject = project.hasNature(ViliProjectNature.ID);
+            isYmirProject = project.hasNature(YmirProjectNature.ID);
         } catch (CoreException ex) {
-            isViliProject = false;
+            isYmirProject = false;
         }
-        if (isViliProject) {
+        if (isYmirProject) {
             IFile file = project.getFile(Globals.PATH_APP_PROPERTIES);
             if (file.exists()) {
                 InputStream is = null;
@@ -780,7 +780,7 @@ public class Activator extends AbstractUIPlugin {
     public void saveApplicationProperties(IProject project, MapProperties properties, boolean merge) throws IOException {
         boolean isYmirProject;
         try {
-            isYmirProject = project.hasNature(ViliProjectNature.ID);
+            isYmirProject = project.hasNature(YmirProjectNature.ID);
         } catch (CoreException ex) {
             isYmirProject = false;
         }

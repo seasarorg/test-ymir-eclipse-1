@@ -13,7 +13,7 @@ import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
-import org.seasar.ymir.eclipse.natures.ViliProjectNature;
+import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.JdtUtils;
 import org.seasar.ymir.vili.DatabaseEntry;
@@ -37,7 +37,7 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
         this.project = project;
         javaProject = JavaCore.create(project);
         this.store = Activator.getDefault().getPreferenceStore(project);
-        isYmirProject = project.hasNature(ViliProjectNature.ID);
+        isYmirProject = project.hasNature(YmirProjectNature.ID);
         if (isYmirProject) {
             applicationProperties = Activator.getDefault().loadApplicationProperties(project);
         } else {
