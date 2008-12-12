@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Vili
 Bundle-SymbolicName: org.seasar.ymir.eclipse; singleton:=true
-Bundle-Version: 0.0.2.qualifier
+Bundle-Version: 0.0.3.qualifier
 Bundle-Activator: org.seasar.ymir.eclipse.Activator
 Bundle-Vendor: The Seasar Project
 Require-Bundle: org.eclipse.ui,
@@ -21,7 +21,7 @@ Bundle-ClassPath: .,
  lib/wstx-asl-3.2.7.jar,
  lib/commons-logging-api-1.0.4.jar,
  lib/freyja-1.0.11.jar,
- lib/vili-api-0.0.2-SNAPSHOT.jar
+ lib/vili-api-0.0.3-SNAPSHOT.jar
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Export-Package: freemarker,
