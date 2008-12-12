@@ -47,4 +47,12 @@ public class AntPathPatternsTest extends TestCase {
         assertTrue(target.matches("a/b/"));
         assertTrue(target.matches("a/b/rc"));
     }
+
+    public void testMatches7() throws Exception {
+        AntPathPatterns target = AntPathPatterns.newInstance("vili-*/");
+        assertTrue(target.matches("vili-behavior.properties"));
+        assertTrue(target.matches("vili-lib/"));
+        assertTrue(target.matches("vili-lib/lib.jar"));
+        assertTrue(target.matches("vili-lib/lib/lib.jar"));
+    }
 }

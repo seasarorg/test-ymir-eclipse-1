@@ -43,4 +43,6 @@ public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
     PlatformDelegate getPlatform();
 
     DatabaseEntry getDatabase();
+
+    String getViliVersion();
 }
