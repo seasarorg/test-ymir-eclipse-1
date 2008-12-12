@@ -17,7 +17,7 @@ import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
-import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
+import org.seasar.ymir.vili.ViliProjectPreferences;
 
 public class AddFeaturesWizard extends Wizard implements ISelectArtifactWizard {
     static final String DS_SECTION = "AddFeaturesWizard"; //$NON-NLS-1$

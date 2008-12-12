@@ -13,14 +13,15 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
-import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.ParameterKeys;
-import org.seasar.ymir.eclipse.PlatformDelegate;
+import org.seasar.ymir.eclipse.PlatformDelegateImpl;
 import org.seasar.ymir.eclipse.natures.ViliProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
-import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
 import org.seasar.ymir.eclipse.util.MapAdapter;
+import org.seasar.ymir.vili.DatabaseEntry;
+import org.seasar.ymir.vili.PlatformDelegate;
+import org.seasar.ymir.vili.ViliProjectPreferences;
+import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
 
 public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     private static final Map<String, String> JRE_VERSION_MAP;
@@ -57,7 +58,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     private String jreVersion;
 
-    private PlatformDelegate platformDelegate = new PlatformDelegate();
+    private PlatformDelegate platformDelegate = new PlatformDelegateImpl();
 
     private MapProperties applicationProperties;
 

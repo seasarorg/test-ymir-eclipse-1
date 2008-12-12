@@ -7,6 +7,7 @@ import org.seasar.ymir.eclipse.maven.impl.DefaultExtendedConfiguration;
 import org.seasar.ymir.eclipse.maven.impl.DefaultExtendedContext;
 import org.seasar.ymir.eclipse.maven.impl.ExtendedRemoteRepository;
 import org.seasar.ymir.eclipse.maven.impl.NonTransitiveContext;
+import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import werkzeugkasten.mvnhack.repository.ArtifactBuilder;
@@ -43,7 +44,7 @@ public class ArtifactResolver {
     }
 
     public URL getURL(Artifact artifact) {
-        String suffix = "." + artifact.getType(); //$NON-NLS-1$
+        String suffix = "/" + ArtifactUtils.toPath(artifact);
         for (Repository repo : configuration.getRepositories()) {
             for (URL url : repo.getLocation(artifact)) {
                 if (url.toExternalForm().endsWith(suffix)) {

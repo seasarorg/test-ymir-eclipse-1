@@ -11,12 +11,12 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
-import org.seasar.ymir.eclipse.DatabaseEntry;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.natures.ViliProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.JdtUtils;
+import org.seasar.ymir.vili.DatabaseEntry;
 import org.seasar.ymir.vili.maven.Dependency;
 import org.seasar.ymir.vili.maven.Project;
 

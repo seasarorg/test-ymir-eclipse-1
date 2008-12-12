@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
-import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
+import org.seasar.ymir.vili.ViliProjectPreferences;
 
 public class YmirConfigurationControl {
     private static final String REQUIRED_TEMPLATE = Messages.getString("YmirConfigurationControl.21"); //$NON-NLS-1$

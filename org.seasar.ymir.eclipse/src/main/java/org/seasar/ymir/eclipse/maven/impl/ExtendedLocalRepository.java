@@ -78,6 +78,7 @@ public class ExtendedLocalRepository extends LocalRepository implements Extended
 
     @Override
     public Artifact load(Context context, String groupId, String artifactId, String version) {
+        String actualVersion = null;
         long lastUpdated = 0L;
         if (ArtifactUtils.isSnapshot(version)) {
             Metadata metadata = ArtifactUtils.createMetadata(resolveMetadata(groupId, artifactId, version));
@@ -89,6 +90,7 @@ public class ExtendedLocalRepository extends LocalRepository implements Extended
             if (versioning != null) {
                 Snapshot snapshot = versioning.getSnapshot();
                 if (snapshot != null && snapshot.isLocalCopy()) {
+                    actualVersion = version;
                     if (versioning.getLastUpdated() != null) {
                         lastUpdated = versioning.getLastUpdated().longValue();
                     }
@@ -96,8 +98,8 @@ public class ExtendedLocalRepository extends LocalRepository implements Extended
             }
         }
 
-        return ExtendedDefaultArtifact
-                .newInstance(super.load(context, groupId, artifactId, version), null, lastUpdated);
+        return ExtendedDefaultArtifact.newInstance(super.load(context, groupId, artifactId, version), actualVersion,
+                lastUpdated);
     }
 
     @Override

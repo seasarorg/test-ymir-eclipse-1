@@ -1,7 +1,7 @@
 package org.seasar.ymir.eclipse.preferences.impl;
 
-import org.seasar.ymir.eclipse.DatabaseEntry;
-import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
+import org.seasar.ymir.vili.DatabaseEntry;
+import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
 import org.seasar.ymir.vili.maven.Dependency;
 
 abstract public class ViliProjectPreferencesProviderBase implements ViliProjectPreferencesProvider {

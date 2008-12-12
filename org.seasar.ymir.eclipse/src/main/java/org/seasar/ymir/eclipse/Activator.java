@@ -74,8 +74,6 @@ import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.maven.util.MavenUtils;
 import org.seasar.ymir.eclipse.natures.ViliProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.eclipse.preferences.ViliProjectPreferences;
-import org.seasar.ymir.eclipse.preferences.ViliProjectPreferencesProvider;
 import org.seasar.ymir.eclipse.preferences.impl.ViliNewProjectPreferencesProvider;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesImpl;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesProviderImpl;
@@ -85,6 +83,8 @@ import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.eclipse.util.URLUtils;
 import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.ViliBehavior;
+import org.seasar.ymir.vili.ViliProjectPreferences;
+import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
 import org.seasar.ymir.vili.maven.Dependencies;
 import org.seasar.ymir.vili.maven.Dependency;
 import org.seasar.ymir.vili.maven.Project;
@@ -840,7 +840,7 @@ public class Activator extends AbstractUIPlugin {
                 Map<String, Object> additionalParameters = null;
                 if (javaProject != null) {
                     additionalParameters = behavior.newConfigurator(projectClassLoader).createAdditionalParameters(
-                            behavior);
+                            behavior, preferences);
                     if (additionalParameters != null) {
                         @SuppressWarnings("unchecked")
                         Map<String, Object> ps = new CascadeMap<String, Object>(additionalParameters, parameters);
