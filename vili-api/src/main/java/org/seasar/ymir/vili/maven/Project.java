@@ -11,7 +11,11 @@ public class Project {
 
     private String version;
 
+    private Profiles profiles;
+
     private Repositories repositories;
+
+    private PluginRepositories pluginRepositories;
 
     private Dependencies dependencies;
 
@@ -75,21 +79,39 @@ public class Project {
         }
     }
 
-    public Repositories getRepositories() {
-        return repositories;
-    }
-
-    @Child(order = 5)
-    public void setRepositories(Repositories repositories) {
-        this.repositories = repositories;
-    }
-
     public Dependencies getDependencies() {
         return dependencies;
     }
 
-    @Child(order = 6)
+    @Child(order = 5)
     public void setDependencies(Dependencies dependencies) {
         this.dependencies = dependencies;
+    }
+
+    public Repositories getRepositories() {
+        return repositories;
+    }
+
+    @Child(order = 6)
+    public void setRepositories(Repositories repositories) {
+        this.repositories = repositories;
+    }
+
+    public PluginRepositories getPluginRepositories() {
+        return pluginRepositories;
+    }
+
+    @Child(order = 7)
+    public void setPluginRepositories(PluginRepositories pluginRepositories) {
+        this.pluginRepositories = pluginRepositories;
+    }
+
+    public Profiles getProfiles() {
+        return profiles;
+    }
+
+    @Child(order = 8)
+    public void setProfiles(Profiles profiles) {
+        this.profiles = profiles;
     }
 }
