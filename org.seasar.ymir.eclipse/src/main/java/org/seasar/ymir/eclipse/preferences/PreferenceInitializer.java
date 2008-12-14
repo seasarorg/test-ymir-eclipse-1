@@ -53,7 +53,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                         new FragmentEntry(
                                 "ymir-fragment-json", Messages.getString("PreferenceInitializer.1"), Messages.getString("PreferenceInitializer.0")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         new FragmentEntry("ymir-fragment-amf", Messages.getString("PreferenceInitializer.60"), //$NON-NLS-1$ //$NON-NLS-2$
-                                Messages.getString("PreferenceInitializer.61")) //$NON-NLS-1$
+                                Messages.getString("PreferenceInitializer.61")), //$NON-NLS-1$
+                        new FragmentEntry("ymir-fragment-yonex", Messages.getString("PreferenceInitializer.76"), //$NON-NLS-1$ //$NON-NLS-2$
+                                Messages.getString("PreferenceInitializer.77")) //$NON-NLS-1$
                 ));
         StringWriter sw = new StringWriter();
         try {
