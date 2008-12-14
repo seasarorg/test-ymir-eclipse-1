@@ -7,7 +7,8 @@ import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 
 public class NullConfigurator implements Configurator {
-    public Map<String, Object> createAdditionalParameters(ViliBehavior behavior, ViliProjectPreferences preferences) {
+    public Map<String, Object> createAdditionalParameters(ViliBehavior behavior, ViliProjectPreferences preferences,
+            Map<String, Object> artifactParameters) {
         return null;
     }
 }

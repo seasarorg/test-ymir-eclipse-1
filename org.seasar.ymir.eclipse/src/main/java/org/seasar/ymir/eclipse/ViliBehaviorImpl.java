@@ -280,7 +280,11 @@ public class ViliBehaviorImpl implements ViliBehavior {
         } catch (IOException ex) {
             Activator.getDefault().getLog().log(
                     new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create temp file", ex));
-            return parent;
+            if (parent != null) {
+                return parent;
+            } else {
+                return getClass().getClassLoader();
+            }
         }
         rootDir.delete();
         rootDir.mkdirs();
@@ -323,7 +327,11 @@ public class ViliBehaviorImpl implements ViliBehavior {
             StreamUtils.close(jarFile);
         }
 
-        return new URLClassLoader(urlList.toArray(new URL[0]), parent);
+        if (parent != null) {
+            return new URLClassLoader(urlList.toArray(new URL[0]), parent);
+        } else {
+            return new URLClassLoader(urlList.toArray(new URL[0]));
+        }
     }
 
     File expand(File dir, JarFile jarFile, JarEntry entry) {

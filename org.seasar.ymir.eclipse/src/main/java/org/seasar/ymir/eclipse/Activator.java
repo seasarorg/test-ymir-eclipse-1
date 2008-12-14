@@ -845,15 +845,12 @@ public class Activator extends AbstractUIPlugin {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> parameters = new CascadeMap<String, Object>(fragment.getParameterMap(),
                         new BeanMap(preferences));
-                Map<String, Object> additionalParameters = null;
-                if (javaProject != null) {
-                    additionalParameters = behavior.newConfigurator(projectClassLoader).createAdditionalParameters(
-                            behavior, preferences);
-                    if (additionalParameters != null) {
-                        @SuppressWarnings("unchecked")
-                        Map<String, Object> ps = new CascadeMap<String, Object>(additionalParameters, parameters);
-                        parameters = ps;
-                    }
+                Map<String, Object> additionalParameters = behavior.newConfigurator(projectClassLoader)
+                        .createAdditionalParameters(behavior, preferences, fragment.getParameterMap());
+                if (additionalParameters != null) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> ps = new CascadeMap<String, Object>(additionalParameters, parameters);
+                    parameters = ps;
                 }
 
                 try {
