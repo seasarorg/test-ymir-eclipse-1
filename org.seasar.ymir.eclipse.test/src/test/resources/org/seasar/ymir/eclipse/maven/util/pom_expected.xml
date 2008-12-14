@@ -45,4 +45,18 @@
   <version>version1</version>
 </dependency>
 </dependencies>
+<pluginRepositories>
+<pluginRepository>
+  <id>codehaus snapshot repository</id>
+  <url>http://snapshots.repository.codehaus.org</url>
+  <releases>
+    <enabled>true</enabled>
+  </releases>
+</pluginRepository>
+</pluginRepositories>
+<profiles>
+<profile>
+  <id>executable</id>
+</profile>
+</profiles>
 </project>
