@@ -87,6 +87,10 @@ import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
 import org.seasar.ymir.vili.maven.Dependencies;
 import org.seasar.ymir.vili.maven.Dependency;
+import org.seasar.ymir.vili.maven.PluginRepositories;
+import org.seasar.ymir.vili.maven.PluginRepository;
+import org.seasar.ymir.vili.maven.Profile;
+import org.seasar.ymir.vili.maven.Profiles;
 import org.seasar.ymir.vili.maven.Project;
 import org.seasar.ymir.vili.maven.Repositories;
 import org.seasar.ymir.vili.maven.Repository;
@@ -827,10 +831,14 @@ public class Activator extends AbstractUIPlugin {
             }
 
             Project pom = new Project();
-            Repositories repositories = new Repositories();
             Dependencies dependencies = new Dependencies();
-            pom.setRepositories(repositories);
             pom.setDependencies(dependencies);
+            Repositories repositories = new Repositories();
+            pom.setRepositories(repositories);
+            PluginRepositories pluginRepositories = new PluginRepositories();
+            pom.setPluginRepositories(pluginRepositories);
+            Profiles profiles = new Profiles();
+            pom.setProfiles(profiles);
 
             for (ArtifactPair fragment : fragments) {
                 ViliBehavior behavior = fragment.getBehavior();
@@ -859,14 +867,24 @@ public class Activator extends AbstractUIPlugin {
                 }
 
                 Project fPom = fragment.getBehavior().getPom();
+                if (fPom.getDependencies() != null) {
+                    for (Dependency fDependency : fPom.getDependencies().getDependencies()) {
+                        dependencies.addDependency(fDependency);
+                    }
+                }
                 if (fPom.getRepositories() != null) {
                     for (Repository fRepository : fPom.getRepositories().getRepositories()) {
                         repositories.addRepository(fRepository);
                     }
                 }
-                if (fPom.getDependencies() != null) {
-                    for (Dependency fDependency : fPom.getDependencies().getDependencies()) {
-                        dependencies.addDependency(fDependency);
+                if (fPom.getPluginRepositories() != null) {
+                    for (PluginRepository fPluignRepository : fPom.getPluginRepositories().getPluginRepositories()) {
+                        pluginRepositories.addPluginRepository(fPluignRepository);
+                    }
+                }
+                if (fPom.getProfiles() != null) {
+                    for (Profile fProfile : fPom.getProfiles().getProfiles()) {
+                        profiles.addProfile(fProfile);
                     }
                 }
             }
