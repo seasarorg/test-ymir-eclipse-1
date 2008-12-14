@@ -4,5 +4,6 @@ import java.util.Map;
 
 public interface Configurator {
     Map<String, Object> createAdditionalParameters(ViliBehavior behavior,
-            ViliProjectPreferences preferences);
+            ViliProjectPreferences preferences,
+            Map<String, Object> artifactParameters);
 }
