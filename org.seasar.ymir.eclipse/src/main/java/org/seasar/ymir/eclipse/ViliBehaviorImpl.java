@@ -60,6 +60,10 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private Pair[] templateEncodingPairs = new Pair[0];
 
+    private AntPathPatterns viewTemplateIncludes;
+
+    private AntPathPatterns viewTemplateExcludes;
+
     public ViliBehaviorImpl(URL url) throws IOException {
         properties = readProperties(url);
 
@@ -75,7 +79,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     private MapProperties readProperties(URL url) throws IOException {
-        @SuppressWarnings("unchecked")//$NON-NLS-1$
+        @SuppressWarnings("unchecked")
         MapProperties properties = new MapProperties(new LinkedHashMap());
         InputStream is = url.openStream();
         try {
@@ -89,7 +93,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
     private MapProperties readProperties(Artifact artifact) throws IOException {
         Activator activator = Activator.getDefault();
 
-        @SuppressWarnings("unchecked")//$NON-NLS-1$
+        @SuppressWarnings("unchecked")
         MapProperties properties = new MapProperties(new LinkedHashMap());
         JarFile jarFile = activator.getJarFile(artifact);
         try {
@@ -109,7 +113,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
                     if (entry == null) {
                         continue;
                     }
-                    @SuppressWarnings("unchecked")//$NON-NLS-1$
+                    @SuppressWarnings("unchecked")
                     MapProperties newProperties = new MapProperties(new LinkedHashMap(), properties);
                     properties = newProperties;
                     is = jarFile.getInputStream(entry);
@@ -152,6 +156,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
         templateIncludes = AntPathPatterns.newInstance(properties.getProperty(TEMPLATE_INCLUDES));
         templateExcludes = AntPathPatterns.newInstance(properties.getProperty(TEMPLATE_EXCLUDES));
         templateParameters = PropertyUtils.toLines(properties.getProperty(TEMPLATE_PARAMETERS));
+        viewTemplateIncludes = AntPathPatterns.newInstance(properties.getProperty(VIEWTEMPLATE_INCLUDES));
+        viewTemplateExcludes = AntPathPatterns.newInstance(properties.getProperty(VIEWTEMPLATE_EXCLUDES));
 
         for (Enumeration<?> enm = properties.propertyNames(); enm.hasMoreElements();) {
             String name = (String) enm.nextElement();
@@ -231,23 +237,12 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return null;
     }
 
-    static class Pair {
-        private AntPathPatterns antPathPatterns;
+    public AntPathPatterns getViewTemplateIncludes() {
+        return viewTemplateIncludes;
+    }
 
-        private String value;
-
-        public Pair(AntPathPatterns antPathPatterns, String value) {
-            this.antPathPatterns = antPathPatterns;
-            this.value = value;
-        }
-
-        public AntPathPatterns getAntPathPatterns() {
-            return antPathPatterns;
-        }
-
-        public String getValue() {
-            return value;
-        }
+    public AntPathPatterns getViewTemplateExcludes() {
+        return viewTemplateExcludes;
     }
 
     public boolean isProjectOf(ProjectType type) {
@@ -345,10 +340,9 @@ public class ViliBehaviorImpl implements ViliBehavior {
             os = new FileOutputStream(file);
             IOUtils.pipe(is, os, false, false);
         } catch (IOException ex) {
-            Activator.getDefault().getLog()
-                    .log(
-                            new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't expand " + entry.getName() + " to " //$NON-NLS-1$ //$NON-NLS-2$
-                                    + dir, ex));
+            Activator.getDefault().getLog().log(
+                    new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't expand " + entry.getName() + " to " //$NON-NLS-1$ //$NON-NLS-2$
+                            + dir, ex));
         } finally {
             IOUtils.closeQuietly(os);
             IOUtils.closeQuietly(is);
@@ -357,5 +351,24 @@ public class ViliBehaviorImpl implements ViliBehavior {
         file.deleteOnExit();
 
         return file;
+    }
+
+    static class Pair {
+        private AntPathPatterns antPathPatterns;
+
+        private String value;
+
+        public Pair(AntPathPatterns antPathPatterns, String value) {
+            this.antPathPatterns = antPathPatterns;
+            this.value = value;
+        }
+
+        public AntPathPatterns getAntPathPatterns() {
+            return antPathPatterns;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }
