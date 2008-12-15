@@ -44,7 +44,7 @@ public class ArtifactResolver {
     }
 
     public URL getURL(Artifact artifact) {
-        String suffix = "/" + ArtifactUtils.toPath(artifact);
+        String suffix = "/" + ArtifactUtils.toPath(artifact); //$NON-NLS-1$
         for (Repository repo : configuration.getRepositories()) {
             for (URL url : repo.getLocation(artifact)) {
                 if (url.toExternalForm().endsWith(suffix)) {

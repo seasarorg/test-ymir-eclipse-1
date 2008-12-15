@@ -5,8 +5,7 @@ import java.io.IOException;
 import net.skirnir.xom.IllegalSyntaxException;
 import net.skirnir.xom.ValidationException;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
@@ -45,14 +44,14 @@ public class TemplatePreferencePage extends PreferencePage implements IWorkbench
     @Override
     public boolean performOk() {
         IPreferenceStore store = getPreferenceStore();
-        String template = templateControl.getTemplate();
+        String template = templateControl.getTemplate().trim();
         try {
             Activator.getDefault().createTemplateEntry(template);
         } catch (ValidationException ex) {
-            Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, ex.toString(), ex));
+            MessageDialog.openInformation(getControl().getShell(), Messages.getString("TemplatePreferencePage.1"), Messages.getString("TemplatePreferencePage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         } catch (IllegalSyntaxException ex) {
-            Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, ex.toString(), ex));
+            MessageDialog.openInformation(getControl().getShell(), Messages.getString("TemplatePreferencePage.1"), Messages.getString("TemplatePreferencePage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         }
         store.setValue(PreferenceConstants.P_TEMPLATE, template);

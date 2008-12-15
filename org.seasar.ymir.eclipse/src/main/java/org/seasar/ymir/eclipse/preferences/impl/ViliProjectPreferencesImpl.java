@@ -96,7 +96,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         viewEncoding = provider.getViewEncoding();
         useDatabase = provider.isUseDatabase();
         databaseEntry = provider.getDatabaseEntry();
-        emptyDatabaseEntry = new DatabaseEntry("", "", "", "", "", "", null);
+        emptyDatabaseEntry = new DatabaseEntry("", "", "", "", "", "", null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
         projectName = provider.getProjectName();
         groupId = provider.getGroupId();
         artifactId = provider.getArtifactId();
@@ -118,13 +118,13 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
                 return prop.getProperty(Globals.KEY_VERSION);
             } catch (IOException ex) {
                 Activator.getDefault().getLog().log(
-                        new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read "
+                        new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " //$NON-NLS-1$
                                 + Globals.PATH_VILI_API_POM_PROPERTIES, ex));
             } finally {
                 IOUtils.closeQuietly(is);
             }
         }
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     public boolean isProjectSpecificTemplateEnabled() {

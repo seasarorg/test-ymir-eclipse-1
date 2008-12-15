@@ -34,7 +34,7 @@ public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesPro
     }
 
     public DatabaseEntry getDatabaseEntry() {
-        return new DatabaseEntry("", "", "", "", "", "", null);
+        return new DatabaseEntry("", "", "", "", "", "", null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
     }
 
     public String getProjectName() {

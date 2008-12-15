@@ -277,7 +277,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
 
             ViliBehavior behavior = skeleton.getBehavior();
             try {
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings("unchecked") //$NON-NLS-1$
                 Map<String, Object> parameters = new CascadeMap<String, Object>(skeleton.getParameterMap(),
                         new BeanMap(preferences));
                 Activator.getDefault()

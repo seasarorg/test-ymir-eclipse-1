@@ -254,7 +254,7 @@ public class ViliProjectPreferencesControl {
 
     public void setDefaultValues() {
         if (isWebProject) {
-            viewEncodingField.setText("UTF-8");
+            viewEncodingField.setText("UTF-8"); //$NON-NLS-1$
         }
         if (isDatabaseProject) {
             useDatabaseField.setSelection(true);

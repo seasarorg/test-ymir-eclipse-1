@@ -266,7 +266,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
                 return (Configurator) classLoader.loadClass(configuratorName).newInstance();
             } catch (Throwable t) {
                 Activator.getDefault().getLog().log(
-                        new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create configurator", t));
+                        new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create configurator", t)); //$NON-NLS-1$
             }
         }
 
@@ -276,10 +276,10 @@ public class ViliBehaviorImpl implements ViliBehavior {
     ClassLoader createViliClassLoader(ClassLoader parent) {
         File rootDir;
         try {
-            rootDir = File.createTempFile("vili-", ".tmp");
+            rootDir = File.createTempFile("vili-", ".tmp"); //$NON-NLS-1$ //$NON-NLS-2$
         } catch (IOException ex) {
             Activator.getDefault().getLog().log(
-                    new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create temp file", ex));
+                    new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create temp file", ex)); //$NON-NLS-1$
             if (parent != null) {
                 return parent;
             } else {
@@ -306,14 +306,14 @@ public class ViliBehaviorImpl implements ViliBehavior {
             jarFile = Activator.getDefault().getJarFile(artifact);
         } catch (IOException ex) {
             Activator.getDefault().getLog().log(
-                    new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't open jar file: " + artifact, ex));
+                    new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't open jar file: " + artifact, ex)); //$NON-NLS-1$
             throw new RuntimeException(ex);
         }
         try {
             for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
                 JarEntry entry = enm.nextElement();
                 String name = entry.getName();
-                if (name.endsWith("/")) {
+                if (name.endsWith("/")) { //$NON-NLS-1$
                     continue;
                 }
 
@@ -347,7 +347,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
         } catch (IOException ex) {
             Activator.getDefault().getLog()
                     .log(
-                            new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't expand " + entry.getName() + " to "
+                            new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't expand " + entry.getName() + " to " //$NON-NLS-1$ //$NON-NLS-2$
                                     + dir, ex));
         } finally {
             IOUtils.closeQuietly(os);

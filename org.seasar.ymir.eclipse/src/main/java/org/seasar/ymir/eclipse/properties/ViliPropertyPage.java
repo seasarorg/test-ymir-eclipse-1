@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
@@ -96,14 +97,14 @@ public class ViliPropertyPage extends PropertyPage {
 
         boolean templateProjectSpecificSettingsEnabled = templateControl.isProjectSpecificSettingsEnabled();
         if (templateProjectSpecificSettingsEnabled) {
-            String template = templateControl.getTemplate();
+            String template = templateControl.getTemplate().trim();
             try {
                 Activator.getDefault().createTemplateEntry(template);
             } catch (ValidationException ex) {
-                Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, ex.toString(), ex));
+                MessageDialog.openInformation(getControl().getShell(), Messages.getString("ViliPropertyPage.1"), Messages.getString("ViliPropertyPage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
                 return false;
             } catch (IllegalSyntaxException ex) {
-                Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, ex.toString(), ex));
+                MessageDialog.openInformation(getControl().getShell(), Messages.getString("ViliPropertyPage.1"), Messages.getString("ViliPropertyPage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
                 return false;
             }
             store.putValue(PreferenceConstants.P_TEMPLATE, template);

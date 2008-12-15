@@ -818,7 +818,7 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
     public void addFragments(IProject project, ViliProjectPreferences preferences, ArtifactPair[] fragments,
             IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("Activator.8"), fragments.length + 3); //$NON-NLS-1$
@@ -842,13 +842,13 @@ public class Activator extends AbstractUIPlugin {
 
             for (ArtifactPair fragment : fragments) {
                 ViliBehavior behavior = fragment.getBehavior();
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings("unchecked") //$NON-NLS-1$
                 Map<String, Object> parameters = new CascadeMap<String, Object>(fragment.getParameterMap(),
                         new BeanMap(preferences));
                 Map<String, Object> additionalParameters = behavior.newConfigurator(projectClassLoader)
                         .createAdditionalParameters(behavior, preferences, fragment.getParameterMap());
                 if (additionalParameters != null) {
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings("unchecked") //$NON-NLS-1$
                     Map<String, Object> ps = new CascadeMap<String, Object>(additionalParameters, parameters);
                     parameters = ps;
                 }

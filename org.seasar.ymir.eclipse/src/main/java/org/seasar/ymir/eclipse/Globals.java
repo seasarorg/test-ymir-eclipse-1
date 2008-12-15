@@ -63,7 +63,7 @@ public interface Globals {
 
     String PATH_POM_XML = "pom.xml"; //$NON-NLS-1$
 
-    String PATH_VILI_API_POM_PROPERTIES = "META-INF/maven/org.seasar.ymir.vili/vili-api/pom.properties";
+    String PATH_VILI_API_POM_PROPERTIES = "META-INF/maven/org.seasar.ymir.vili/vili-api/pom.properties"; //$NON-NLS-1$
 
-    String KEY_VERSION = "version";
+    String KEY_VERSION = "version"; //$NON-NLS-1$
 }

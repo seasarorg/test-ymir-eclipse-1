@@ -61,7 +61,7 @@ public class ProjectClassLoader extends URLClassLoader {
                                 // TODO こういうケースはあるのか？
                                 Activator.getDefault().getLog().log(
                                         new Status(IStatus.WARNING, Activator.PLUGIN_ID,
-                                                "Can't construct URL for classLoader because default output location is null: entry="
+                                                "Can't construct URL for classLoader because default output location is null: entry=" //$NON-NLS-1$
                                                         + entries[i].getPath()));
                                 continue;
                             }
@@ -72,7 +72,7 @@ public class ProjectClassLoader extends URLClassLoader {
                     } catch (RuntimeException e1) {
                         Activator.getDefault().getLog().log(
                                 new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                                        "Can't construct URL for classLoader: entry=" + entries[i].getPath(), e1));
+                                        "Can't construct URL for classLoader: entry=" + entries[i].getPath(), e1)); //$NON-NLS-1$
                         continue;
                     }
                 } else {

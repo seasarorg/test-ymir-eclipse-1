@@ -17,7 +17,7 @@ class PomTagEvaluator implements TagEvaluator {
 
     public String[] getSpecialTagPatternStrings() {
         return new String[] {
-                "project", "build", "profiles", "repositories", "repository", "pluginRepositories", "pluginRepository", "url", "dependencies", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+                "project", "build", "profiles", "repositories", "repository", "pluginRepositories", "pluginRepository", "url", "dependencies", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
                 "dependency", "groupId", "artifactId" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
