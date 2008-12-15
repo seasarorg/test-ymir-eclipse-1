@@ -16,6 +16,10 @@ public interface ViliBehavior {
 
     String TEMPLATE_PARAMETERS = "template.parameters"; //$NON-NLS-1$
 
+    String VIEWTEMPLATE_INCLUDES = "viewTemplate.includes";
+
+    String VIEWTEMPLATE_EXCLUDES = "viewTemplate.excludes";
+
     String PREFIX_TEMPLATE_ENCODING = "template.encoding."; //$NON-NLS-1$
 
     String PREFIX_TEMPLATE_PARAMETER = "template.parameter."; //$NON-NLS-1$
@@ -69,6 +73,10 @@ public interface ViliBehavior {
     ArtifactType getArtifactType();
 
     String getTemplateEncoding(String path);
+
+    AntPathPatterns getViewTemplateIncludes();
+
+    AntPathPatterns getViewTemplateExcludes();
 
     boolean isProjectOf(ProjectType type);
 
