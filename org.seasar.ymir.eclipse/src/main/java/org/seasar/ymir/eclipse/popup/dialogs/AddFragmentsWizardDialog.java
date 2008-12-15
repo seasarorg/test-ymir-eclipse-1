@@ -4,15 +4,15 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
-import org.seasar.ymir.eclipse.wizards.AddFeaturesWizard;
+import org.seasar.ymir.eclipse.wizards.AddFragmentsWizard;
 
-public class AddFeaturesWizardDialog extends WizardDialog {
-    public AddFeaturesWizardDialog(Shell parentShell, IProject project) {
-        super(parentShell, new AddFeaturesWizard(project));
+public class AddFragmentsWizardDialog extends WizardDialog {
+    public AddFragmentsWizardDialog(Shell parentShell, IProject project) {
+        super(parentShell, new AddFragmentsWizard(project));
     }
 
     @Override
     protected Point getInitialSize() {
-        return new Point(600, 500);
+        return new Point(600, 558);
     }
 }

@@ -10,7 +10,7 @@ import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.seasar.eclipse.common.util.AdaptableUtil;
-import org.seasar.ymir.eclipse.popup.dialogs.AddFeaturesWizardDialog;
+import org.seasar.ymir.eclipse.popup.dialogs.AddFragmentsWizardDialog;
 
 public class AddFragmentsAction implements IObjectActionDelegate {
     private IProject project;
@@ -26,7 +26,7 @@ public class AddFragmentsAction implements IObjectActionDelegate {
      */
     public void run(IAction action) {
         Shell shell = new Shell();
-        AddFeaturesWizardDialog dialog = new AddFeaturesWizardDialog(shell, project);
+        AddFragmentsWizardDialog dialog = new AddFragmentsWizardDialog(shell, project);
         dialog.open();
     }
 
