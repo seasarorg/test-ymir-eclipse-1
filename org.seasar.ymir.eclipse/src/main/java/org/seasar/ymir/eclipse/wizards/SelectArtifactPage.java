@@ -354,7 +354,7 @@ public class SelectArtifactPage extends WizardPage {
                 fragmentTemplateDescriptionText.setText(description);
             }
         });
-        new TableColumn(fragmentTemplateTable, SWT.LEFT).setWidth(120);
+        new TableColumn(fragmentTemplateTable, SWT.LEFT).setWidth(270);
 
         fragmentTemplateEntries = Activator.getDefault().getTemplateEntry().getAllFragments();
         fragmentTemplateArtifacts = new ArtifactPair[fragmentTemplateEntries.length];
