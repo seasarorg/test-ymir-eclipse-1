@@ -16,13 +16,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -50,12 +46,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -70,8 +64,6 @@ import org.osgi.framework.BundleContext;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
-import org.seasar.ymir.eclipse.maven.ExtendedContext;
-import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.maven.util.MavenUtils;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
@@ -110,8 +102,6 @@ import freemarker.template.TemplateException;
 public class Activator extends AbstractUIPlugin {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.seasar.ymir.eclipse"; //$NON-NLS-1$
-
-    private static final String PATHPREFIX_SRC_MAIN_WEBAPP_LIB = Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB + "/"; //$NON-NLS-1$
 
     private static final String EXTENSION_PROPERTIES = "properties"; //$NON-NLS-1$
 
@@ -486,12 +476,6 @@ public class Activator extends AbstractUIPlugin {
         case INCLUDED:
             return false;
         }
-        if (path.equals(PATHPREFIX_SRC_MAIN_WEBAPP_LIB)) {
-            return false;
-        }
-        if (path.startsWith(PATHPREFIX_SRC_MAIN_WEBAPP_LIB) && libsAreManagedAutomatically()) {
-            return true;
-        }
         if (path.equals(PATH_POM_XML) && behavior.getArtifactType() == ArtifactType.FRAGMENT) {
             return true;
         }
@@ -675,12 +659,6 @@ public class Activator extends AbstractUIPlugin {
 
     public ArtifactResolver getArtifactResolver() {
         return artifactResolver;
-    }
-
-    public boolean libsAreManagedAutomatically() {
-        return (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null || Platform
-                .getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null)
-                && Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null;
     }
 
     public String getResourceAsString(Artifact artifact, String path, String encoding, IProgressMonitor monitor)
@@ -886,7 +864,7 @@ public class Activator extends AbstractUIPlugin {
     @SuppressWarnings("unchecked")//$NON-NLS-1$
     public void addFragments(IProject project, ViliProjectPreferences preferences, ArtifactPair[] fragments,
             IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("Activator.8"), fragments.length + 3); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("Activator.8"), fragments.length + 1); //$NON-NLS-1$
         try {
             IJavaProject javaProject = null;
             ClassLoader projectClassLoader = null;
@@ -955,110 +933,6 @@ public class Activator extends AbstractUIPlugin {
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
-
-            if (javaProject != null) {
-                IPath[] dependencyPaths = copyDependencies(project, dependencies.getDependencies(),
-                        new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                addDependenciesToClasspath(javaProject, dependencyPaths, new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-            }
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private IPath[] copyDependencies(IProject project, Dependency[] dependencies, IProgressMonitor monitor) {
-        monitor.beginTask(Messages.getString("Activator.5"), dependencies.length); //$NON-NLS-1$
-        try {
-            if (libsAreManagedAutomatically()) {
-                return new IPath[0];
-            }
-
-            ExtendedContext context = artifactResolver.newContext(false);
-            List<IPath> list = new ArrayList<IPath>();
-            for (Dependency dependency : dependencies) {
-                IPath dependencyPath = copyDependency(project, context, dependency, new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-                if (dependencyPath != null) {
-                    list.add(dependencyPath);
-                }
-            }
-            return list.toArray(new IPath[0]);
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private IPath copyDependency(IProject project, ExtendedContext context, Dependency dependency,
-            IProgressMonitor monitor) {
-        monitor.beginTask(Messages.getString("Activator.5"), 2); //$NON-NLS-1$
-        try {
-            IPath path = null;
-            try {
-                Artifact artifact = artifactResolver.resolve(context, dependency.getGroupId(), dependency
-                        .getArtifactId(), dependency.getVersion());
-                monitor.worked(1);
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                URL url = artifactResolver.getURL(artifact);
-                IFile file = project.getFile(Globals.PATH_SRC_MAIN_WEBAPP_WEBINF_LIB
-                        + "/" + ArtifactUtils.getFileName(artifact)); //$NON-NLS-1$ 
-                InputStream is = null;
-                try {
-                    writeFile(file, url.openStream(), new SubProgressMonitor(monitor, 1));
-                } finally {
-                    StreamUtils.close(is);
-                }
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                path = file.getFullPath();
-            } catch (Throwable ignore) {
-            }
-
-            return path;
-        } finally {
-            monitor.done();
-        }
-    }
-
-    public void addDependenciesToClasspath(IJavaProject javaProject, IPath[] dependencyPaths, IProgressMonitor monitor)
-            throws CoreException {
-        monitor.beginTask(Messages.getString("Activator.4"), 1); //$NON-NLS-1$
-        try {
-            if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null
-                    || Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
-                return;
-            }
-
-            Set<String> existsSet = new HashSet<String>();
-            List<IClasspathEntry> newEntryList = new ArrayList<IClasspathEntry>();
-            for (IClasspathEntry entry : javaProject.getRawClasspath()) {
-                if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-                    existsSet.add(ArtifactUtils.getArtifactId(entry.getPath().toPortableString()));
-                }
-                newEntryList.add(entry);
-            }
-
-            for (IPath dependencyPath : dependencyPaths) {
-                if (!existsSet.contains(ArtifactUtils.getArtifactId(dependencyPath.toPortableString()))) {
-                    newEntryList.add(JavaCore.newLibraryEntry(dependencyPath, null, null));
-                }
-            }
-
-            javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]),
-                    new SubProgressMonitor(monitor, 1));
         } finally {
             monitor.done();
         }
