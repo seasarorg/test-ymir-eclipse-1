@@ -78,4 +78,6 @@ public interface ViliBehavior {
     Project getPom();
 
     Configurator newConfigurator(ClassLoader projectClassLoader);
+
+    boolean isTieUpWithBundle(String bundleName);
 }
