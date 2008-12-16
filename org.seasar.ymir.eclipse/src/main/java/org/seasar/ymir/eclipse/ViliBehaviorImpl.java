@@ -47,6 +47,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private Project pom;
 
+    private Configurator configurator;
+
     private AntPathPatterns expansionExcludes;
 
     private AntPathPatterns expansionExcludesIfEmpty;
@@ -75,10 +77,11 @@ public class ViliBehaviorImpl implements ViliBehavior {
         initialize(properties);
     }
 
-    public ViliBehaviorImpl(Artifact artifact) throws IOException {
+    public ViliBehaviorImpl(Artifact artifact, ClassLoader projectClassLoader) throws IOException {
         this.artifact = artifact;
         properties = readProperties(artifact);
         pom = readPom(artifact);
+        configurator = newConfigurator(projectClassLoader);
         initializeTieUpBundleSet(artifact);
 
         initialize(properties);
@@ -248,7 +251,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return pom;
     }
 
-    public Configurator newConfigurator(ClassLoader projectClassLoader) {
+    Configurator newConfigurator(ClassLoader projectClassLoader) {
         String configuratorName = properties.getProperty(CONFIGURATOR);
         if (configuratorName != null) {
             ClassLoader classLoader = createViliClassLoader(projectClassLoader);
@@ -413,5 +416,13 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     public boolean isTieUpWithBundle(String bundleName) {
         return tieUpBundleSet.contains(bundleName);
+    }
+
+    public MapProperties getProperties() {
+        return properties;
+    }
+
+    public Configurator getConfigurator() {
+        return configurator;
     }
 }

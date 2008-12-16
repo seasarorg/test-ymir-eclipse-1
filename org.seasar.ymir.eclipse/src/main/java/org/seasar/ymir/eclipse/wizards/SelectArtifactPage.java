@@ -48,6 +48,10 @@ import werkzeugkasten.mvnhack.repository.Artifact;
 public class SelectArtifactPage extends WizardPage {
     protected static final long WAIT_RESOLVE_SKELETON_ARTIFACT = 1000L;
 
+    private ClassLoader projectClassLoader;
+
+    private ExtendedContext context;
+
     private boolean showSkeletonTab;
 
     private boolean initialized;
@@ -116,13 +120,12 @@ public class SelectArtifactPage extends WizardPage {
 
     private volatile ArtifactPair[] fragmentTemplateArtifacts;
 
-    private ExtendedContext context;
-
-    public SelectArtifactPage(ExtendedContext context, boolean showSkeletonTab) {
+    public SelectArtifactPage(ClassLoader projectClassLoader, ExtendedContext context, boolean showSkeletonTab) {
         super("SelectArtifactPage"); //$NON-NLS-1$
 
-        this.showSkeletonTab = showSkeletonTab;
+        this.projectClassLoader = projectClassLoader;
         this.context = context;
+        this.showSkeletonTab = showSkeletonTab;
     }
 
     /**
@@ -320,8 +323,8 @@ public class SelectArtifactPage extends WizardPage {
                     for (int i = 0; i < items.length; i++) {
                         if (items[i] == e.item) {
                             if (items[i].getChecked()) {
-                                fragmentTemplateArtifacts[i] = ArtifactPair
-                                        .newInstance(resolveFragmentArtifact(fragmentTemplateEntries[i]));
+                                fragmentTemplateArtifacts[i] = ArtifactPair.newInstance(
+                                        resolveFragmentArtifact(fragmentTemplateEntries[i]), projectClassLoader);
                                 if (fragmentTemplateArtifacts[i] == null) {
                                     items[i].setChecked(false);
                                     setErrorMessage(Messages.getString("SelectArtifactPage.13")); //$NON-NLS-1$
@@ -454,7 +457,7 @@ public class SelectArtifactPage extends WizardPage {
                         customFragmentArtifactIdField.getText(), useLatestFragmentVersionField.getSelection() ? null
                                 : customFragmentVersionField.getText());
                 if (artifact != null) {
-                    ArtifactPair pair = ArtifactPair.newInstance(artifact);
+                    ArtifactPair pair = ArtifactPair.newInstance(artifact, projectClassLoader);
                     if (pair.getBehavior().getArtifactType() == ArtifactType.FRAGMENT) {
                         customFragmentListModel.add(pair);
                         customFragmentListField.add(pair.getBehavior().getLabel());
@@ -889,5 +892,9 @@ public class SelectArtifactPage extends WizardPage {
 
     void putDialogSettings() {
         // IDialogSettings section = getDialogSettings().getSection(NewProjectWizard.DS_SECTION);
+    }
+
+    public ClassLoader getProjectClassLoader() {
+        return projectClassLoader;
     }
 }

@@ -50,8 +50,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -866,13 +864,6 @@ public class Activator extends AbstractUIPlugin {
             IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("Activator.8"), fragments.length + 1); //$NON-NLS-1$
         try {
-            IJavaProject javaProject = null;
-            ClassLoader projectClassLoader = null;
-            if (project.hasNature(Globals.NATURE_ID_JAVA)) {
-                javaProject = JavaCore.create(project);
-                projectClassLoader = new ProjectClassLoader(javaProject, getClass().getClassLoader());
-            }
-
             Project pom = new Project();
             Dependencies dependencies = new Dependencies();
             pom.setDependencies(dependencies);
@@ -888,8 +879,8 @@ public class Activator extends AbstractUIPlugin {
                 @SuppressWarnings("unchecked")//$NON-NLS-1$
                 Map<String, Object> parameters = new CascadeMap<String, Object>(fragment.getParameterMap(),
                         new BeanMap(preferences));
-                Map<String, Object> additionalParameters = behavior.newConfigurator(projectClassLoader)
-                        .createAdditionalParameters(behavior, preferences, fragment.getParameterMap());
+                Map<String, Object> additionalParameters = behavior.getConfigurator().createAdditionalParameters(
+                        project, behavior, preferences, fragment.getParameterMap());
                 if (additionalParameters != null) {
                     @SuppressWarnings("unchecked")//$NON-NLS-1$
                     Map<String, Object> ps = new CascadeMap<String, Object>(additionalParameters, parameters);

@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -51,6 +52,8 @@ public class ConfigureParametersPage extends WizardPage {
         }
     };
 
+    private IProject project;
+
     private ViliProjectPreferences preferences;
 
     private Composite tabFolderParent;
@@ -67,9 +70,9 @@ public class ConfigureParametersPage extends WizardPage {
 
     private ArtifactPair skeleton;
 
-    private ArtifactPair[] fragments;
+    private ViliBehavior SkeletonBehavior;
 
-    private ViliBehavior behavior;
+    private ArtifactPair[] fragments;
 
     private Map<String, ParameterModel>[] parameterModelMaps;
 
@@ -77,9 +80,10 @@ public class ConfigureParametersPage extends WizardPage {
 
     private YmirConfigurationControl ymirConfigurationControl;
 
-    public ConfigureParametersPage(ViliProjectPreferences preferences) {
+    public ConfigureParametersPage(IProject project, ViliProjectPreferences preferences) {
         super("ConfigureParametersPage"); //$NON-NLS-1$
 
+        this.project = project;
         this.preferences = preferences;
 
         setTitle(Messages.getString("ConfigureParametersPage.1")); //$NON-NLS-1$
@@ -122,8 +126,8 @@ public class ConfigureParametersPage extends WizardPage {
             genericTabContent.setLayout(new GridLayout());
             genericTabItem.setControl(genericTabContent);
 
-            preferencesControl = new ViliProjectPreferencesControl(genericTabContent, preferences, behavior
-                    .isProjectOf(ProjectType.WEB), behavior.isProjectOf(ProjectType.DATABASE)) {
+            preferencesControl = new ViliProjectPreferencesControl(genericTabContent, preferences, SkeletonBehavior
+                    .isProjectOf(ProjectType.WEB), SkeletonBehavior.isProjectOf(ProjectType.DATABASE)) {
                 @Override
                 public void setErrorMessage(String message) {
                     ConfigureParametersPage.this.setErrorMessage(message);
@@ -132,7 +136,7 @@ public class ConfigureParametersPage extends WizardPage {
             preferencesControl.createControl();
         }
 
-        if (skeletonParameterExists()) {
+        if (skeletonParameterExists) {
             CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
             skeletonTabItem.setText(Messages.getString("ConfigureParametersPage.12")); //$NON-NLS-1$
 
@@ -151,7 +155,7 @@ public class ConfigureParametersPage extends WizardPage {
         }
 
         if (skeleton != null) {
-            if (behavior.isProjectOf(ProjectType.YMIR)) {
+            if (SkeletonBehavior.isProjectOf(ProjectType.YMIR)) {
                 CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
                 ymirConfigurationTabItem.setText(Messages.getString("ConfigureParametersPage.0")); //$NON-NLS-1$
 
@@ -291,9 +295,13 @@ public class ConfigureParametersPage extends WizardPage {
                 ISelectArtifactWizard wizard = (ISelectArtifactWizard) getWizard();
                 skeleton = wizard.getSkeleton();
                 if (skeleton != null) {
-                    behavior = skeleton.getBehavior();
+                    SkeletonBehavior = skeleton.getBehavior();
                 }
                 fragments = wizard.getFragments();
+                for (ArtifactPair fragment : fragments) {
+                    ViliBehavior fragmentBehavior = fragment.getBehavior();
+                    fragmentBehavior.getConfigurator().start(project, fragmentBehavior, preferences);
+                }
                 createTabFolder();
                 tabPrepared = true;
 
@@ -317,7 +325,7 @@ public class ConfigureParametersPage extends WizardPage {
 
     public void notifySkeletonAndFragmentsCleared() {
         skeleton = null;
-        behavior = null;
+        SkeletonBehavior = null;
         fragments = null;
 
         if (tabFolder != null) {

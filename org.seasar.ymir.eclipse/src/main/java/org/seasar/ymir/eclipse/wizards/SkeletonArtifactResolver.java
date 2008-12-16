@@ -76,13 +76,13 @@ public class SkeletonArtifactResolver implements Runnable {
                             failed = true;
                             break;
                         }
-                        fragmentList.add(ArtifactPair.newInstance(artifact));
+                        fragmentList.add(ArtifactPair.newInstance(artifact, page.getProjectClassLoader()));
                     }
                 } while (false);
 
                 String errorMessage;
                 if (!failed) {
-                    ArtifactPair pair = ArtifactPair.newInstance(skeleton);
+                    ArtifactPair pair = ArtifactPair.newInstance(skeleton, page.getProjectClassLoader());
                     if (pair.getBehavior().getArtifactType() == ArtifactType.SKELETON) {
                         page.setSkeletonAndFragments(pair, fragmentList.toArray(new ArtifactPair[0]));
                         errorMessage = null;

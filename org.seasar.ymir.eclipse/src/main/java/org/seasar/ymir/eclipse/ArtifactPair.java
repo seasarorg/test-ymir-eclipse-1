@@ -10,20 +10,23 @@ import werkzeugkasten.mvnhack.repository.Artifact;
 public class ArtifactPair {
     private Artifact artifact;
 
+    private ClassLoader projectClassLoader;
+
     private ViliBehavior behavior;
 
     private Map<String, Object> parameterMap;
 
-    public static ArtifactPair newInstance(Artifact artifact) {
+    public static ArtifactPair newInstance(Artifact artifact, ClassLoader projectClassLoader) {
         if (artifact == null) {
             return null;
         } else {
-            return new ArtifactPair(artifact);
+            return new ArtifactPair(artifact, projectClassLoader);
         }
     }
 
-    private ArtifactPair(Artifact artifact) {
+    private ArtifactPair(Artifact artifact, ClassLoader projectClassLoader) {
         this.artifact = artifact;
+        this.projectClassLoader = projectClassLoader;
     }
 
     @Override
@@ -38,7 +41,7 @@ public class ArtifactPair {
     public ViliBehavior getBehavior() {
         if (behavior == null) {
             try {
-                behavior = new ViliBehaviorImpl(artifact);
+                behavior = new ViliBehaviorImpl(artifact, projectClassLoader);
             } catch (IOException ex) {
                 throw new RuntimeException("Can't load vili-behavior: " + artifact, ex); //$NON-NLS-1$
             }
