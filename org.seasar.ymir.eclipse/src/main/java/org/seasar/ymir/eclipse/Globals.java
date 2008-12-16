@@ -64,4 +64,10 @@ public interface Globals {
     String PATH_VILI_API_POM_PROPERTIES = "META-INF/maven/org.seasar.ymir.vili/vili-api/pom.properties"; //$NON-NLS-1$
 
     String KEY_VERSION = "version"; //$NON-NLS-1$
+
+    String PATH_M2ECLIPSE_PREFS = ".settings/org.maven.ide.eclipse.prefs";
+
+    String PATH_M2ECLIPSE_LIGHT_PREFS = ".settings/org.maven.ide.eclipse_light.prefs";
+
+    String PATH_MAVEN2ADDITIONAL_PREFS = ".settings/net.skirnir.eclipse.maven.prefs";
 }

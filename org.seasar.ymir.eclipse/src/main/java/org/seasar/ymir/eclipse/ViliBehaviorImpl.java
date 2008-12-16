@@ -11,9 +11,11 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -65,6 +67,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private AntPathPatterns viewTemplateExcludes;
 
+    private Set<String> tieUpBundleSet = new HashSet<String>();
+
     public ViliBehaviorImpl(URL url) throws IOException {
         properties = readProperties(url);
 
@@ -75,8 +79,26 @@ public class ViliBehaviorImpl implements ViliBehavior {
         this.artifact = artifact;
         properties = readProperties(artifact);
         pom = readPom(artifact);
+        initializeTieUpBundleSet(artifact);
 
         initialize(properties);
+    }
+
+    private void initializeTieUpBundleSet(Artifact artifact) throws IOException {
+        if (getArtifactType() != ArtifactType.SKELETON) {
+            return;
+        }
+
+        Activator activator = Activator.getDefault();
+        if (activator.exists(artifact, Globals.PATH_M2ECLIPSE_LIGHT_PREFS)) {
+            tieUpBundleSet.add(Globals.BUNDLENAME_M2ECLIPSE_LIGHT);
+        }
+        if (activator.exists(artifact, Globals.PATH_M2ECLIPSE_PREFS)) {
+            tieUpBundleSet.add(Globals.BUNDLENAME_M2ECLIPSE);
+        }
+        if (activator.exists(artifact, Globals.PATH_MAVEN2ADDITIONAL_PREFS)) {
+            tieUpBundleSet.add(Globals.BUNDLENAME_MAVEN2ADDITIONAL);
+        }
     }
 
     private MapProperties readProperties(URL url) throws IOException {
@@ -387,5 +409,9 @@ public class ViliBehaviorImpl implements ViliBehavior {
         } else {
             return InclusionType.UNDEFINED;
         }
+    }
+
+    public boolean isTieUpWithBundle(String bundleName) {
+        return tieUpBundleSet.contains(bundleName);
     }
 }

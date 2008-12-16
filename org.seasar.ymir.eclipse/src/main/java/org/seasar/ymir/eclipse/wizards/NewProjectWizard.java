@@ -305,7 +305,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
                     throw new OperationCanceledException();
                 }
 
-                setUpClasspath(javaProject, jreContainerPath, new SubProgressMonitor(monitor, 1));
+                setUpClasspath(javaProject, behavior, jreContainerPath, new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -421,12 +421,14 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
         }
     }
 
-    private void setUpClasspath(IJavaProject javaProject, IPath jreContainerPath, IProgressMonitor monitor)
-            throws CoreException {
-        if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null) {
+    private void setUpClasspath(IJavaProject javaProject, ViliBehavior behavior, IPath jreContainerPath,
+            IProgressMonitor monitor) throws CoreException {
+        if (behavior.isTieUpWithBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT)
+                && Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null) {
             setUpClasspathForM2Eclipse(javaProject, jreContainerPath, Globals.CLASSPATH_CONTAINER_M2ECLIPSE_LIGHT,
                     monitor);
-        } else if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
+        } else if (behavior.isTieUpWithBundle(Globals.BUNDLENAME_M2ECLIPSE)
+                && Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
             setUpClasspathForM2Eclipse(javaProject, jreContainerPath, Globals.CLASSPATH_CONTAINER_M2ECLIPSE, monitor);
         } else {
             setUpClasspathForNonM2Eclipse(javaProject, jreContainerPath, monitor);
@@ -498,13 +500,16 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
                 if (Platform.getBundle(Globals.BUNDLENAME_WEBLAUNCHER) != null) {
                     newNatureList.add(Globals.NATURE_ID_WEBLAUNCHER);
                 }
-                if (Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null) {
+                if (behavior.isTieUpWithBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL)
+                        && Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null) {
                     newNatureList.add(Globals.NATURE_ID_MAVEN2ADDITIONAL);
                 }
             }
-            if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null) {
+            if (behavior.isTieUpWithBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT)
+                    && Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null) {
                 newNatureList.add(Globals.NATURE_ID_M2ECLIPSE_LIGHT);
-            } else if (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
+            } else if (behavior.isTieUpWithBundle(Globals.BUNDLENAME_M2ECLIPSE)
+                    && Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
                 newNatureList.add(Globals.NATURE_ID_M2ECLIPSE);
                 command = description.newCommand();
                 command.setBuilderName(Globals.BUILDER_ID_M2ECLIPSE);

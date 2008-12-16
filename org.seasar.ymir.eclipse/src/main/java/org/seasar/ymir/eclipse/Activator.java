@@ -937,4 +937,18 @@ public class Activator extends AbstractUIPlugin {
             monitor.done();
         }
     }
+
+    public boolean exists(Artifact artifact, String path) throws IOException {
+        JarFile jarFile = null;
+        try {
+            jarFile = getJarFile(artifact);
+            if (jarFile == null) {
+                return false;
+            }
+
+            return jarFile.getJarEntry(path) != null;
+        } finally {
+            StreamUtils.close(jarFile);
+        }
+    }
 }
