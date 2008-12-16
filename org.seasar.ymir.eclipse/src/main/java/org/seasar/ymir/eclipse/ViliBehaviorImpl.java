@@ -29,6 +29,7 @@ import org.seasar.ymir.eclipse.util.ArrayUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.Configurator;
+import org.seasar.ymir.vili.InclusionType;
 import org.seasar.ymir.vili.ParameterType;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
@@ -170,26 +171,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
         projectTypeSet = ProjectType.createEnumSet(properties.getProperty(PROJECTTYPE));
     }
 
-    public AntPathPatterns getExpansionExcludes() {
-        return expansionExcludes;
-    }
-
-    public AntPathPatterns getExpansionExcludesIfEmpty() {
-        return expansionExcludesIfEmpty;
-    }
-
-    public AntPathPatterns getExpansionMerges() {
-        return expansionMerges;
-    }
-
-    public AntPathPatterns getTemplateIncludes() {
-        return templateIncludes;
-    }
-
-    public AntPathPatterns getTemplateExcludes() {
-        return templateExcludes;
-    }
-
     public String[] getTemplateParameters() {
         return templateParameters;
     }
@@ -235,14 +216,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
             }
         }
         return null;
-    }
-
-    public AntPathPatterns getViewTemplateIncludes() {
-        return viewTemplateIncludes;
-    }
-
-    public AntPathPatterns getViewTemplateExcludes() {
-        return viewTemplateExcludes;
     }
 
     public boolean isProjectOf(ProjectType type) {
@@ -369,6 +342,50 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
         public String getValue() {
             return value;
+        }
+    }
+
+    public InclusionType shouldEvaluateAsTemplate(String path) {
+        if (templateExcludes.matches(path)) {
+            return InclusionType.EXCLUDED;
+        } else if (templateIncludes.matches(path)) {
+            return InclusionType.INCLUDED;
+        } else {
+            return InclusionType.UNDEFINED;
+        }
+    }
+
+    public InclusionType shouldExpand(String path) {
+        if (expansionExcludes.matches(path)) {
+            return InclusionType.EXCLUDED;
+        } else {
+            return InclusionType.UNDEFINED;
+        }
+    }
+
+    public InclusionType shouldIgnoreIfExpansionResultIsEmpty(String path) {
+        if (expansionExcludesIfEmpty.matches(path)) {
+            return InclusionType.INCLUDED;
+        } else {
+            return InclusionType.UNDEFINED;
+        }
+    }
+
+    public InclusionType shouldMerge(String path) {
+        if (expansionMerges.matches(path)) {
+            return InclusionType.INCLUDED;
+        } else {
+            return InclusionType.UNDEFINED;
+        }
+    }
+
+    public InclusionType shouldTreatAsViewTemplate(String path) {
+        if (viewTemplateExcludes.matches(path)) {
+            return InclusionType.EXCLUDED;
+        } else if (viewTemplateIncludes.matches(path)) {
+            return InclusionType.INCLUDED;
+        } else {
+            return InclusionType.UNDEFINED;
         }
     }
 }

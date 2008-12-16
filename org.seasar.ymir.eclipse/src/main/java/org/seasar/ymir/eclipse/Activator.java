@@ -356,17 +356,17 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private boolean isViewTemplate(String path, ViliBehavior behavior) {
-        if (behavior.getViewTemplateExcludes().matches(path)) {
+        switch (behavior.shouldTreatAsViewTemplate(path)) {
+        case INCLUDED:
+            return true;
+        case EXCLUDED:
             return false;
         }
-        if (behavior.getViewTemplateIncludes().matches(path)) {
+        switch (systemBehavior.shouldTreatAsViewTemplate(path)) {
+        case INCLUDED:
             return true;
-        }
-        if (systemBehavior.getViewTemplateExcludes().matches(path)) {
+        case EXCLUDED:
             return false;
-        }
-        if (systemBehavior.getViewTemplateIncludes().matches(path)) {
-            return true;
         }
 
         return false;
@@ -432,11 +432,17 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private boolean shouldMerge(String path, ViliBehavior behavior) {
-        if (behavior.getExpansionMerges().matches(path)) {
+        switch (behavior.shouldMerge(path)) {
+        case INCLUDED:
             return true;
+        case EXCLUDED:
+            return false;
         }
-        if (systemBehavior.getExpansionMerges().matches(path)) {
+        switch (systemBehavior.shouldMerge(path)) {
+        case INCLUDED:
             return true;
+        case EXCLUDED:
+            return false;
         }
 
         return false;
@@ -468,11 +474,17 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private boolean shouldIgnore(String path, ViliBehavior behavior) {
-        if (behavior.getExpansionExcludes().matches(path)) {
+        switch (behavior.shouldExpand(path)) {
+        case EXCLUDED:
             return true;
+        case INCLUDED:
+            return false;
         }
-        if (systemBehavior.getExpansionExcludes().matches(path)) {
+        switch (systemBehavior.shouldExpand(path)) {
+        case EXCLUDED:
             return true;
+        case INCLUDED:
+            return false;
         }
         if (path.equals(PATHPREFIX_SRC_MAIN_WEBAPP_LIB)) {
             return false;
@@ -488,21 +500,37 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private boolean shouldIgnore(String path, String evaluatedString, ViliBehavior behavior) {
-        return behavior.getExpansionExcludesIfEmpty().matches(path) && evaluatedString.trim().length() == 0;
+        if (evaluatedString.trim().length() > 0) {
+            return false;
+        }
+        switch (behavior.shouldIgnoreIfExpansionResultIsEmpty(path)) {
+        case INCLUDED:
+            return true;
+        case EXCLUDED:
+            return false;
+        }
+        switch (systemBehavior.shouldIgnoreIfExpansionResultIsEmpty(path)) {
+        case INCLUDED:
+            return true;
+        case EXCLUDED:
+            return false;
+        }
+
+        return false;
     }
 
     private boolean shouldEvaluateAsTemplate(String path, ViliBehavior behavior) {
-        if (behavior.getTemplateExcludes().matches(path)) {
+        switch (behavior.shouldEvaluateAsTemplate(path)) {
+        case INCLUDED:
+            return true;
+        case EXCLUDED:
             return false;
         }
-        if (behavior.getTemplateIncludes().matches(path)) {
+        switch (systemBehavior.shouldEvaluateAsTemplate(path)) {
+        case INCLUDED:
             return true;
-        }
-        if (systemBehavior.getTemplateExcludes().matches(path)) {
+        case EXCLUDED:
             return false;
-        }
-        if (systemBehavior.getTemplateIncludes().matches(path)) {
-            return true;
         }
 
         return false;
