@@ -37,6 +37,10 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                         new SkeletonEntry(
                                 "ymir-skeleton-generic", Messages.getString("PreferenceInitializer.66"), //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("PreferenceInitializer.13"), new FragmentEntry("ymir-fragment-dbflute", "", "")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                        new SkeletonEntry("ymir-skeleton-generic", "Ymir標準プロジェクト（YSP）",
+                                "The Ymir Projectで規定している標準構成のプロジェクトを作成します。", new FragmentEntry("ymir-fragment-dbflute",
+                                        "", ""), new FragmentEntry("ymir-fragment-utility", "", ""), new FragmentEntry(
+                                        "org.seasar.ymir.skeleton.ysp", "ysp-base", "", "")),
                         new SkeletonEntry(
                                 "ymir-skeleton-skeleton-generic", Messages.getString("PreferenceInitializer.68"), Messages.getString("PreferenceInitializer.69")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         new SkeletonEntry("ymir-skeleton-skeleton-web", Messages.getString("PreferenceInitializer.74"), //$NON-NLS-1$ //$NON-NLS-2$
@@ -55,8 +59,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                         new FragmentEntry("ymir-fragment-amf", Messages.getString("PreferenceInitializer.60"), //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("PreferenceInitializer.61")), //$NON-NLS-1$
                         new FragmentEntry("ymir-fragment-yonex", Messages.getString("PreferenceInitializer.76"), //$NON-NLS-1$ //$NON-NLS-2$
-                                Messages.getString("PreferenceInitializer.77")) //$NON-NLS-1$
-                ));
+                                Messages.getString("PreferenceInitializer.77")), //$NON-NLS-1$
+                        new FragmentEntry("org.seasar.ymir.skeleton.ysp", "ysp-base", "[YSP] 基本リソース",
+                                "[Ymir標準プロジェクト] Ymir標準プロジェクトを構築するための基本となるリソースを追加します。"), new FragmentEntry(
+                                "org.seasar.ymir.skeleton.ysp", "ysp-login", "[YSP] ログイン機能",
+                                "[Ymir標準プロジェクト] ログイン機能を追加します。"), new FragmentEntry("org.seasar.ymir.skeleton.ysp",
+                                "ysp-crud", "[YSP] CRUD用のビューとロジック", "[Ymir標準プロジェクト] CRUD用のビューとロジックを追加します。")));
         StringWriter sw = new StringWriter();
         try {
             Activator.getDefault().getXOMapper().toXML(defaultTemplateEntry, sw);
