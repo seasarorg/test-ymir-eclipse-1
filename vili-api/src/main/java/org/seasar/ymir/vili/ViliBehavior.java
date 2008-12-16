@@ -1,7 +1,6 @@
 package org.seasar.ymir.vili;
 
 import org.seasar.ymir.vili.maven.Project;
-import org.seasar.ymir.vili.util.AntPathPatterns;
 
 public interface ViliBehavior {
     String EXPANSION_EXCLUDES = "expansion.excludes"; //$NON-NLS-1$
@@ -44,15 +43,15 @@ public interface ViliBehavior {
 
     String CONFIGURATOR = "configurator"; //$NON-NLS-1$
 
-    AntPathPatterns getExpansionExcludes();
+    InclusionType shouldExpand(String path);
 
-    AntPathPatterns getExpansionExcludesIfEmpty();
+    InclusionType shouldIgnoreIfExpansionResultIsEmpty(String path);
 
-    AntPathPatterns getExpansionMerges();
+    InclusionType shouldMerge(String path);
 
-    AntPathPatterns getTemplateIncludes();
+    InclusionType shouldEvaluateAsTemplate(String path);
 
-    AntPathPatterns getTemplateExcludes();
+    InclusionType shouldTreatAsViewTemplate(String path);
 
     String[] getTemplateParameters();
 
@@ -73,10 +72,6 @@ public interface ViliBehavior {
     ArtifactType getArtifactType();
 
     String getTemplateEncoding(String path);
-
-    AntPathPatterns getViewTemplateIncludes();
-
-    AntPathPatterns getViewTemplateExcludes();
 
     boolean isProjectOf(ProjectType type);
 
