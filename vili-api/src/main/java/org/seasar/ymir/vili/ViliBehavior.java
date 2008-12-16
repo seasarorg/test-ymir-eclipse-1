@@ -1,5 +1,6 @@
 package org.seasar.ymir.vili;
 
+import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.vili.maven.Project;
 
 public interface ViliBehavior {
@@ -77,7 +78,9 @@ public interface ViliBehavior {
 
     Project getPom();
 
-    Configurator newConfigurator(ClassLoader projectClassLoader);
+    Configurator getConfigurator();
 
     boolean isTieUpWithBundle(String bundleName);
+
+    MapProperties getProperties();
 }
