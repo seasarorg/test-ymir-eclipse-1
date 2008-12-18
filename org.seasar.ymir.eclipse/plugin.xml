@@ -85,13 +85,13 @@
                id="org.seasar.ymir.eclipse.addFragmentsAction"
                label="%popup.action.addFragments"
                menubarPath="org.seasar.ymir.eclipse.menu/group">
-            <enablement>
-               <objectState
-                     name="projectNature"
-                     value="org.seasar.ymir.eclipse.viliProjectNature">
-               </objectState>
-            </enablement>
          </action>
+         <visibility>
+            <objectState
+                  name="projectNature"
+                  value="org.seasar.ymir.eclipse.viliProjectNature">
+            </objectState>
+         </visibility>
       </objectContribution>
    </extension>
    <extension
