@@ -17,6 +17,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
@@ -50,6 +51,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -127,6 +129,8 @@ public class Activator extends AbstractUIPlugin {
 
     private ViliBehavior systemBehavior;
 
+    private Map<IProject, ProjectRelative> projectRelativeMap = new HashMap<IProject, ProjectRelative>();
+
     /**
      * The constructor
      */
@@ -142,14 +146,14 @@ public class Activator extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
 
+        setUpTemplateEngine();
+        readSystemBehavior();
+
         artifactResolver = new ArtifactResolver();
         IPreferenceStore preferenceStore = getPreferenceStore();
         artifactResolver.setOffline(preferenceStore.getBoolean(PreferenceConstants.P_OFFLINE));
 
-        setUpTemplateEngine();
-        readSystemBehavior();
-
-        getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
+        preferenceStore.addPropertyChangeListener(new IPropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 if (PreferenceConstants.P_OFFLINE.equals(event.getProperty())) {
                     artifactResolver.setOffline(((Boolean) event.getNewValue()).booleanValue());
@@ -187,6 +191,14 @@ public class Activator extends AbstractUIPlugin {
         parser = null;
         systemBehavior = null;
         plugin = null;
+
+        synchronized (projectRelativeMap) {
+            for (ProjectRelative relative : projectRelativeMap.values()) {
+                JavaCore.removeElementChangedListener(relative);
+            }
+            projectRelativeMap.clear();
+        }
+
         super.stop(context);
     }
 
@@ -940,6 +952,26 @@ public class Activator extends AbstractUIPlugin {
             return jarFile.getJarEntry(path) != null;
         } finally {
             StreamUtils.close(jarFile);
+        }
+    }
+
+    public ProjectRelative getProjectRelative(IProject project) {
+        synchronized (projectRelativeMap) {
+            ProjectRelative relative = projectRelativeMap.get(project);
+            if (relative == null) {
+                relative = new ProjectRelative(project);
+                projectRelativeMap.put(project, relative);
+                JavaCore.addElementChangedListener(relative);
+                project.getWorkspace().addResourceChangeListener(relative);
+                getPreferenceStore(project).addPropertyChangeListener(relative);
+            }
+            return relative;
+        }
+    }
+
+    public void removeProjectRelative(IProject project) {
+        synchronized (projectRelativeMap) {
+            projectRelativeMap.remove(project);
         }
     }
 }

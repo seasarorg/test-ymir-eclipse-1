@@ -92,6 +92,13 @@
                   value="org.seasar.ymir.eclipse.viliProjectNature">
             </objectState>
          </visibility>
+         <action
+               class="org.seasar.ymir.eclipse.popup.actions.ActionAction"
+               id="org.seasar.ymir.eclipse.actionAction"
+               label="%popup.action.action"
+               menubarPath="org.seasar.ymir.eclipse.menu/group"
+               style="pulldown">
+         </action>
       </objectContribution>
    </extension>
    <extension
