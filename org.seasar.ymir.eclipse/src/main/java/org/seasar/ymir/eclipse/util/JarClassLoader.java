@@ -96,7 +96,7 @@ public class JarClassLoader extends ClassLoader {
         try {
             is = jarURL.openStream();
             JarInputStream jis = new JarInputStream(is);
-            for (JarEntry entry = jis.getNextJarEntry(); entry != null;) {
+            for (JarEntry entry = jis.getNextJarEntry(); entry != null; entry = jis.getNextJarEntry()) {
                 String name = entry.getName();
                 if (name.equals(classesPath + path)) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -104,7 +104,7 @@ public class JarClassLoader extends ClassLoader {
                     return baos.toByteArray();
                 } else if (name.startsWith(libPath) && name.toLowerCase().endsWith(SUFFIX_JAR)) {
                     JarInputStream jjis = new JarInputStream(jis);
-                    for (JarEntry e = jjis.getNextJarEntry(); e != null;) {
+                    for (JarEntry e = jjis.getNextJarEntry(); e != null; e = jjis.getNextJarEntry()) {
                         String n = e.getName();
                         if (n.equals(path)) {
                             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -135,7 +135,7 @@ public class JarClassLoader extends ClassLoader {
         try {
             is = jarURL.openStream();
             JarInputStream jis = new JarInputStream(is);
-            for (JarEntry entry = jis.getNextJarEntry(); entry != null;) {
+            for (JarEntry entry = jis.getNextJarEntry(); entry != null; entry = jis.getNextJarEntry()) {
                 String name = entry.getName();
                 if (name.equals(classesPath + path)) {
                     File file = new File(tempDir, classesPath + PATH_DELIMITER + path);
@@ -144,7 +144,7 @@ public class JarClassLoader extends ClassLoader {
                     return file.toURI().toURL();
                 } else if (name.startsWith(libPath) && name.toLowerCase().endsWith(SUFFIX_JAR)) {
                     JarInputStream jjis = new JarInputStream(jis);
-                    for (JarEntry e = jjis.getNextJarEntry(); e != null;) {
+                    for (JarEntry e = jjis.getNextJarEntry(); e != null; e = jjis.getNextJarEntry()) {
                         String n = e.getName();
                         if (n.equals(path)) {
                             File file = new File(tempDir, name + PATH_DELIMITER + path);
@@ -173,7 +173,7 @@ public class JarClassLoader extends ClassLoader {
             try {
                 is = jarURL.openStream();
                 JarInputStream jis = new JarInputStream(is);
-                for (JarEntry entry = jis.getNextJarEntry(); entry != null;) {
+                for (JarEntry entry = jis.getNextJarEntry(); entry != null; entry = jis.getNextJarEntry()) {
                     String name = entry.getName();
                     if (name.equals(classesPath + path)) {
                         File file = new File(tempDir, classesPath + PATH_DELIMITER + path);
@@ -182,7 +182,7 @@ public class JarClassLoader extends ClassLoader {
                         urlList.add(file.toURI().toURL());
                     } else if (name.startsWith(libPath) && name.toLowerCase().endsWith(SUFFIX_JAR)) {
                         JarInputStream jjis = new JarInputStream(jis);
-                        for (JarEntry e = jjis.getNextJarEntry(); e != null;) {
+                        for (JarEntry e = jjis.getNextJarEntry(); e != null; e = jjis.getNextJarEntry()) {
                             String n = e.getName();
                             if (n.equals(path)) {
                                 File file = new File(tempDir, name + PATH_DELIMITER + path);
