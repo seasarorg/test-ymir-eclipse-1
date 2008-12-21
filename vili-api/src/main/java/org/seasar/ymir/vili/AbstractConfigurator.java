@@ -14,4 +14,12 @@ abstract public class AbstractConfigurator implements Configurator {
             Map<String, Object> artifactParameters) {
         return null;
     }
+
+    public void processBeforeExpanding(IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters) {
+    }
+
+    public void processAfterExpanded(IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters) {
+    }
 }

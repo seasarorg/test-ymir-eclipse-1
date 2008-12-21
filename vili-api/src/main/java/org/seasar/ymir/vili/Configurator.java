@@ -38,4 +38,26 @@ public interface Configurator {
     Map<String, Object> createAdditionalParameters(IProject project,
             ViliBehavior behavior, ViliProjectPreferences preferences,
             Map<String, Object> artifactParameters);
+
+    /**
+     * フラグメントの展開処理の直前に呼び出されます。
+     * 
+     * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。
+     * @param behavior ViliBehaviorインスタンス。
+     * @param preferences ViliProjectPreferencesインスタンス。
+     * @param parameters フラグメントの展開時に使用されるパラメータ。
+     */
+    void processBeforeExpanding(IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters);
+
+    /**
+     * フラグメントの展開処理の直後に呼び出されます。
+     * 
+     * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。
+     * @param behavior ViliBehaviorインスタンス。
+     * @param preferences ViliProjectPreferencesインスタンス。
+     * @param parameters フラグメントの展開時に使用されたパラメータ。
+     */
+    void processAfterExpanded(IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters);
 }
