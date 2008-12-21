@@ -2,6 +2,7 @@ package org.seasar.ymir.vili;
 
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.vili.maven.Project;
+import org.seasar.ymir.vili.model.Actions;
 
 public interface ViliBehavior {
     String EXPANSION_EXCLUDES = "expansion.excludes"; //$NON-NLS-1$
@@ -83,4 +84,8 @@ public interface ViliBehavior {
     boolean isTieUpWithBundle(String bundleName);
 
     MapProperties getProperties();
+
+    ClassLoader getClassLoader();
+
+    Actions getActions();
 }
