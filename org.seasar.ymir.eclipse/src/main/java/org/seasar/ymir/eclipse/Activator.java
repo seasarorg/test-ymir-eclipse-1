@@ -279,12 +279,16 @@ public class Activator extends AbstractUIPlugin {
                 cfg.setObjectWrapper(new DefaultObjectWrapper());
 
                 ViliBehavior behavior = pair.getBehavior();
+                behavior.getConfigurator().processBeforeExpanding(project, behavior, preferences, parameters);
+
                 for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
                     JarEntry entry = enm.nextElement();
                     String name = entry.getName();
                     expand(project, preferences, name, cfg, parameters, jarFile, behavior, new SubProgressMonitor(
                             monitor, 1));
                 }
+
+                behavior.getConfigurator().processAfterExpanded(project, behavior, preferences, parameters);
             } finally {
                 jarFile.close();
             }
@@ -294,13 +298,13 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private void expand(IProject project, ViliProjectPreferences preferences, String path, Configuration cfg,
-            Map<String, Object> parameterMap, JarFile jarFile, ViliBehavior behavior, IProgressMonitor monitor)
+            Map<String, Object> parameters, JarFile jarFile, ViliBehavior behavior, IProgressMonitor monitor)
             throws IOException, CoreException {
         if (shouldIgnore(path, behavior)) {
             return;
         }
 
-        String resolvedPath = resolvePath(path, cfg, parameterMap);
+        String resolvedPath = resolvePath(path, cfg, parameters);
         if (path.endsWith("/")) { //$NON-NLS-1$
             mkdirs(project.getFolder(resolvedPath), new SubProgressMonitor(monitor, 1));
         } else {
@@ -315,7 +319,7 @@ public class Activator extends AbstractUIPlugin {
                     try {
                         StringWriter sw = new StringWriter();
                         cfg.setEncoding(Locale.getDefault(), templateEncoding);
-                        cfg.getTemplate(path).process(parameterMap, sw);
+                        cfg.getTemplate(path).process(parameters, sw);
                         evaluatedString = sw.toString();
                         if (shouldIgnore(path, evaluatedString, behavior)) {
                             return;
