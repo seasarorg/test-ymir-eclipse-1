@@ -13,14 +13,50 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
+import org.seasar.ymir.vili.IAction;
+import org.seasar.ymir.vili.model.Action;
+import org.seasar.ymir.vili.model.Actions;
+
+import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class ProjectRelative implements IElementChangedListener, IResourceChangeListener, IPropertyChangeListener {
     private IProject project;
 
     private ClassLoader projectClassLoader;
 
+    private Actions actions;
+
     public ProjectRelative(IProject project) {
         this.project = project;
+
+        actions = createActions(Activator.getDefault().getPreferenceStore(project).getString(
+                PreferenceConstants.P_ACTIONS));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Actions createActions(String text) {
+        Actions actions = null;
+        if (text != null && text.length() > 0) {
+            actions = Activator.getDefault().getAsBean(text, Actions.class);
+        }
+        if (actions == null) {
+            actions = new Actions();
+        }
+
+        for (Action action : actions.getActions()) {
+            Artifact artifact = Activator.getDefault().getArtifactResolver().resolve(action.getGroupId(),
+                    action.getArtifactId(), action.getVersion(), false);
+            if (artifact != null) {
+                try {
+                    action.setClass((Class<? extends IAction>) ArtifactPair.newInstance(artifact, projectClassLoader)
+                            .getBehavior().getClassLoader().loadClass(action.getActionClass()));
+                } catch (ClassNotFoundException ex) {
+                    Activator.getDefault().log(ex);
+                }
+            }
+        }
+
+        return actions;
     }
 
     public ClassLoader getProjectClassLoader() {
@@ -96,11 +132,15 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void propertyChange(PropertyChangeEvent event) {
         String property = event.getProperty();
-        if (PreferenceConstants.P_TEMPLATE.equals(property)
-                || PreferenceConstants.P_TEMPLATE_PROJECTSPECIFICSETTINGSENABLED.equals(property)) {
-            // メニュー全消し。
+        if (PreferenceConstants.P_ACTIONS.equals(property)) {
+            actions = createActions((String) event.getNewValue());
         }
+    }
+
+    public Actions getActions() {
+        return actions;
     }
 }

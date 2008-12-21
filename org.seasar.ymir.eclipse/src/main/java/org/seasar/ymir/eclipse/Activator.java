@@ -52,6 +52,7 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -87,6 +88,8 @@ import org.seasar.ymir.vili.maven.Profiles;
 import org.seasar.ymir.vili.maven.Project;
 import org.seasar.ymir.vili.maven.Repositories;
 import org.seasar.ymir.vili.maven.Repository;
+import org.seasar.ymir.vili.model.Action;
+import org.seasar.ymir.vili.model.Actions;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import freemarker.cache.TemplateLoader;
@@ -649,26 +652,41 @@ public class Activator extends AbstractUIPlugin {
         return parser;
     }
 
+    public <T> T getAsBean(String content, Class<T> clazz) {
+        if (content == null) {
+            return null;
+        }
+        try {
+            return getAsBean(new StringReader(content), clazz);
+        } catch (CoreException ex) {
+            log(ex);
+            return null;
+        }
+    }
+
+    public <T> T getAsBean(Reader reader, Class<T> clazz) throws CoreException {
+        try {
+            return mapper.toBean(parser.parse(reader).getRootElement(), //$NON-NLS-1$
+                    clazz);
+        } catch (Throwable t) {
+            throwCoreException(t.toString(), t);
+            return null;
+        }
+    }
+
     public <T> T getAsBean(IFile file, Class<T> clazz) {
         if (!file.exists()) {
             return null;
         }
 
         try {
-            return mapper.toBean(parser.parse(new InputStreamReader(file.getContents(), "UTF-8")).getRootElement(), //$NON-NLS-1$
-                    clazz);
-        } catch (ValidationException ex) {
-            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex)); //$NON-NLS-1$
-        } catch (IllegalSyntaxException ex) {
-            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex)); //$NON-NLS-1$
+            return getAsBean(new InputStreamReader(file.getContents(), "UTF-8"), clazz);
         } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
-        } catch (IOException ex) {
-            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex)); //$NON-NLS-1$
+            throw new RuntimeException("Can't happen!", ex);
         } catch (CoreException ex) {
-            getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " + file, ex)); //$NON-NLS-1$
+            log(ex);
+            return null;
         }
-        return null;
     }
 
     public ArtifactResolver getArtifactResolver() {
@@ -899,6 +917,12 @@ public class Activator extends AbstractUIPlugin {
             Profiles profiles = new Profiles();
             pom.setProfiles(profiles);
 
+            IPreferenceStore store = getPreferenceStore(project);
+            Actions actions = getAsBean(store.getString(PreferenceConstants.P_ACTIONS), Actions.class);
+            if (actions == null) {
+                actions = new Actions();
+            }
+
             for (ArtifactPair fragment : fragments) {
                 ViliBehavior behavior = fragment.getBehavior();
                 @SuppressWarnings("unchecked")//$NON-NLS-1$
@@ -943,11 +967,27 @@ public class Activator extends AbstractUIPlugin {
                         profiles.addProfile(fProfile);
                     }
                 }
+
+                Actions fragmentActions = behavior.getActions();
+                if (fragmentActions != null) {
+                    for (Action action : fragmentActions.getActions()) {
+                        actions.addAction(action);
+                    }
+                }
             }
 
             MavenUtils.addToPom(project.getFile(Globals.PATH_POM_XML), pom, new SubProgressMonitor(monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
+            }
+
+            try {
+                StringWriter sw = new StringWriter();
+                mapper.toXML(actions, sw);
+                store.putValue(PreferenceConstants.P_ACTIONS, sw.toString());
+                ((IPersistentPreferenceStore) store).save();
+            } catch (Throwable t) {
+                log(t);
             }
         } finally {
             monitor.done();
@@ -988,7 +1028,13 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    public void log(Exception ex) {
-        getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, "Exception has occured", ex));
+    public void log(Throwable t) {
+        IStatus status;
+        if (t instanceof CoreException) {
+            status = ((CoreException) t).getStatus();
+        } else {
+            status = new Status(IStatus.ERROR, PLUGIN_ID, "Problem has occured", t);
+        }
+        getLog().log(status);
     }
 }

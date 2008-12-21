@@ -72,4 +72,6 @@ public interface Globals {
     String PATH_MAVEN2ADDITIONAL_PREFS = ".settings/net.skirnir.eclipse.maven.prefs";
 
     String QUALIFIER_MAPPING = "org.seasar.ymir.extension.mapping";
+
+    String PATH_ACTIONS_XML = PATH_VILI_INF + "/actions.xml";
 }

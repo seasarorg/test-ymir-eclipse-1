@@ -33,6 +33,7 @@ import org.seasar.ymir.vili.ParameterType;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.maven.Project;
+import org.seasar.ymir.vili.model.Actions;
 import org.seasar.ymir.vili.util.AntPathPatterns;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -43,6 +44,10 @@ public class ViliBehaviorImpl implements ViliBehavior {
     private MapProperties properties;
 
     private Project pom;
+
+    private Actions actions;
+
+    private ClassLoader classLoader;
 
     private Configurator configurator;
 
@@ -78,10 +83,24 @@ public class ViliBehaviorImpl implements ViliBehavior {
         this.artifact = artifact;
         properties = readProperties(artifact);
         pom = readPom(artifact);
-        configurator = newConfigurator(projectClassLoader);
+        actions = readActions(artifact);
+        classLoader = createViliClassLoader(projectClassLoader);
+        configurator = newConfigurator();
         initializeTieUpBundleSet(artifact);
 
         initialize(properties);
+    }
+
+    private ClassLoader createViliClassLoader(ClassLoader parent) {
+        try {
+            JarClassLoader classLoader = new JarClassLoader(Activator.getDefault().getURL(artifact), parent);
+            classLoader.setClassesPath(Globals.PATH_CLASSES);
+            classLoader.setLibPath(Globals.PATH_LIB);
+            return classLoader;
+        } catch (IOException ex) {
+            Activator.getDefault().log(ex);
+            return parent;
+        }
     }
 
     private void initializeTieUpBundleSet(Artifact artifact) throws IOException {
@@ -172,6 +191,18 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return new Project();
     }
 
+    private Actions readActions(Artifact artifact) throws IOException {
+        Activator activator = Activator.getDefault();
+        try {
+            return activator.getAsBean(activator.getResourceAsString(artifact, Globals.PATH_ACTIONS_XML,
+                    Globals.ENCODING, new NullProgressMonitor()), Actions.class);
+        } catch (Throwable t) {
+            IOException ioe = new IOException("Can't read " + Globals.PATH_ACTIONS_XML + " in " + artifact); //$NON-NLS-1$ //$NON-NLS-2$
+            ioe.initCause(t);
+            throw ioe;
+        }
+    }
+
     private void initialize(MapProperties properties) {
         expansionExcludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDES));
         expansionExcludesIfEmpty = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDESIFEMPTY));
@@ -248,10 +279,9 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return pom;
     }
 
-    Configurator newConfigurator(ClassLoader projectClassLoader) {
+    Configurator newConfigurator() {
         String configuratorName = properties.getProperty(CONFIGURATOR);
         if (configuratorName != null) {
-            ClassLoader classLoader = createViliClassLoader(projectClassLoader);
             try {
                 return (Configurator) classLoader.loadClass(configuratorName).newInstance();
             } catch (Throwable t) {
@@ -261,18 +291,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
         }
 
         return new NullConfigurator();
-    }
-
-    ClassLoader createViliClassLoader(ClassLoader parent) {
-        try {
-            JarClassLoader classLoader = new JarClassLoader(Activator.getDefault().getURL(artifact), parent);
-            classLoader.setClassesPath(Globals.PATH_CLASSES);
-            classLoader.setLibPath(Globals.PATH_LIB);
-            return classLoader;
-        } catch (IOException ex) {
-            Activator.getDefault().log(ex);
-            return parent;
-        }
     }
 
     File expand(File dir, JarFile jarFile, JarEntry entry) {
@@ -372,5 +390,13 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     public Configurator getConfigurator() {
         return configurator;
+    }
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    public Actions getActions() {
+        return actions;
     }
 }

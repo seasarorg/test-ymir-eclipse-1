@@ -1,6 +1,7 @@
 package org.seasar.ymir.eclipse.wizards;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -34,6 +35,8 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.Wizard;
@@ -61,6 +64,7 @@ import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.Dependencies;
 import org.seasar.ymir.vili.maven.Dependency;
 import org.seasar.ymir.vili.maven.Project;
+import org.seasar.ymir.vili.model.Actions;
 
 public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtifactWizard {
     private static final char PACKAGE_DELIMITER = '.';
@@ -254,8 +258,10 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
 
     private void createProject(IProject project, IPath locationPath, IPath jreContainerPath, ArtifactPair skeleton,
             IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 11); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 12); //$NON-NLS-1$
         try {
+            Activator activator = Activator.getDefault();
+
             if (!project.exists()) {
                 IProjectDescription description = project.getWorkspace().newProjectDescription(project.getName());
                 if (Platform.getLocation().equals(locationPath)) {
@@ -311,6 +317,21 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
                 }
             } else {
                 monitor.worked(3);
+            }
+
+            Actions actions = behavior.getActions();
+            if (actions != null) {
+                IPreferenceStore store = activator.getPreferenceStore(project);
+                try {
+                    StringWriter sw = new StringWriter();
+                    activator.getXOMapper().toXML(actions, sw);
+                    store.putValue(org.seasar.ymir.eclipse.preferences.PreferenceConstants.P_ACTIONS, sw.toString());
+                    ((IPersistentPreferenceStore) store).save();
+                } catch (Throwable t) {
+                    activator.log(t);
+                }
+            } else {
+                monitor.worked(1);
             }
 
             if (behavior.isProjectOf(ProjectType.YMIR)) {
