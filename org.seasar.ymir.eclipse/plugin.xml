@@ -81,9 +81,9 @@
                path="additions">
          </menu>
          <action
-               class="org.seasar.ymir.eclipse.popup.actions.AddFragmentsAction"
+               class="org.seasar.ymir.eclipse.actions.AddFragmentsAction"
                id="org.seasar.ymir.eclipse.addFragmentsAction"
-               label="%popup.action.addFragments"
+               label="%action.addFragments"
                menubarPath="org.seasar.ymir.eclipse.menu/group">
          </action>
          <visibility>
@@ -93,12 +93,66 @@
             </objectState>
          </visibility>
          <action
-               class="org.seasar.ymir.eclipse.popup.actions.ActionAction"
+               class="org.seasar.ymir.eclipse.actions.ActionAction"
                id="org.seasar.ymir.eclipse.actionAction"
-               label="%popup.action.action"
+               label="%action.action"
                menubarPath="org.seasar.ymir.eclipse.menu/group"
                style="pulldown">
          </action>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="org.seasar.ymir.eclipse.javaObjectContribution"
+            nameFilter="*.java"
+            objectClass="org.eclipse.core.resources.IFile">
+         <menu
+               id="org.seasar.ymir.eclipse.menu"
+               label="%plugin.name"
+               path="additions">
+         </menu>
+         <visibility>
+            <and>
+               <objectState
+                     name="projectNature"
+                     value="org.seasar.ymir.eclipse.ymirProjectNature" />
+               <or>
+                  <objectState
+                        name="name"
+                        value="*Page.java"/>
+                  <objectState
+                        name="name"
+                        value="*PageBase.java"/>
+               </or>
+            </and>
+         </visibility>
+         <action
+               class="org.seasar.ymir.eclipse.actions.TogglePageAndHtmlAction"
+               icon="icons/togglePageAndHtml.gif"
+               id="org.seasar.ymir.eclipse.togglePageAndHtmlAction"
+               label="%action.togglePageAndHtml"
+               menubarPath="org.seasar.ymir.eclipse.menu/group"/>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="org.seasar.ymir.eclipse.javaObjectContribution"
+            nameFilter="*.html"
+            objectClass="org.eclipse.core.resources.IFile">
+         <menu
+               id="org.seasar.ymir.eclipse.menu"
+               label="%plugin.name"
+               path="additions">
+         </menu>
+         <visibility>
+            <objectState
+                  name="projectNature"
+                  value="org.seasar.ymir.eclipse.ymirProjectNature" />
+         </visibility>
+         <action
+               class="org.seasar.ymir.eclipse.actions.TogglePageAndHtmlAction"
+               icon="icons/togglePageAndHtml.gif"
+               id="org.seasar.ymir.eclipse.togglePageAndHtmlAction"
+               label="%action.togglePageAndHtml"
+               menubarPath="org.seasar.ymir.eclipse.menu/group"/>
       </objectContribution>
    </extension>
    <extension
@@ -110,6 +164,48 @@
                class="org.seasar.ymir.eclipse.natures.YmirProjectNature">
          </run>
       </runtime>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="org.seasar.ymir.eclipse.command.category"
+            name="Vili"/>
+      <command
+            categoryId="org.seasar.ymir.eclipse.command.category"
+            id="org.seasar.ymir.eclipse.command.TogglePageAndHtmlAction"
+            name="%action.togglePageAndHtml"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="org.seasar.ymir.eclipse.command.TogglePageAndHtmlAction"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Ctrl+5">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="org.seasar.ymir.eclipse.plugin.actionSet"
+            label="Vili"
+            visible="true">
+         <menu
+               id="org.seasar.ymir.eclipse.editor.Actions"
+               label="Vili"
+               path="Navigate/additions">
+            <separator name="additions"/>
+         </menu>
+         <action
+               class="org.seasar.ymir.eclipse.actions.TogglePageAndHtmlAction"
+               definitionId="org.seasar.ymir.eclipse.command.TogglePageAndHtmlAction"
+               icon="icons/togglePageAndHtml.gif"
+               id="org.seasar.ymir.eclipse.action.TogglePageAndHtmlAction"
+               label="%action.togglePageAndHtml"
+               menubarPath="Navigate/org.seasar.ymir.eclipse.editor.Actions/additions"
+               style="push">
+         </action>
+         </actionSet>
    </extension>
 
 </plugin>

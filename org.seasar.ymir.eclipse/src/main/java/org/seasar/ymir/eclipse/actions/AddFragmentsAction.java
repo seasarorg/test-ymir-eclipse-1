@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.popup.actions;
+package org.seasar.ymir.eclipse.actions;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;

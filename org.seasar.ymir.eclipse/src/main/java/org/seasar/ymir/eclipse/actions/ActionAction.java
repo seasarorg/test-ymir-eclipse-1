@@ -1,13 +1,9 @@
-package org.seasar.ymir.eclipse.popup.actions;
+package org.seasar.ymir.eclipse.actions;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuCreator;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.events.MenuAdapter;
@@ -67,20 +63,21 @@ public class ActionAction implements IObjectActionDelegate, IMenuCreator {
                         item.dispose();
                     }
 
-//                    IMenuManager mgr = new MenuManager("#action");
-//                    mgr.add(new GroupMarker(AbstractMavenMenuCreator.NEW));
-//                    mgr.insertAfter(AbstractMavenMenuCreator.NEW, new GroupMarker(AbstractMavenMenuCreator.UPDATE));
-//                    mgr.insertAfter(AbstractMavenMenuCreator.UPDATE, new GroupMarker(AbstractMavenMenuCreator.OPEN));
-//                    mgr.insertAfter(AbstractMavenMenuCreator.OPEN, new GroupMarker(AbstractMavenMenuCreator.NATURE));
-//                    mgr.insertAfter(AbstractMavenMenuCreator.NATURE, new GroupMarker(AbstractMavenMenuCreator.IMPORT));
-//
-//                    for (AbstractMavenMenuCreator creator : getCreators()) {
-//                        creator.createMenu(mgr);
-//                    }
-//
-//                    for (IContributionItem item : mgr.getItems()) {
-//                        item.fill(m, -1);
-//                    }
+                    // IMenuManager mgr = new MenuManager("#action");
+                    // mgr.add(new GroupMarker(AbstractMavenMenuCreator.NEW));
+                    // mgr.insertAfter(AbstractMavenMenuCreator.NEW, new GroupMarker(AbstractMavenMenuCreator.UPDATE));
+                    // mgr.insertAfter(AbstractMavenMenuCreator.UPDATE, new GroupMarker(AbstractMavenMenuCreator.OPEN));
+                    // mgr.insertAfter(AbstractMavenMenuCreator.OPEN, new GroupMarker(AbstractMavenMenuCreator.NATURE));
+                    // mgr.insertAfter(AbstractMavenMenuCreator.NATURE, new
+                    // GroupMarker(AbstractMavenMenuCreator.IMPORT));
+                    //
+                    // for (AbstractMavenMenuCreator creator : getCreators()) {
+                    // creator.createMenu(mgr);
+                    // }
+                    //
+                    // for (IContributionItem item : mgr.getItems()) {
+                    // item.fill(m, -1);
+                    // }
 
                     fillMenu = false;
                 }

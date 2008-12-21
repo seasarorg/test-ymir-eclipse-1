@@ -33,6 +33,8 @@ public interface Globals {
 
     String PATH_SRC_MAIN_RESOURCES = "src/main/resources"; //$NON-NLS-1$
 
+    String PATH_SRC_MAIN_WEBAPP = "src/main/webapp";
+
     String PATH_APP_PROPERTIES = PATH_SRC_MAIN_RESOURCES + "/app.properties"; //$NON-NLS-1$
 
     String BUNDLENAME_WEBLAUNCHER = "werkzeugkasten.weblauncher"; //$NON-NLS-1$
@@ -70,4 +72,6 @@ public interface Globals {
     String PATH_M2ECLIPSE_LIGHT_PREFS = ".settings/org.maven.ide.eclipse_light.prefs";
 
     String PATH_MAVEN2ADDITIONAL_PREFS = ".settings/net.skirnir.eclipse.maven.prefs";
+
+    String QUALIFIER_MAPPING = "org.seasar.ymir.extension.mapping";
 }

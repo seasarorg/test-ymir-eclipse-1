@@ -974,4 +974,8 @@ public class Activator extends AbstractUIPlugin {
             projectRelativeMap.remove(project);
         }
     }
+
+    public void log(Exception ex) {
+        getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, "Exception has occured", ex));
+    }
 }
