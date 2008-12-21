@@ -43,21 +43,19 @@ public interface Globals {
 
     String NATURE_ID_JAVA = "org.eclipse.jdt.core.javanature"; //$NON-NLS-1$
 
-    String PREFIX_VILI = "vili-"; //$NON-NLS-1$
+    String PATH_VILI_INF = "VILI-INF";
 
-    String VILI_BEHAVIOR_PROPERTIES = PREFIX_VILI + "behavior.properties"; //$NON-NLS-1$
+    String BEHAVIOR_PROPERTIES = "behavior.properties"; //$NON-NLS-1$
 
-    String HEAD_VILI_BEHAVIOR_PROPERTIES = PREFIX_VILI + "behavior_"; //$NON-NLS-1$
+    String PATH_BEHAVIOR_PROPERTIES = PATH_VILI_INF + "/" + BEHAVIOR_PROPERTIES;
 
-    String TAIL_VILI_BEHAVIOR_PROPERTIES = ".properties"; //$NON-NLS-1$
+    String HEAD_BEHAVIOR_PROPERTIES = PATH_VILI_INF + "/behavior_"; //$NON-NLS-1$
 
-    String VILI_CLASSES = PREFIX_VILI + "classes"; //$NON-NLS-1$
+    String TAIL_BEHAVIOR_PROPERTIES = ".properties"; //$NON-NLS-1$
 
-    String PREFIX_VILI_CLASSES = VILI_CLASSES + "/"; //$NON-NLS-1$
+    String PATH_CLASSES = PATH_VILI_INF + "/classes"; //$NON-NLS-1$
 
-    String VILI_LIB = PREFIX_VILI + "lib"; //$NON-NLS-1$
-
-    String PREFIX_VILI_LIB = VILI_LIB + "/"; //$NON-NLS-1$
+    String PATH_LIB = PATH_VILI_INF + "/lib"; //$NON-NLS-1$
 
     String IMAGE_YMIR = "icons/ymir.gif"; //$NON-NLS-1$
 

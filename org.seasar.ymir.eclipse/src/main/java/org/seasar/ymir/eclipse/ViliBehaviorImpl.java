@@ -7,13 +7,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -22,12 +19,12 @@ import java.util.jar.JarFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.seasar.kvasir.util.ClassUtils;
 import org.seasar.kvasir.util.LocaleUtils;
 import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.util.ArrayUtils;
+import org.seasar.ymir.eclipse.util.JarClassLoader;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.Configurator;
@@ -123,7 +120,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
         MapProperties properties = new MapProperties(new LinkedHashMap());
         JarFile jarFile = activator.getJarFile(artifact);
         try {
-            JarEntry entry = jarFile.getJarEntry(Globals.VILI_BEHAVIOR_PROPERTIES);
+            JarEntry entry = jarFile.getJarEntry(Globals.PATH_BEHAVIOR_PROPERTIES);
             if (entry != null) {
                 InputStream is = jarFile.getInputStream(entry);
                 try {
@@ -134,8 +131,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
                 String[] suffixes = LocaleUtils.getSuffixes(Locale.getDefault());
                 for (int i = suffixes.length - 1; i >= 0; i--) {
-                    entry = jarFile.getJarEntry(Globals.HEAD_VILI_BEHAVIOR_PROPERTIES + suffixes[i]
-                            + Globals.TAIL_VILI_BEHAVIOR_PROPERTIES);
+                    entry = jarFile.getJarEntry(Globals.HEAD_BEHAVIOR_PROPERTIES + suffixes[i]
+                            + Globals.TAIL_BEHAVIOR_PROPERTIES);
                     if (entry == null) {
                         continue;
                     }
@@ -267,63 +264,14 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     ClassLoader createViliClassLoader(ClassLoader parent) {
-        File rootDir;
         try {
-            rootDir = File.createTempFile("vili-", ".tmp"); //$NON-NLS-1$ //$NON-NLS-2$
+            JarClassLoader classLoader = new JarClassLoader(Activator.getDefault().getURL(artifact), parent);
+            classLoader.setClassesPath(Globals.PATH_CLASSES);
+            classLoader.setLibPath(Globals.PATH_LIB);
+            return classLoader;
         } catch (IOException ex) {
-            Activator.getDefault().getLog().log(
-                    new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create temp file", ex)); //$NON-NLS-1$
-            if (parent != null) {
-                return parent;
-            } else {
-                return getClass().getClassLoader();
-            }
-        }
-        rootDir.delete();
-        rootDir.mkdirs();
-        rootDir.deleteOnExit();
-
-        File classesDir = new File(rootDir, Globals.VILI_CLASSES);
-        classesDir.mkdir();
-        classesDir.deleteOnExit();
-
-        File libDir = new File(rootDir, Globals.VILI_LIB);
-        libDir.mkdir();
-        libDir.deleteOnExit();
-
-        List<URL> urlList = new ArrayList<URL>();
-        urlList.add(ClassUtils.getURLForURLClassLoader(classesDir));
-
-        JarFile jarFile;
-        try {
-            jarFile = Activator.getDefault().getJarFile(artifact);
-        } catch (IOException ex) {
-            Activator.getDefault().getLog().log(
-                    new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't open jar file: " + artifact, ex)); //$NON-NLS-1$
-            throw new RuntimeException(ex);
-        }
-        try {
-            for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
-                JarEntry entry = enm.nextElement();
-                String name = entry.getName();
-                if (name.endsWith("/")) { //$NON-NLS-1$
-                    continue;
-                }
-
-                if (name.startsWith(Globals.PREFIX_VILI_CLASSES)) {
-                    expand(classesDir, jarFile, entry);
-                } else if (name.startsWith(Globals.PREFIX_VILI_LIB)) {
-                    urlList.add(ClassUtils.getURLForURLClassLoader(expand(libDir, jarFile, entry)));
-                }
-            }
-        } finally {
-            StreamUtils.close(jarFile);
-        }
-
-        if (parent != null) {
-            return new URLClassLoader(urlList.toArray(new URL[0]), parent);
-        } else {
-            return new URLClassLoader(urlList.toArray(new URL[0]));
+            Activator.getDefault().log(ex);
+            return parent;
         }
     }
 

@@ -59,11 +59,11 @@ public class JarClassLoader extends ClassLoader {
     }
 
     public void setClassesPath(String classesPath) {
-        classesPath = normalizePath(classesPath);
+        this.classesPath = normalizePath(classesPath);
     }
 
     public void setLibPath(String libPath) {
-        libPath = normalizePath(libPath);
+        this.libPath = normalizePath(libPath);
     }
 
     String normalizePath(String path) {

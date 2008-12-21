@@ -177,7 +177,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     private void readSystemBehavior() throws IOException {
-        systemBehavior = new ViliBehaviorImpl(getClass().getResource(Globals.VILI_BEHAVIOR_PROPERTIES));
+        systemBehavior = new ViliBehaviorImpl(getClass().getResource(Globals.BEHAVIOR_PROPERTIES));
     }
 
     /*
@@ -703,8 +703,8 @@ public class Activator extends AbstractUIPlugin {
     }
 
     // TODO JarInputStreamを使って一度ファイルシステムにコピーしないようにできるか検討する。
-    public JarFile getJarFile(Artifact artifact) throws IOException {
-        URL artifactURL = artifactResolver.getURL(artifact);
+    public File getFile(Artifact artifact) throws IOException {
+        URL artifactURL = getURL(artifact);
         File artifactFile = URLUtils.toFile(artifactURL);
         if (artifactFile == null) {
             artifactFile = File.createTempFile("ymir", ".jar"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -721,7 +721,16 @@ public class Activator extends AbstractUIPlugin {
                 StreamUtils.close(os);
             }
         }
-        return new JarFile(artifactFile);
+        return artifactFile;
+    }
+
+    // TODO JarInputStreamを使って一度ファイルシステムにコピーしないようにできるか検討する。
+    public JarFile getJarFile(Artifact artifact) throws IOException {
+        return new JarFile(getFile(artifact));
+    }
+
+    public URL getURL(Artifact artifact) {
+        return artifactResolver.getURL(artifact);
     }
 
     public MapProperties getPropertiesResource(Artifact artifact, String path, IProgressMonitor monitor)
