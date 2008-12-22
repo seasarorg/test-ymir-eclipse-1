@@ -10,12 +10,6 @@ abstract public class AbstractConfigurator implements IConfigurator {
             ViliProjectPreferences preferences) {
     }
 
-    public Map<String, Object> createAdditionalParameters(IProject project,
-            ViliBehavior behavior, ViliProjectPreferences preferences,
-            Map<String, Object> artifactParameters) {
-        return null;
-    }
-
     public void processBeforeExpanding(IProject project, ViliBehavior behavior,
             ViliProjectPreferences preferences, Map<String, Object> parameters,
             IProgressMonitor monitor) {
