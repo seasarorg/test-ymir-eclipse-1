@@ -52,7 +52,15 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private Configurator configurator;
 
+    private AntPathPatterns expansionIncludes;
+
     private AntPathPatterns expansionExcludes;
+
+    private AntPathPatterns expansionIncludesIfExists;
+
+    private AntPathPatterns expansionExcludesIfExists;
+
+    private AntPathPatterns expansionIncludesIfEmpty;
 
     private AntPathPatterns expansionExcludesIfEmpty;
 
@@ -216,7 +224,11 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     private void initialize(MapProperties properties) {
+        expansionIncludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_INCLUDES));
         expansionExcludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDES));
+        expansionIncludesIfExists = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_INCLUDESIFEXISTS));
+        expansionExcludesIfExists = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDESIFEXISTS));
+        expansionIncludesIfEmpty = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_INCLUDESIFEMPTY));
         expansionExcludesIfEmpty = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDESIFEMPTY));
         expansionMerges = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_MERGES));
         templateIncludes = AntPathPatterns.newInstance(properties.getProperty(TEMPLATE_INCLUDES));
@@ -361,13 +373,27 @@ public class ViliBehaviorImpl implements ViliBehavior {
     public InclusionType shouldExpand(String path) {
         if (expansionExcludes.matches(path)) {
             return InclusionType.EXCLUDED;
+        } else if (expansionIncludes.matches(path)) {
+            return InclusionType.INCLUDED;
         } else {
             return InclusionType.UNDEFINED;
         }
     }
 
-    public InclusionType shouldIgnoreIfExpansionResultIsEmpty(String path) {
+    public InclusionType shouldExpandIfExists(String path) {
+        if (expansionExcludesIfExists.matches(path)) {
+            return InclusionType.EXCLUDED;
+        } else if (expansionIncludesIfExists.matches(path)) {
+            return InclusionType.INCLUDED;
+        } else {
+            return InclusionType.UNDEFINED;
+        }
+    }
+
+    public InclusionType shouldExpandIfExpansionResultIsEmpty(String path) {
         if (expansionExcludesIfEmpty.matches(path)) {
+            return InclusionType.EXCLUDED;
+        } else if (expansionIncludesIfEmpty.matches(path)) {
             return InclusionType.INCLUDED;
         } else {
             return InclusionType.UNDEFINED;
@@ -410,5 +436,9 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     public Actions getActions() {
         return actions;
+    }
+
+    public void notifyPropertiesUpdated() {
+        initialize(properties);
     }
 }

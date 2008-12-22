@@ -307,11 +307,16 @@ public class Activator extends AbstractUIPlugin {
     private void expand(IProject project, ViliProjectPreferences preferences, String path, Configuration cfg,
             Map<String, Object> parameters, JarFile jarFile, ViliBehavior behavior, IProgressMonitor monitor)
             throws IOException, CoreException {
-        if (shouldIgnore(path, behavior)) {
+        if (!shouldExpand(path, behavior)) {
             return;
         }
 
         String resolvedPath = resolvePath(path, cfg, parameters);
+        if ((project.getFile(resolvedPath).exists() || project.getFolder(resolvedPath).exists())
+                && !shouldExpandIfExists(path, behavior)) {
+            return;
+        }
+
         if (path.endsWith("/")) { //$NON-NLS-1$
             mkdirs(project.getFolder(resolvedPath), new SubProgressMonitor(monitor, 1));
         } else {
@@ -328,7 +333,7 @@ public class Activator extends AbstractUIPlugin {
                         cfg.setEncoding(Locale.getDefault(), templateEncoding);
                         cfg.getTemplate(path).process(parameters, sw);
                         evaluatedString = sw.toString();
-                        if (shouldIgnore(path, evaluatedString, behavior)) {
+                        if (!shouldExpand(path, evaluatedString, behavior)) {
                             return;
                         }
                     } catch (TemplateException ex) {
@@ -484,44 +489,63 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    private boolean shouldIgnore(String path, ViliBehavior behavior) {
+    private boolean shouldExpand(String path, ViliBehavior behavior) {
+        if (path.equals(PATH_POM_XML) && behavior.getArtifactType() == ArtifactType.FRAGMENT) {
+            return false;
+        }
+
         switch (behavior.shouldExpand(path)) {
-        case EXCLUDED:
-            return true;
         case INCLUDED:
+            return true;
+        case EXCLUDED:
             return false;
         }
         switch (systemBehavior.shouldExpand(path)) {
-        case EXCLUDED:
-            return true;
         case INCLUDED:
+            return true;
+        case EXCLUDED:
             return false;
         }
-        if (path.equals(PATH_POM_XML) && behavior.getArtifactType() == ArtifactType.FRAGMENT) {
-            return true;
-        }
 
-        return false;
+        return true;
     }
 
-    private boolean shouldIgnore(String path, String evaluatedString, ViliBehavior behavior) {
+    private boolean shouldExpand(String path, String evaluatedString, ViliBehavior behavior) {
         if (evaluatedString.trim().length() > 0) {
-            return false;
+            return true;
         }
-        switch (behavior.shouldIgnoreIfExpansionResultIsEmpty(path)) {
+
+        switch (behavior.shouldExpandIfExpansionResultIsEmpty(path)) {
         case INCLUDED:
             return true;
         case EXCLUDED:
             return false;
         }
-        switch (systemBehavior.shouldIgnoreIfExpansionResultIsEmpty(path)) {
+        switch (systemBehavior.shouldExpandIfExpansionResultIsEmpty(path)) {
         case INCLUDED:
             return true;
         case EXCLUDED:
             return false;
         }
 
-        return false;
+        return true;
+    }
+
+    private boolean shouldExpandIfExists(String path, ViliBehavior behavior) {
+        switch (behavior.shouldExpandIfExists(path)) {
+        case INCLUDED:
+            return true;
+        case EXCLUDED:
+            return false;
+        }
+        switch (systemBehavior.shouldExpandIfExists(path)) {
+        case INCLUDED:
+            return true;
+        case EXCLUDED:
+            return false;
+        }
+
+        return true;
     }
 
     private boolean shouldEvaluateAsTemplate(String path, ViliBehavior behavior) {
