@@ -49,6 +49,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.preferences.IScopeContext;
@@ -290,7 +291,7 @@ public class Activator extends AbstractUIPlugin {
                 for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
                     JarEntry entry = enm.nextElement();
                     String name = entry.getName();
-                    expand(project, preferences, name, cfg, parameters, jarFile, behavior, new SubProgressMonitor(
+                    expand(name, jarFile, project, behavior, preferences, parameters, cfg, new SubProgressMonitor(
                             monitor, 1));
                 }
 
@@ -304,16 +305,11 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    private void expand(IProject project, ViliProjectPreferences preferences, String path, Configuration cfg,
-            Map<String, Object> parameters, JarFile jarFile, ViliBehavior behavior, IProgressMonitor monitor)
-            throws IOException, CoreException {
-        if (!shouldExpand(path, behavior)) {
-            return;
-        }
-
+    private void expand(String path, JarFile jarFile, IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters, Configuration cfg,
+            IProgressMonitor monitor) throws IOException, CoreException {
         String resolvedPath = resolvePath(path, cfg, parameters);
-        if ((project.getFile(resolvedPath).exists() || project.getFolder(resolvedPath).exists())
-                && !shouldExpandIfExists(path, behavior)) {
+        if (!shouldExpand(path, resolvedPath, project, behavior, preferences, parameters)) {
             return;
         }
 
@@ -333,9 +329,6 @@ public class Activator extends AbstractUIPlugin {
                         cfg.setEncoding(Locale.getDefault(), templateEncoding);
                         cfg.getTemplate(path).process(parameters, sw);
                         evaluatedString = sw.toString();
-                        if (!shouldExpand(path, evaluatedString, behavior)) {
-                            return;
-                        }
                     } catch (TemplateException ex) {
                         IOException ioex = new IOException();
                         ioex.initCause(ex);
@@ -489,11 +482,31 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    private boolean shouldExpand(String path, ViliBehavior behavior) {
-        if (path.equals(PATH_POM_XML) && behavior.getArtifactType() == ArtifactType.FRAGMENT) {
-            return false;
+    private boolean shouldExpand(String path, String resolvedPath, IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters) {
+        if (behavior.getArtifactType() == ArtifactType.SKELETON) {
+            if (path.equals(Globals.PATH_M2ECLIPSE_LIGHT_PREFS)
+                    && Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) == null) {
+                return false;
+            } else if (path.equals(Globals.PATH_M2ECLIPSE_PREFS)
+                    && (Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null || Platform
+                            .getBundle(Globals.BUNDLENAME_M2ECLIPSE) == null)) {
+                return false;
+            }
         }
 
+        if (behavior.getArtifactType() == ArtifactType.FRAGMENT) {
+            if (path.equals(PATH_POM_XML)) {
+                return false;
+            }
+        }
+
+        switch (behavior.getConfigurator().shouldExpand(path, resolvedPath, project, behavior, preferences, parameters)) {
+        case INCLUDED:
+            return true;
+        case EXCLUDED:
+            return false;
+        }
         switch (behavior.shouldExpand(path)) {
         case INCLUDED:
             return true;
@@ -501,44 +514,6 @@ public class Activator extends AbstractUIPlugin {
             return false;
         }
         switch (systemBehavior.shouldExpand(path)) {
-        case INCLUDED:
-            return true;
-        case EXCLUDED:
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean shouldExpand(String path, String evaluatedString, ViliBehavior behavior) {
-        if (evaluatedString.trim().length() > 0) {
-            return true;
-        }
-
-        switch (behavior.shouldExpandIfExpansionResultIsEmpty(path)) {
-        case INCLUDED:
-            return true;
-        case EXCLUDED:
-            return false;
-        }
-        switch (systemBehavior.shouldExpandIfExpansionResultIsEmpty(path)) {
-        case INCLUDED:
-            return true;
-        case EXCLUDED:
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean shouldExpandIfExists(String path, ViliBehavior behavior) {
-        switch (behavior.shouldExpandIfExists(path)) {
-        case INCLUDED:
-            return true;
-        case EXCLUDED:
-            return false;
-        }
-        switch (systemBehavior.shouldExpandIfExists(path)) {
         case INCLUDED:
             return true;
         case EXCLUDED:

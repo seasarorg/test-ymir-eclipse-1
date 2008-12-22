@@ -27,7 +27,7 @@ import org.seasar.ymir.eclipse.util.ArrayUtils;
 import org.seasar.ymir.eclipse.util.JarClassLoader;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.vili.ArtifactType;
-import org.seasar.ymir.vili.Configurator;
+import org.seasar.ymir.vili.IConfigurator;
 import org.seasar.ymir.vili.InclusionType;
 import org.seasar.ymir.vili.ParameterType;
 import org.seasar.ymir.vili.ProjectType;
@@ -50,19 +50,11 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private ClassLoader classLoader;
 
-    private Configurator configurator;
+    private IConfigurator configurator;
 
     private AntPathPatterns expansionIncludes;
 
     private AntPathPatterns expansionExcludes;
-
-    private AntPathPatterns expansionIncludesIfExists;
-
-    private AntPathPatterns expansionExcludesIfExists;
-
-    private AntPathPatterns expansionIncludesIfEmpty;
-
-    private AntPathPatterns expansionExcludesIfEmpty;
 
     private AntPathPatterns expansionMerges;
 
@@ -226,10 +218,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
     private void initialize(MapProperties properties) {
         expansionIncludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_INCLUDES));
         expansionExcludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDES));
-        expansionIncludesIfExists = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_INCLUDESIFEXISTS));
-        expansionExcludesIfExists = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDESIFEXISTS));
-        expansionIncludesIfEmpty = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_INCLUDESIFEMPTY));
-        expansionExcludesIfEmpty = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDESIFEMPTY));
         expansionMerges = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_MERGES));
         templateIncludes = AntPathPatterns.newInstance(properties.getProperty(TEMPLATE_INCLUDES));
         templateExcludes = AntPathPatterns.newInstance(properties.getProperty(TEMPLATE_EXCLUDES));
@@ -303,11 +291,11 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return pom;
     }
 
-    Configurator newConfigurator() {
+    IConfigurator newConfigurator() {
         String configuratorName = properties.getProperty(CONFIGURATOR);
         if (configuratorName != null) {
             try {
-                return (Configurator) classLoader.loadClass(configuratorName).newInstance();
+                return (IConfigurator) classLoader.loadClass(configuratorName).newInstance();
             } catch (Throwable t) {
                 Activator.getDefault().getLog().log(
                         new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create configurator", t)); //$NON-NLS-1$
@@ -380,26 +368,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
         }
     }
 
-    public InclusionType shouldExpandIfExists(String path) {
-        if (expansionExcludesIfExists.matches(path)) {
-            return InclusionType.EXCLUDED;
-        } else if (expansionIncludesIfExists.matches(path)) {
-            return InclusionType.INCLUDED;
-        } else {
-            return InclusionType.UNDEFINED;
-        }
-    }
-
-    public InclusionType shouldExpandIfExpansionResultIsEmpty(String path) {
-        if (expansionExcludesIfEmpty.matches(path)) {
-            return InclusionType.EXCLUDED;
-        } else if (expansionIncludesIfEmpty.matches(path)) {
-            return InclusionType.INCLUDED;
-        } else {
-            return InclusionType.UNDEFINED;
-        }
-    }
-
     public InclusionType shouldMerge(String path) {
         if (expansionMerges.matches(path)) {
             return InclusionType.INCLUDED;
@@ -426,7 +394,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return properties;
     }
 
-    public Configurator getConfigurator() {
+    public IConfigurator getConfigurator() {
         return configurator;
     }
 
@@ -436,9 +404,5 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     public Actions getActions() {
         return actions;
-    }
-
-    public void notifyPropertiesUpdated() {
-        initialize(properties);
     }
 }
