@@ -9,14 +9,6 @@ public interface ViliBehavior {
 
     String EXPANSION_EXCLUDES = "expansion.excludes"; //$NON-NLS-1$
 
-    String EXPANSION_INCLUDESIFEXISTS = "expansion.includesIfExists";
-
-    String EXPANSION_EXCLUDESIFEXISTS = "expansion.excludesIfExists";
-
-    String EXPANSION_INCLUDESIFEMPTY = "expansion.includesIfEmpty"; //$NON-NLS-1$
-
-    String EXPANSION_EXCLUDESIFEMPTY = "expansion.excludesIfEmpty"; //$NON-NLS-1$
-
     String EXPANSION_MERGES = "expansion.merges"; //$NON-NLS-1$
 
     String TEMPLATE_INCLUDES = "template.includes"; //$NON-NLS-1$
@@ -55,10 +47,6 @@ public interface ViliBehavior {
 
     InclusionType shouldExpand(String path);
 
-    InclusionType shouldExpandIfExists(String path);
-
-    InclusionType shouldExpandIfExpansionResultIsEmpty(String path);
-
     InclusionType shouldMerge(String path);
 
     InclusionType shouldEvaluateAsTemplate(String path);
@@ -89,7 +77,7 @@ public interface ViliBehavior {
 
     Project getPom();
 
-    Configurator getConfigurator();
+    IConfigurator getConfigurator();
 
     boolean isTieUpWithBundle(String bundleName);
 
@@ -98,6 +86,4 @@ public interface ViliBehavior {
     ClassLoader getClassLoader();
 
     Actions getActions();
-
-    void notifyPropertiesUpdated();
 }

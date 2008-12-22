@@ -5,7 +5,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-public interface Configurator {
+public interface IConfigurator {
     /**
      * このインスタンスの利用を開始します。
      * <p>このメソッドはこのインスタンスが生成された直後に呼び出されます。
@@ -52,6 +52,29 @@ public interface Configurator {
     void processBeforeExpanding(IProject project, ViliBehavior behavior,
             ViliProjectPreferences preferences, Map<String, Object> parameters,
             IProgressMonitor monitor);
+
+    /**
+     * 指定されたパスのリソースを展開するかどうかを返します。
+     * <p>展開する場合は{@link InclusionType#INCLUDED}を、
+     * 展開しない場合は{@link InclusionType#EXCLUDED}を、
+     * 展開するかどうかをここでは決定しない場合は{@link InclusionType#UNDEFINED}
+     * を返すようにして下さい。
+     * </p>
+     * <p>このメソッドの返り値はbehavior.propertiesでの
+     * expansion.includes指定やexpansion.excludes指定よりも優先されます。
+     * </p>
+     * 
+     * @param path リソースのパス（例：dbflute_${projectName}）。
+     * @param resolvedPath リソースのパスを評価したパス（例：dbflute_abc）。
+     * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。
+     * @param behavior ViliBehaviorインスタンス。
+     * @param preferences ViliProjectPreferencesインスタンス。
+     * @param parameters フラグメントの展開時に使用されたパラメータ。
+     * @return リソースを展開するかどうか。
+     */
+    InclusionType shouldExpand(String path, String resolvedPath,
+            IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters);
 
     /**
      * フラグメントの展開処理の直後に呼び出されます。
