@@ -10,12 +10,15 @@ import java.util.Set;
 public class CascadeMap<K, V> implements Map<K, V> {
     private Map<K, V>[] maps;
 
-    public CascadeMap(Map<K, V>... maps) {
-        this.maps = maps;
+    @SuppressWarnings("unchecked")
+    public CascadeMap(Map<K, V> map, Map<K, V>... maps) {
+        this.maps = new Map[maps.length + 1];
+        this.maps[0] = map;
+        System.arraycopy(maps, 0, this.maps, 1, maps.length);
     }
 
     public void clear() {
-        throw new UnsupportedOperationException();
+        maps[0].clear();
     }
 
     public boolean containsKey(Object key) {
@@ -90,15 +93,15 @@ public class CascadeMap<K, V> implements Map<K, V> {
     }
 
     public V put(K key, V value) {
-        throw new UnsupportedOperationException();
+        return maps[0].put(key, value);
     }
 
     public void putAll(Map<? extends K, ? extends V> t) {
-        throw new UnsupportedOperationException();
+        maps[0].putAll(t);
     }
 
     public V remove(Object key) {
-        throw new UnsupportedOperationException();
+        return maps[0].remove(key);
     }
 
     public int size() {

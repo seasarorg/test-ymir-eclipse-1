@@ -930,15 +930,8 @@ public class Activator extends AbstractUIPlugin {
                 Artifact artifact = fragment.getArtifact();
                 ViliBehavior behavior = fragment.getBehavior();
                 @SuppressWarnings("unchecked")//$NON-NLS-1$
-                Map<String, Object> parameters = new CascadeMap<String, Object>(fragment.getParameterMap(),
-                        new BeanMap(preferences));
-                Map<String, Object> additionalParameters = behavior.getConfigurator().createAdditionalParameters(
-                        project, behavior, preferences, fragment.getParameterMap());
-                if (additionalParameters != null) {
-                    @SuppressWarnings("unchecked")//$NON-NLS-1$
-                    Map<String, Object> ps = new CascadeMap<String, Object>(additionalParameters, parameters);
-                    parameters = ps;
-                }
+                Map<String, Object> parameters = new CascadeMap<String, Object>(new HashMap<String, Object>(), fragment
+                        .getParameterMap(), new BeanMap(preferences));
 
                 try {
                     expandArtifact(project, preferences, fragment, parameters, new SubProgressMonitor(monitor, 1));
