@@ -3,6 +3,7 @@ package org.seasar.ymir.vili;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 public interface Configurator {
     /**
@@ -46,9 +47,11 @@ public interface Configurator {
      * @param behavior ViliBehaviorインスタンス。
      * @param preferences ViliProjectPreferencesインスタンス。
      * @param parameters フラグメントの展開時に使用されるパラメータ。
+     * @param monitor プログレスモニタ。
      */
     void processBeforeExpanding(IProject project, ViliBehavior behavior,
-            ViliProjectPreferences preferences, Map<String, Object> parameters);
+            ViliProjectPreferences preferences, Map<String, Object> parameters,
+            IProgressMonitor monitor);
 
     /**
      * フラグメントの展開処理の直後に呼び出されます。
@@ -57,7 +60,9 @@ public interface Configurator {
      * @param behavior ViliBehaviorインスタンス。
      * @param preferences ViliProjectPreferencesインスタンス。
      * @param parameters フラグメントの展開時に使用されたパラメータ。
+     * @param monitor プログレスモニタ。
      */
     void processAfterExpanded(IProject project, ViliBehavior behavior,
-            ViliProjectPreferences preferences, Map<String, Object> parameters);
+            ViliProjectPreferences preferences, Map<String, Object> parameters,
+            IProgressMonitor monitor);
 }

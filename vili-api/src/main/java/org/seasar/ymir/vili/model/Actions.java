@@ -17,4 +17,12 @@ public class Actions {
     public void addAction(Action action) {
         actions.put(action, action);
     }
+
+    public void setActions(Action[] actions) {
+        this.actions.clear();
+
+        for (Action action : actions) {
+            addAction(action);
+        }
+    }
 }
