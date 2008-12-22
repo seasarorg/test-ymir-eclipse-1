@@ -122,7 +122,7 @@ public class Action {
         return actionClass;
     }
 
-    @Child(order = 6)
+    @Child(order = 6, value = "class")
     @Required
     public void setActionClass(String actionClass) {
         this.actionClass = actionClass;

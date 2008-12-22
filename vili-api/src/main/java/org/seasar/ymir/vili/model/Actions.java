@@ -1,19 +1,20 @@
 package org.seasar.ymir.vili.model;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import net.skirnir.xom.annotation.Child;
 
 public class Actions {
-    private Set<Action> actions = new LinkedHashSet<Action>();
+    // LinkedHashSetを使わないのは、LinkedHashSetだと同一と判定されるキーを追加した場合に新しいものに置き換わらないから。
+    private Map<Action, Action> actions = new LinkedHashMap<Action, Action>();
 
     public Action[] getActions() {
-        return actions.toArray(new Action[0]);
+        return actions.values().toArray(new Action[0]);
     }
 
     @Child(order = 1)
     public void addAction(Action action) {
-        actions.add(action);
+        actions.put(action, action);
     }
 }
