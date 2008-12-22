@@ -16,8 +16,10 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
@@ -282,7 +284,8 @@ public class Activator extends AbstractUIPlugin {
                 cfg.setObjectWrapper(new DefaultObjectWrapper());
 
                 ViliBehavior behavior = pair.getBehavior();
-                behavior.getConfigurator().processBeforeExpanding(project, behavior, preferences, parameters);
+                behavior.getConfigurator().processBeforeExpanding(project, behavior, preferences, parameters,
+                        new SubProgressMonitor(monitor, 1));
 
                 for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
                     JarEntry entry = enm.nextElement();
@@ -291,7 +294,8 @@ public class Activator extends AbstractUIPlugin {
                             monitor, 1));
                 }
 
-                behavior.getConfigurator().processAfterExpanded(project, behavior, preferences, parameters);
+                behavior.getConfigurator().processAfterExpanded(project, behavior, preferences, parameters,
+                        new SubProgressMonitor(monitor, 1));
             } finally {
                 jarFile.close();
             }
@@ -924,6 +928,7 @@ public class Activator extends AbstractUIPlugin {
             }
 
             for (ArtifactPair fragment : fragments) {
+                Artifact artifact = fragment.getArtifact();
                 ViliBehavior behavior = fragment.getBehavior();
                 @SuppressWarnings("unchecked")//$NON-NLS-1$
                 Map<String, Object> parameters = new CascadeMap<String, Object>(fragment.getParameterMap(),
@@ -970,9 +975,18 @@ public class Activator extends AbstractUIPlugin {
 
                 Actions fragmentActions = behavior.getActions();
                 if (fragmentActions != null) {
-                    for (Action action : fragmentActions.getActions()) {
-                        actions.addAction(action);
+                    List<Action> actionList = new ArrayList<Action>();
+                    for (Action action : actions.getActions()) {
+                        if (action.getGroupId().equals(artifact.getGroupId())
+                                && action.getArtifactId().equals(artifact.getArtifactId())) {
+                            continue;
+                        }
+                        actionList.add(action);
                     }
+                    for (Action action : fragmentActions.getActions()) {
+                        actionList.add(action);
+                    }
+                    actions.setActions(actionList.toArray(new Action[0]));
                 }
             }
 
