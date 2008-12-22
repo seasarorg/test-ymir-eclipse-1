@@ -55,4 +55,10 @@ public class AntPathPatternsTest extends TestCase {
         assertTrue(target.matches("vili-lib/lib.jar"));
         assertTrue(target.matches("vili-lib/lib/lib.jar"));
     }
+
+    public void testMatches8() throws Exception {
+        AntPathPatterns target = AntPathPatterns.newInstance("dbflute_${projectName}/");
+        assertTrue(target.matches("dbflute_${projectName}"));
+        assertTrue(target.matches("dbflute_${projectName}/hoehoe"));
+    }
 }
