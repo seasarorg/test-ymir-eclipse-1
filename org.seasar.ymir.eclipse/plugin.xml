@@ -84,7 +84,7 @@
                class="org.seasar.ymir.eclipse.actions.AddFragmentsAction"
                id="org.seasar.ymir.eclipse.addFragmentsAction"
                label="%action.addFragments"
-               menubarPath="org.seasar.ymir.eclipse.menu/group">
+               menubarPath="org.seasar.ymir.eclipse.menu/additions">
          </action>
          <visibility>
             <objectState
@@ -96,7 +96,7 @@
                class="org.seasar.ymir.eclipse.actions.ActionAction"
                id="org.seasar.ymir.eclipse.actionAction"
                label="%action.action"
-               menubarPath="org.seasar.ymir.eclipse.menu/group"
+               menubarPath="org.seasar.ymir.eclipse.menu/additions"
                style="pulldown">
          </action>
       </objectContribution>
@@ -130,7 +130,7 @@
                icon="icons/togglePageAndHtml.gif"
                id="org.seasar.ymir.eclipse.togglePageAndHtmlAction"
                label="%action.togglePageAndHtml"
-               menubarPath="org.seasar.ymir.eclipse.menu/group"/>
+               menubarPath="org.seasar.ymir.eclipse.menu/additions"/>
       </objectContribution>
       <objectContribution
             adaptable="true"
@@ -152,7 +152,7 @@
                icon="icons/togglePageAndHtml.gif"
                id="org.seasar.ymir.eclipse.togglePageAndHtmlAction"
                label="%action.togglePageAndHtml"
-               menubarPath="org.seasar.ymir.eclipse.menu/group"/>
+               menubarPath="org.seasar.ymir.eclipse.menu/additions"/>
       </objectContribution>
    </extension>
    <extension

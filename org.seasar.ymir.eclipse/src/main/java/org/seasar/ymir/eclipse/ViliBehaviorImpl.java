@@ -33,6 +33,7 @@ import org.seasar.ymir.vili.ParameterType;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.maven.Project;
+import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
 import org.seasar.ymir.vili.util.AntPathPatterns;
 
@@ -193,14 +194,25 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private Actions readActions(Artifact artifact) throws IOException {
         Activator activator = Activator.getDefault();
+        Actions actions = null;
         try {
-            return activator.getAsBean(activator.getResourceAsString(artifact, Globals.PATH_ACTIONS_XML,
+            actions = activator.getAsBean(activator.getResourceAsString(artifact, Globals.PATH_ACTIONS_XML,
                     Globals.ENCODING, new NullProgressMonitor()), Actions.class);
         } catch (Throwable t) {
             IOException ioe = new IOException("Can't read " + Globals.PATH_ACTIONS_XML + " in " + artifact); //$NON-NLS-1$ //$NON-NLS-2$
             ioe.initCause(t);
             throw ioe;
         }
+
+        if (actions != null) {
+            for (Action action : actions.getActions()) {
+                action.setGroupId(artifact.getGroupId());
+                action.setArtifactId(artifact.getArtifactId());
+                action.setVersion(artifact.getVersion());
+            }
+        }
+
+        return actions;
     }
 
     private void initialize(MapProperties properties) {

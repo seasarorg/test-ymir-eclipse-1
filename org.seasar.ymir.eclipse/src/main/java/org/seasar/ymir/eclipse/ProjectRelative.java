@@ -48,8 +48,8 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
                     action.getArtifactId(), action.getVersion(), false);
             if (artifact != null) {
                 try {
-                    action.setClass((Class<? extends IAction>) ArtifactPair.newInstance(artifact, projectClassLoader)
-                            .getBehavior().getClassLoader().loadClass(action.getActionClass()));
+                    action.setClass((Class<? extends IAction>) ArtifactPair.newInstance(artifact,
+                            getProjectClassLoader()).getBehavior().getClassLoader().loadClass(action.getActionClass()));
                 } catch (ClassNotFoundException ex) {
                     Activator.getDefault().log(ex);
                 }
@@ -63,7 +63,7 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
         if (projectClassLoader == null) {
             try {
                 if (project.hasNature(Globals.NATURE_ID_JAVA)) {
-                    projectClassLoader = new ProjectClassLoader(JavaCore.create(project));
+                    projectClassLoader = new ProjectClassLoader(JavaCore.create(project), getClass().getClassLoader());
                 } else {
                     projectClassLoader = getClass().getClassLoader();
                 }

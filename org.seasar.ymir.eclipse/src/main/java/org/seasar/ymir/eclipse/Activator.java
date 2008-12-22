@@ -126,7 +126,7 @@ public class Activator extends AbstractUIPlugin {
                 }
             };
         }
-    }).setStrict(false);
+    }).setStrict(false).setTrimContent(true);
 
     private XMLParser parser = XMLParserFactory.newInstance();
 

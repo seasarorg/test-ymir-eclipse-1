@@ -16,7 +16,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.Globals;
-import org.seasar.ymir.eclipse.util.WorkbenchUtil;
+import org.seasar.ymir.eclipse.util.WorkbenchUtils;
 
 /**
  * <p>このクラスはDoltengのソースコードを基にしています。</p>
@@ -33,9 +33,9 @@ public class TogglePageAndHtmlAction extends AbstractWorkbenchWindowActionDelega
             String pkg = type.getPackageFragment().getElementName();
             IFile file = findHtmlFromPage(project, pkg + "." + type.getElementName());
             if (file != null) {
-                WorkbenchUtil.openResource(file);
+                WorkbenchUtils.openResource(file);
             } else {
-                WorkbenchUtil.showMessage("Pageクラス（" + (pkg + "." + type.getElementName()) + "）に対応するHTMLが見つかりませんでした。");
+                WorkbenchUtils.showMessage("Pageクラス（" + (pkg + "." + type.getElementName()) + "）に対応するHTMLが見つかりませんでした。");
             }
         }
     }
@@ -60,7 +60,7 @@ public class TogglePageAndHtmlAction extends AbstractWorkbenchWindowActionDelega
                 if (type != null && type.exists()) {
                     JavaUI.openInEditor(type);
                 } else {
-                    WorkbenchUtil.showMessage("HTML（" + path + "）に対応するPageクラスが見つかりませんでした。");
+                    WorkbenchUtils.showMessage("HTML（" + path + "）に対応するPageクラスが見つかりませんでした。");
                 }
             }
         } catch (Exception e) {

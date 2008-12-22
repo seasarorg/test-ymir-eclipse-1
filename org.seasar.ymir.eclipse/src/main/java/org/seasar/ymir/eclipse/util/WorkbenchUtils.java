@@ -38,7 +38,7 @@ import org.seasar.ymir.eclipse.Activator;
  * @author taichi
  * 
  */
-public class WorkbenchUtil {
+public class WorkbenchUtils {
 
     public static void selectAndReveal(IResource newResource) {
         IWorkbench workbench = PlatformUI.getWorkbench();

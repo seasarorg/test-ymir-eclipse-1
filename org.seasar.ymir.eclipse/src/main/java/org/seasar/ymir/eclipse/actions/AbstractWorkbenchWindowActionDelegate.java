@@ -17,7 +17,7 @@ import org.seasar.eclipse.common.util.AdaptableUtil;
 import org.seasar.eclipse.common.util.ResouceUtil;
 import org.seasar.eclipse.common.util.TextEditorUtil;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.util.WorkbenchUtil;
+import org.seasar.ymir.eclipse.util.WorkbenchUtils;
 
 /**
  * <p>このクラスはDoltengのソースコードを基にしています。</p>
@@ -54,7 +54,7 @@ public abstract class AbstractWorkbenchWindowActionDelegate implements IWorkbenc
 
     protected IJavaElement getSelectionElement() throws JavaModelException {
         IJavaElement result = null;
-        ITextEditor txtEditor = TextEditorUtil.toTextEditor(WorkbenchUtil.getActiveEditor());
+        ITextEditor txtEditor = TextEditorUtil.toTextEditor(WorkbenchUtils.getActiveEditor());
         if (txtEditor != null) {
             IResource resource = AdaptableUtil.toResource(txtEditor.getEditorInput());
             if (resource != null) {
