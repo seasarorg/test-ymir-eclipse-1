@@ -6,7 +6,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 import org.seasar.kvasir.util.io.IOUtils;
-import org.seasar.ymir.vili.maven.Repository;
+import org.seasar.ymir.vili.model.maven.Repository;
 
 import net.skirnir.xom.BeanAccessor;
 import net.skirnir.xom.BeanAccessorFactory;

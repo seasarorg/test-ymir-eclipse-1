@@ -1,4 +1,4 @@
-package org.seasar.ymir.vili.maven;
+package org.seasar.ymir.vili.model.maven;
 
 import net.skirnir.xom.annotation.Child;
 

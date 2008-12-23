@@ -15,7 +15,7 @@ import net.skirnir.xom.annotation.Content;
 import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 import org.seasar.kvasir.util.io.IOUtils;
-import org.seasar.ymir.vili.maven.Repositories;
+import org.seasar.ymir.vili.model.maven.Repositories;
 
 public class RepositoriesTest extends TestCase {
     private XOMapper mapper = XOMapperFactory.newInstance()

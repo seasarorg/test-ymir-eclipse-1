@@ -1,29 +1,29 @@
-package org.seasar.ymir.vili.maven;
+package org.seasar.ymir.vili.model.maven;
 
 import net.skirnir.xom.annotation.Child;
 
-public class PluginRepository {
+public class Repository {
     private String id;
 
     private String name;
 
     private String url;
 
-    private Releases releases;
+    private Snapshots snapshots;
 
-    public PluginRepository() {
+    public Repository() {
     }
 
-    public PluginRepository(String id, String name, String url) {
+    public Repository(String id, String name, String url) {
         this(id, name, url, false);
     }
 
-    public PluginRepository(String id, String name, String url, boolean releases) {
+    public Repository(String id, String name, String url, boolean snapshots) {
         setId(id);
         setName(name);
         setUrl(url);
-        if (releases) {
-            setReleases(new Releases(true));
+        if (snapshots) {
+            setSnapshots(new Snapshots(true));
         }
     }
 
@@ -35,7 +35,7 @@ public class PluginRepository {
         if (obj == this) {
             return true;
         }
-        PluginRepository o = (PluginRepository) obj;
+        Repository o = (Repository) obj;
         if (equals(o.url, url)) {
             return true;
         }
@@ -95,12 +95,12 @@ public class PluginRepository {
         this.url = url;
     }
 
-    public Releases getReleases() {
-        return releases;
+    public Snapshots getSnapshots() {
+        return snapshots;
     }
 
     @Child(order = 4)
-    public void setReleases(Releases releases) {
-        this.releases = releases;
+    public void setSnapshots(Snapshots snapshots) {
+        this.snapshots = snapshots;
     }
 }

@@ -1,8 +1,8 @@
 package org.seasar.ymir.vili;
 
 import org.seasar.kvasir.util.collection.MapProperties;
-import org.seasar.ymir.vili.maven.Project;
 import org.seasar.ymir.vili.model.Actions;
+import org.seasar.ymir.vili.model.maven.Project;
 
 public interface ViliBehavior {
     String EXPANSION_INCLUDES = "expansion.includes"; //$NON-NLS-1$

@@ -1,14 +1,14 @@
-package org.seasar.ymir.vili.maven;
+package org.seasar.ymir.vili.model.maven;
 
 import net.skirnir.xom.annotation.Child;
 
-public class Snapshots {
+public class Releases {
     private String enabled;
 
-    public Snapshots() {
+    public Releases() {
     }
 
-    public Snapshots(boolean enabled) {
+    public Releases(boolean enabled) {
         this.enabled = String.valueOf(enabled);
     }
 

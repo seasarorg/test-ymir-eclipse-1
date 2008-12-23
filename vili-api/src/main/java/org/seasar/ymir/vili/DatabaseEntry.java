@@ -1,6 +1,6 @@
 package org.seasar.ymir.vili;
 
-import org.seasar.ymir.vili.maven.Dependency;
+import org.seasar.ymir.vili.model.maven.Dependency;
 
 public class DatabaseEntry implements Cloneable {
     private String name;

@@ -1,13 +1,15 @@
-package org.seasar.ymir.vili.maven;
+package org.seasar.ymir.vili.model.maven;
 
 import net.skirnir.xom.annotation.Child;
 
-public class Parent {
+public class Metadata {
     private String groupId;
 
     private String artifactId;
 
     private String version;
+
+    private Versioning versioning;
 
     public String getGroupId() {
         return groupId;
@@ -34,5 +36,14 @@ public class Parent {
     @Child(order = 3)
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Versioning getVersioning() {
+        return versioning;
+    }
+
+    @Child(order = 4)
+    public void setVersioning(Versioning versioning) {
+        this.versioning = versioning;
     }
 }

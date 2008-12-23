@@ -14,8 +14,8 @@ import net.skirnir.xom.XOMapperFactory;
 import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 import org.seasar.kvasir.util.io.IOUtils;
-import org.seasar.ymir.vili.maven.Parent;
-import org.seasar.ymir.vili.maven.Project;
+import org.seasar.ymir.vili.model.maven.Parent;
+import org.seasar.ymir.vili.model.maven.Project;
 
 public class ProjectTest extends TestCase {
     private XOMapper mapper = XOMapperFactory.newInstance().setBeanAccessorFactory(new BeanAccessorFactory() {
