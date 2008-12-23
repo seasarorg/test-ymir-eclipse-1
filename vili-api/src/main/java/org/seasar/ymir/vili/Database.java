@@ -2,7 +2,9 @@ package org.seasar.ymir.vili;
 
 import org.seasar.ymir.vili.model.maven.Dependency;
 
-public class DatabaseEntry implements Cloneable {
+import net.skirnir.xom.annotation.Child;
+
+public class Database implements Cloneable {
     private String name;
 
     private String type;
@@ -17,7 +19,10 @@ public class DatabaseEntry implements Cloneable {
 
     private Dependency dependency;
 
-    public DatabaseEntry(String name, String type, String driverClassName,
+    public Database() {
+    }
+
+    public Database(String name, String type, String driverClassName,
             String databaseURL, String user, String password,
             Dependency dependency) {
         this.name = name;
@@ -48,6 +53,7 @@ public class DatabaseEntry implements Cloneable {
         return name;
     }
 
+    @Child(order = 1)
     public void setName(String name) {
         this.name = name;
     }
@@ -56,6 +62,7 @@ public class DatabaseEntry implements Cloneable {
         return type;
     }
 
+    @Child(order = 2)
     public void setType(String type) {
         this.type = type;
     }
@@ -64,6 +71,7 @@ public class DatabaseEntry implements Cloneable {
         return driverClassName;
     }
 
+    @Child(order = 3)
     public void setDriverClassName(String driverClassName) {
         this.driverClassName = driverClassName;
     }
@@ -72,6 +80,7 @@ public class DatabaseEntry implements Cloneable {
         return databaseURL;
     }
 
+    @Child(order = 4)
     public void setURL(String databaseURL) {
         this.databaseURL = databaseURL;
     }
@@ -80,6 +89,7 @@ public class DatabaseEntry implements Cloneable {
         return user;
     }
 
+    @Child(order = 5)
     public void setUser(String user) {
         this.user = user;
     }
@@ -88,6 +98,7 @@ public class DatabaseEntry implements Cloneable {
         return password;
     }
 
+    @Child(order = 6)
     public void setPassword(String password) {
         this.password = password;
     }
@@ -96,6 +107,7 @@ public class DatabaseEntry implements Cloneable {
         return dependency;
     }
 
+    @Child(order = 7)
     public void setDependency(Dependency dependency) {
         this.dependency = dependency;
     }

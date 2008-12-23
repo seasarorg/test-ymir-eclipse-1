@@ -12,11 +12,11 @@ public interface ViliProjectPreferencesProvider {
 
     String getViewEncoding();
 
-    DatabaseEntry[] getDatabaseEntries();
+    Database[] getDatabaseEntries();
 
     boolean isUseDatabase();
 
-    DatabaseEntry getDatabaseEntry();
+    Database getDatabaseEntry();
 
     String getProjectName();
 
