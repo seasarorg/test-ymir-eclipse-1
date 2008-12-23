@@ -26,6 +26,8 @@ public class TogglePageAndHtmlAction extends AbstractWorkbenchWindowActionDelega
 
     private static final String PATH_DELIMITER = String.valueOf(PATH_DELIMITER_CHAR);
 
+    private static final String SUFFIX_BASE = "Base";
+
     @Override
     protected void processJava(IProject project, IJavaElement element) throws Exception {
         if (element instanceof ICompilationUnit) {
@@ -41,6 +43,9 @@ public class TogglePageAndHtmlAction extends AbstractWorkbenchWindowActionDelega
     }
 
     IFile findHtmlFromPage(IProject project, String className) {
+        if (className.endsWith(SUFFIX_BASE)) {
+            className = className.substring(0, className.length() - SUFFIX_BASE.length());
+        }
         String path = getMappingPreferenceStore(project).getString(className);
         if (path == null || path.length() == 0) {
             return null;

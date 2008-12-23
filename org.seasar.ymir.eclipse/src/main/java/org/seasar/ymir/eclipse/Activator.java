@@ -114,6 +114,8 @@ public class Activator extends AbstractUIPlugin {
 
     private static final String EXTENSION_XPROPERTIES = "xproperties"; //$NON-NLS-1$
 
+    private static final String EXTENSION_PREFS = "prefs";
+
     // The shared instance
     private static Activator plugin;
 
@@ -391,7 +393,7 @@ public class Activator extends AbstractUIPlugin {
 
     private InputStream mergeFile(IFile file, InputStream in) throws CoreException {
         String extension = file.getLocation().getFileExtension();
-        if (EXTENSION_PROPERTIES.equals(extension)) {
+        if (EXTENSION_PROPERTIES.equals(extension) || EXTENSION_PREFS.equals(extension)) {
             return mergeFileAsProperties(file, in, false);
         } else if (EXTENSION_XPROPERTIES.equals(extension)) {
             return mergeFileAsProperties(file, in, true);
