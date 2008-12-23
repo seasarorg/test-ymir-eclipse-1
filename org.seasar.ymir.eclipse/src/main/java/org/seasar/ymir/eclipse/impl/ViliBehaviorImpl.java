@@ -397,6 +397,10 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return properties;
     }
 
+    public void notifyPropertiesChanged() {
+        initialize(properties);
+    }
+
     public IConfigurator getConfigurator() {
         return configurator;
     }
