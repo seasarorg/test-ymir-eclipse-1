@@ -57,8 +57,16 @@ public class AntPathPatternsTest extends TestCase {
     }
 
     public void testMatches8() throws Exception {
-        AntPathPatterns target = AntPathPatterns.newInstance("dbflute_${projectName}/");
+        AntPathPatterns target = AntPathPatterns
+                .newInstance("dbflute_${projectName}/");
         assertTrue(target.matches("dbflute_${projectName}"));
         assertTrue(target.matches("dbflute_${projectName}/hoehoe"));
+    }
+
+    public void testMatches9() throws Exception {
+        AntPathPatterns target = AntPathPatterns
+                .newInstance("messages*.xproperties");
+        assertTrue(target.matches("messages.xproperties"));
+        assertTrue(target.matches("messages_ja.xproperties"));
     }
 }
