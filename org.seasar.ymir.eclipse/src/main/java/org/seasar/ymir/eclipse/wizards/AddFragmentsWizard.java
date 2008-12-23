@@ -84,7 +84,7 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
     public boolean performFinish() {
         secondPage.populateSkeletonParameters();
         try {
-            final ArtifactPair[] fragments = firstPage.getFragmentArtifactPairs();
+            final ArtifactPair[] fragments = firstPage.getFragmentTemplateArtifactPairs();
             IRunnableWithProgress op = new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask(Messages.getString("AddFragmentsWizard.3"), 1); //$NON-NLS-1$
@@ -130,7 +130,7 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
     }
 
     public ArtifactPair[] getFragmentArtifactPairs() {
-        return firstPage.getFragmentArtifactPairs();
+        return firstPage.getFragmentTemplateArtifactPairs();
     }
 
     public ArtifactPair getSkeletonArtifactPair() {

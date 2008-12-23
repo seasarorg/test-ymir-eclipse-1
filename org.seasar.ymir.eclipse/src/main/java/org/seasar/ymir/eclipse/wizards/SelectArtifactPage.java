@@ -90,7 +90,7 @@ public class SelectArtifactPage extends WizardPage {
 
     private SkeletonArtifactResolver skeletonArtifactResolver;
 
-    private Table fragmentTable;
+    private Table fragmentTemplateTable;
 
     private Fragment[] fragments;
 
@@ -118,7 +118,7 @@ public class SelectArtifactPage extends WizardPage {
 
     private java.util.List<ArtifactPair> customFragmentListModel;
 
-    private volatile ArtifactPair[] fragmentArtifactPairs;
+    private volatile ArtifactPair[] fragmentTemplateArtifactPairs;
 
     public SelectArtifactPage(ClassLoader projectClassLoader, ExtendedContext context, boolean showSkeletonTab) {
         super("SelectArtifactPage"); //$NON-NLS-1$
@@ -312,44 +312,44 @@ public class SelectArtifactPage extends WizardPage {
         data.heightHint = 150;
         composite.setLayoutData(data);
 
-        fragmentTable = new Table(composite, SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
-        fragmentTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        fragmentTable.addSelectionListener(new SelectionAdapter() {
+        fragmentTemplateTable = new Table(composite, SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
+        fragmentTemplateTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+        fragmentTemplateTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 setErrorMessage(null);
                 if (e.detail == SWT.CHECK) {
-                    TableItem[] items = fragmentTable.getItems();
+                    TableItem[] items = fragmentTemplateTable.getItems();
                     for (int i = 0; i < items.length; i++) {
                         if (items[i] == e.item) {
                             if (items[i].getChecked()) {
-                                fragmentArtifactPairs[i] = ArtifactPair.newInstance(
+                                fragmentTemplateArtifactPairs[i] = ArtifactPair.newInstance(
                                         resolveFragmentArtifact(fragments[i]), projectClassLoader);
-                                if (fragmentArtifactPairs[i] == null) {
+                                if (fragmentTemplateArtifactPairs[i] == null) {
                                     items[i].setChecked(false);
                                     setErrorMessage(Messages.getString("SelectArtifactPage.13")); //$NON-NLS-1$
                                 }
-                                fragmentTable.setSelection(i);
+                                fragmentTemplateTable.setSelection(i);
                                 updateDescriptionText(i);
                             } else {
-                                fragmentArtifactPairs[i] = null;
+                                fragmentTemplateArtifactPairs[i] = null;
                             }
                             update();
                             break;
                         }
                     }
                 } else {
-                    updateDescriptionText(fragmentTable.getSelectionIndex());
+                    updateDescriptionText(fragmentTemplateTable.getSelectionIndex());
                 }
             }
 
             private void updateDescriptionText(int index) {
                 String description;
                 if (index != -1) {
-                    if (fragmentArtifactPairs[index] == null) {
+                    if (fragmentTemplateArtifactPairs[index] == null) {
                         description = fragments[index].getDescription();
                     } else {
-                        description = fragmentArtifactPairs[index].getBehavior().getDescription();
+                        description = fragmentTemplateArtifactPairs[index].getBehavior().getDescription();
                     }
                 } else {
                     description = ""; //$NON-NLS-1$
@@ -357,12 +357,12 @@ public class SelectArtifactPage extends WizardPage {
                 fragmentDescriptionText.setText(description);
             }
         });
-        new TableColumn(fragmentTable, SWT.LEFT).setWidth(270);
+        new TableColumn(fragmentTemplateTable, SWT.LEFT).setWidth(270);
 
         fragments = Activator.getDefault().getTemplate().getAllFragments();
-        fragmentArtifactPairs = new ArtifactPair[fragments.length];
+        fragmentTemplateArtifactPairs = new ArtifactPair[fragments.length];
         for (Fragment fragment : fragments) {
-            new TableItem(fragmentTable, SWT.NONE).setText(new String[] { fragment.getName() });
+            new TableItem(fragmentTemplateTable, SWT.NONE).setText(new String[] { fragment.getName() });
         }
 
         fragmentDescriptionText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY);
@@ -559,7 +559,7 @@ public class SelectArtifactPage extends WizardPage {
     private void updateArchiveListTable() {
         archiveListTable.removeAll();
         ArtifactPair[] pairs;
-        ArtifactPair[] fragments = getFragmentArtifactPairs();
+        ArtifactPair[] fragments = getFragmentTemplateArtifactPairs();
         if (skeletonArtifactPair != null) {
             pairs = new ArtifactPair[1 + fragments.length];
             pairs[0] = skeletonArtifactPair;
@@ -615,7 +615,7 @@ public class SelectArtifactPage extends WizardPage {
                 return false;
             }
         } else {
-            if (getFragmentArtifactPairs().length == 0) {
+            if (getFragmentTemplateArtifactPairs().length == 0) {
                 return false;
             }
         }
@@ -717,9 +717,9 @@ public class SelectArtifactPage extends WizardPage {
 
     private void clearFragments() {
         for (int i = 0; i < fragments.length; i++) {
-            TableItem item = fragmentTable.getItem(i);
+            TableItem item = fragmentTemplateTable.getItem(i);
             item.setChecked(false);
-            fragmentArtifactPairs[i] = null;
+            fragmentTemplateArtifactPairs[i] = null;
         }
         customFragmentListField.removeAll();
         customFragmentDescriptionText.setText(""); //$NON-NLS-1$
@@ -830,10 +830,10 @@ public class SelectArtifactPage extends WizardPage {
         }
     }
 
-    public ArtifactPair[] getFragmentArtifactPairs() {
+    public ArtifactPair[] getFragmentTemplateArtifactPairs() {
         Map<String, ArtifactPair> map = new LinkedHashMap<String, ArtifactPair>();
 
-        for (ArtifactPair fragment : fragmentArtifactPairs) {
+        for (ArtifactPair fragment : fragmentTemplateArtifactPairs) {
             if (fragment != null) {
                 map.put(ArtifactUtils.getUniqueId(fragment.getArtifact()), fragment);
             }
@@ -863,11 +863,11 @@ public class SelectArtifactPage extends WizardPage {
             ViliBehavior behavior = fragmentArtifactPair.getBehavior();
 
             boolean matched = false;
-            for (int j = 0; j < fragments.length; j++) {
-                if (artifact.getGroupId().equals(fragments[j].getGroupId())
-                        && artifact.getArtifactId().equals(fragments[j].getArtifactId())) {
-                    fragmentTable.getItem(j).setChecked(true);
-                    fragmentArtifactPairs[j] = fragmentArtifactPair;
+            for (int i = 0; i < fragments.length; i++) {
+                if (artifact.getGroupId().equals(fragments[i].getGroupId())
+                        && artifact.getArtifactId().equals(fragments[i].getArtifactId())) {
+                    fragmentTemplateTable.getItem(i).setChecked(true);
+                    fragmentTemplateArtifactPairs[i] = fragmentArtifactPair;
                     matched = true;
                     break;
                 }

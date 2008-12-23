@@ -59,7 +59,9 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private AntPathPatterns expansionExcludes;
 
-    private AntPathPatterns expansionMerges;
+    private AntPathPatterns expansionMergeIncludes;
+
+    private AntPathPatterns expansionMergeExcludes;
 
     private AntPathPatterns templateIncludes;
 
@@ -221,7 +223,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
     private void initialize(MapProperties properties) {
         expansionIncludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_INCLUDES));
         expansionExcludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDES));
-        expansionMerges = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_MERGES));
+        expansionMergeIncludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_MERGE_INCLUDES));
+        expansionMergeExcludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_MERGE_EXCLUDES));
         templateIncludes = AntPathPatterns.newInstance(properties.getProperty(TEMPLATE_INCLUDES));
         templateExcludes = AntPathPatterns.newInstance(properties.getProperty(TEMPLATE_EXCLUDES));
         templateParameters = PropertyUtils.toLines(properties.getProperty(TEMPLATE_PARAMETERS));
@@ -376,8 +379,10 @@ public class ViliBehaviorImpl implements ViliBehavior {
         }
     }
 
-    public InclusionType shouldMerge(String path) {
-        if (expansionMerges.matches(path)) {
+    public InclusionType shouldMergeWhenExpanding(String path) {
+        if (expansionMergeExcludes.matches(path)) {
+            return InclusionType.EXCLUDED;
+        } else if (expansionMergeIncludes.matches(path)) {
             return InclusionType.INCLUDED;
         } else {
             return InclusionType.UNDEFINED;

@@ -119,7 +119,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
      */
 
     public void addPages() {
-        firstPage = new SelectArtifactPage(null, nonTransitiveContext, true);
+        firstPage = new SelectArtifactPage(getClass().getClassLoader(), nonTransitiveContext, true);
         firstPage.setTitle(Messages.getString("NewProjectWizard.26")); //$NON-NLS-1$
         firstPage.setDescription(Messages.getString("NewProjectWizard.27")); //$NON-NLS-1$
         addPage(firstPage);
@@ -147,7 +147,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
         thirdPage.populateSkeletonParameters();
         try {
             final ArtifactPair skeleton = firstPage.getSkeletonArtifactPair();
-            final ArtifactPair[] fragments = firstPage.getFragmentArtifactPairs();
+            final ArtifactPair[] fragments = firstPage.getFragmentTemplateArtifactPairs();
             final IProject project = secondPage.getProjectHandle();
             final IPath locationPath = secondPage.getLocationPath();
             final IPath jreContainerPath = preferences.getJREContainerPath();
@@ -606,7 +606,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
     }
 
     public ArtifactPair[] getFragmentArtifactPairs() {
-        return firstPage.getFragmentArtifactPairs();
+        return firstPage.getFragmentTemplateArtifactPairs();
     }
 
     public void notifyFragmentsChanged() {

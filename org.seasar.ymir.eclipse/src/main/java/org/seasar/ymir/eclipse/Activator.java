@@ -351,7 +351,7 @@ public class Activator extends AbstractUIPlugin {
             try {
                 IFile outputFile = project.getFile(resolvedPath);
                 if (outputFile.exists()) {
-                    if (shouldMerge(path, behavior)) {
+                    if (shouldMergeWhenExpanding(path, behavior)) {
                         in = mergeFile(outputFile, in);
                     }
                     outputFile.setContents(in, false, false, new SubProgressMonitor(monitor, 1));
@@ -441,14 +441,14 @@ public class Activator extends AbstractUIPlugin {
         return new ByteArrayInputStream(baos.toByteArray());
     }
 
-    private boolean shouldMerge(String path, ViliBehavior behavior) {
-        switch (behavior.shouldMerge(path)) {
+    private boolean shouldMergeWhenExpanding(String path, ViliBehavior behavior) {
+        switch (behavior.shouldMergeWhenExpanding(path)) {
         case INCLUDED:
             return true;
         case EXCLUDED:
             return false;
         }
-        switch (systemBehavior.shouldMerge(path)) {
+        switch (systemBehavior.shouldMergeWhenExpanding(path)) {
         case INCLUDED:
             return true;
         case EXCLUDED:
