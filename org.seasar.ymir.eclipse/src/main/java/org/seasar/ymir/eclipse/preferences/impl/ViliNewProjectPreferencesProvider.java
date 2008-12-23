@@ -7,7 +7,7 @@ import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.JdtUtils;
-import org.seasar.ymir.vili.DatabaseEntry;
+import org.seasar.ymir.vili.model.Database;
 
 public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesProviderBase {
     @SuppressWarnings("unchecked")//$NON-NLS-1$
@@ -33,8 +33,8 @@ public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesPro
         return true;
     }
 
-    public DatabaseEntry getDatabaseEntry() {
-        return new DatabaseEntry("", "", "", "", "", "", null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+    public Database getDatabase() {
+        return new Database("", "", "", "", "", "", null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
     }
 
     public String getProjectName() {

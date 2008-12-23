@@ -16,9 +16,9 @@ import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.JdtUtils;
-import org.seasar.ymir.vili.DatabaseEntry;
-import org.seasar.ymir.vili.maven.Dependency;
-import org.seasar.ymir.vili.maven.Project;
+import org.seasar.ymir.vili.model.Database;
+import org.seasar.ymir.vili.model.maven.Dependency;
+import org.seasar.ymir.vili.model.maven.Project;
 
 public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesProviderBase {
     private static final String PATH_JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER"; //$NON-NLS-1$
@@ -69,18 +69,18 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
         return store.getBoolean(ParameterKeys.USE_DATABASE);
     }
 
-    public DatabaseEntry getDatabaseEntry() {
+    public Database getDatabase() {
         String type = store.getString(ParameterKeys.DATABASE_TYPE);
-        return new DatabaseEntry(store.getString(ParameterKeys.DATABASE_NAME), type, store
+        return new Database(store.getString(ParameterKeys.DATABASE_NAME), type, store
                 .getString(ParameterKeys.DATABASE_DRIVER_CLASS_NAME), store.getString(ParameterKeys.DATABASE_URL),
                 store.getString(ParameterKeys.DATABASE_USER), store.getString(ParameterKeys.DATABASE_PASSWORD),
                 getDatabaseDependency(type));
     }
 
     private Dependency getDatabaseDependency(String type) {
-        for (DatabaseEntry entry : getDatabaseEntries()) {
-            if (entry.getType().equals(type)) {
-                return entry.getDependency();
+        for (Database database : getDatabases()) {
+            if (database.getType().equals(type)) {
+                return database.getDependency();
             }
         }
         return null;

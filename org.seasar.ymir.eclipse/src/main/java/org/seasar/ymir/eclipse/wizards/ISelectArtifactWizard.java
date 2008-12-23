@@ -7,7 +7,7 @@ public interface ISelectArtifactWizard {
 
     void notifyFragmentsChanged();
 
-    ArtifactPair getSkeleton();
+    ArtifactPair getSkeletonArtifactPair();
 
-    ArtifactPair[] getFragments();
+    ArtifactPair[] getFragmentArtifactPairs();
 }

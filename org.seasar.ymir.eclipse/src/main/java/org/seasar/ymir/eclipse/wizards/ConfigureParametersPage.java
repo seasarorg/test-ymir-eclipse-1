@@ -293,11 +293,11 @@ public class ConfigureParametersPage extends WizardPage {
         if (visible) {
             if (!tabPrepared) {
                 ISelectArtifactWizard wizard = (ISelectArtifactWizard) getWizard();
-                skeleton = wizard.getSkeleton();
+                skeleton = wizard.getSkeletonArtifactPair();
                 if (skeleton != null) {
                     SkeletonBehavior = skeleton.getBehavior();
                 }
-                fragments = wizard.getFragments();
+                fragments = wizard.getFragmentArtifactPairs();
                 for (ArtifactPair fragment : fragments) {
                     ViliBehavior fragmentBehavior = fragment.getBehavior();
                     fragmentBehavior.getConfigurator().start(project, fragmentBehavior, preferences);

@@ -83,25 +83,24 @@ import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
-import org.seasar.ymir.vili.maven.Dependencies;
-import org.seasar.ymir.vili.maven.Dependency;
-import org.seasar.ymir.vili.maven.PluginRepositories;
-import org.seasar.ymir.vili.maven.PluginRepository;
-import org.seasar.ymir.vili.maven.Profile;
-import org.seasar.ymir.vili.maven.Profiles;
-import org.seasar.ymir.vili.maven.Project;
-import org.seasar.ymir.vili.maven.Repositories;
-import org.seasar.ymir.vili.maven.Repository;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
-import org.seasar.ymir.vili.model.TemplateEntry;
+import org.seasar.ymir.vili.model.Template;
+import org.seasar.ymir.vili.model.maven.Dependencies;
+import org.seasar.ymir.vili.model.maven.Dependency;
+import org.seasar.ymir.vili.model.maven.PluginRepositories;
+import org.seasar.ymir.vili.model.maven.PluginRepository;
+import org.seasar.ymir.vili.model.maven.Profile;
+import org.seasar.ymir.vili.model.maven.Profiles;
+import org.seasar.ymir.vili.model.maven.Project;
+import org.seasar.ymir.vili.model.maven.Repositories;
+import org.seasar.ymir.vili.model.maven.Repository;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import freemarker.cache.TemplateLoader;
 import freemarker.cache.URLTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
-import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 /**
@@ -234,15 +233,15 @@ public class Activator extends AbstractUIPlugin {
         return PLUGIN_ID;
     }
 
-    public TemplateEntry getTemplateEntry() {
+    public Template getTemplate() {
         try {
-            return createTemplateEntry(getPreferenceStore().getString(PreferenceConstants.P_TEMPLATE));
+            return createTemplate(getPreferenceStore().getString(PreferenceConstants.P_TEMPLATE));
         } catch (ValidationException ex) {
             getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, ex.toString(), ex));
-            return new TemplateEntry();
+            return new Template();
         } catch (IllegalSyntaxException ex) {
             getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, ex.toString(), ex));
-            return new TemplateEntry();
+            return new Template();
         }
     }
 
@@ -475,7 +474,7 @@ public class Activator extends AbstractUIPlugin {
     private String resolvePath(String path, Configuration cfg, Map<String, Object> parameterMap) throws IOException {
         try {
             StringWriter sw = new StringWriter();
-            new Template("pathName", new StringReader(path), cfg).process(parameterMap, sw); //$NON-NLS-1$
+            new freemarker.template.Template("pathName", new StringReader(path), cfg).process(parameterMap, sw); //$NON-NLS-1$
             return sw.toString();
         } catch (TemplateException ex) {
             IOException ioex = new IOException();
@@ -812,12 +811,12 @@ public class Activator extends AbstractUIPlugin {
         return store;
     }
 
-    public TemplateEntry createTemplateEntry(String template) throws ValidationException, IllegalSyntaxException {
+    public Template createTemplate(String template) throws ValidationException, IllegalSyntaxException {
         if (template == null) {
             return null;
         }
         try {
-            return mapper.toBean(parser.parse(new StringReader(template)).getRootElement(), TemplateEntry.class);
+            return mapper.toBean(parser.parse(new StringReader(template)).getRootElement(), Template.class);
         } catch (IOException ex) {
             throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
         }

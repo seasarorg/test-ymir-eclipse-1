@@ -40,8 +40,8 @@ import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.ViliBehavior;
-import org.seasar.ymir.vili.model.FragmentEntry;
-import org.seasar.ymir.vili.model.SkeletonEntry;
+import org.seasar.ymir.vili.model.Fragment;
+import org.seasar.ymir.vili.model.Skeleton;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
@@ -58,7 +58,7 @@ public class SelectArtifactPage extends WizardPage {
 
     private volatile boolean visible;
 
-    private SkeletonEntry[] entries;
+    private Skeleton[] skeletons;
 
     private CTabFolder tabFolder;
 
@@ -86,15 +86,15 @@ public class SelectArtifactPage extends WizardPage {
 
     private Text customSkeletonDescriptionText;
 
-    private volatile ArtifactPair skeleton;
+    private volatile ArtifactPair skeletonArtifactPair;
 
     private SkeletonArtifactResolver skeletonArtifactResolver;
 
-    private Table fragmentTemplateTable;
+    private Table fragmentTable;
 
-    private FragmentEntry[] fragmentTemplateEntries;
+    private Fragment[] fragments;
 
-    private Text fragmentTemplateDescriptionText;
+    private Text fragmentDescriptionText;
 
     private Button addCustomFragmentButton;
 
@@ -118,7 +118,7 @@ public class SelectArtifactPage extends WizardPage {
 
     private java.util.List<ArtifactPair> customFragmentListModel;
 
-    private volatile ArtifactPair[] fragmentTemplateArtifacts;
+    private volatile ArtifactPair[] fragmentArtifactPairs;
 
     public SelectArtifactPage(ClassLoader projectClassLoader, ExtendedContext context, boolean showSkeletonTab) {
         super("SelectArtifactPage"); //$NON-NLS-1$
@@ -216,9 +216,9 @@ public class SelectArtifactPage extends WizardPage {
         skeletonTemplateListField = new List(composite, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         skeletonTemplateListField.setFont(parent.getFont());
         skeletonTemplateListField.setLayoutData(data);
-        entries = Activator.getDefault().getTemplateEntry().getAllSkeletons();
-        for (SkeletonEntry entry : entries) {
-            skeletonTemplateListField.add(entry.getName());
+        skeletons = Activator.getDefault().getTemplate().getAllSkeletons();
+        for (Skeleton skeleton : skeletons) {
+            skeletonTemplateListField.add(skeleton.getName());
         }
         skeletonTemplateListField.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -226,7 +226,7 @@ public class SelectArtifactPage extends WizardPage {
                 String description;
                 int selectionIndex = skeletonTemplateListField.getSelectionIndex();
                 if (selectionIndex != -1) {
-                    description = entries[selectionIndex].getDescription();
+                    description = skeletons[selectionIndex].getDescription();
                 } else {
                     description = ""; //$NON-NLS-1$
                 }
@@ -312,62 +312,61 @@ public class SelectArtifactPage extends WizardPage {
         data.heightHint = 150;
         composite.setLayoutData(data);
 
-        fragmentTemplateTable = new Table(composite, SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
-        fragmentTemplateTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        fragmentTemplateTable.addSelectionListener(new SelectionAdapter() {
+        fragmentTable = new Table(composite, SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
+        fragmentTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+        fragmentTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 setErrorMessage(null);
                 if (e.detail == SWT.CHECK) {
-                    TableItem[] items = fragmentTemplateTable.getItems();
+                    TableItem[] items = fragmentTable.getItems();
                     for (int i = 0; i < items.length; i++) {
                         if (items[i] == e.item) {
                             if (items[i].getChecked()) {
-                                fragmentTemplateArtifacts[i] = ArtifactPair.newInstance(
-                                        resolveFragmentArtifact(fragmentTemplateEntries[i]), projectClassLoader);
-                                if (fragmentTemplateArtifacts[i] == null) {
+                                fragmentArtifactPairs[i] = ArtifactPair.newInstance(
+                                        resolveFragmentArtifact(fragments[i]), projectClassLoader);
+                                if (fragmentArtifactPairs[i] == null) {
                                     items[i].setChecked(false);
                                     setErrorMessage(Messages.getString("SelectArtifactPage.13")); //$NON-NLS-1$
                                 }
-                                fragmentTemplateTable.setSelection(i);
+                                fragmentTable.setSelection(i);
                                 updateDescriptionText(i);
                             } else {
-                                fragmentTemplateArtifacts[i] = null;
+                                fragmentArtifactPairs[i] = null;
                             }
                             update();
                             break;
                         }
                     }
                 } else {
-                    updateDescriptionText(fragmentTemplateTable.getSelectionIndex());
+                    updateDescriptionText(fragmentTable.getSelectionIndex());
                 }
             }
 
             private void updateDescriptionText(int index) {
                 String description;
                 if (index != -1) {
-                    if (fragmentTemplateArtifacts[index] == null) {
-                        description = fragmentTemplateEntries[index].getDescription();
+                    if (fragmentArtifactPairs[index] == null) {
+                        description = fragments[index].getDescription();
                     } else {
-                        description = fragmentTemplateArtifacts[index].getBehavior().getDescription();
+                        description = fragmentArtifactPairs[index].getBehavior().getDescription();
                     }
                 } else {
                     description = ""; //$NON-NLS-1$
                 }
-                fragmentTemplateDescriptionText.setText(description);
+                fragmentDescriptionText.setText(description);
             }
         });
-        new TableColumn(fragmentTemplateTable, SWT.LEFT).setWidth(270);
+        new TableColumn(fragmentTable, SWT.LEFT).setWidth(270);
 
-        fragmentTemplateEntries = Activator.getDefault().getTemplateEntry().getAllFragments();
-        fragmentTemplateArtifacts = new ArtifactPair[fragmentTemplateEntries.length];
-        for (FragmentEntry fragment : fragmentTemplateEntries) {
-            new TableItem(fragmentTemplateTable, SWT.NONE).setText(new String[] { fragment.getName() });
+        fragments = Activator.getDefault().getTemplate().getAllFragments();
+        fragmentArtifactPairs = new ArtifactPair[fragments.length];
+        for (Fragment fragment : fragments) {
+            new TableItem(fragmentTable, SWT.NONE).setText(new String[] { fragment.getName() });
         }
 
-        fragmentTemplateDescriptionText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP
-                | SWT.READ_ONLY);
-        fragmentTemplateDescriptionText.setLayoutData(new GridData(GridData.FILL_BOTH));
+        fragmentDescriptionText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY);
+        fragmentDescriptionText.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Label customFragmentListLabel = new Label(composite, SWT.NONE);
         data = new GridData();
@@ -560,10 +559,10 @@ public class SelectArtifactPage extends WizardPage {
     private void updateArchiveListTable() {
         archiveListTable.removeAll();
         ArtifactPair[] pairs;
-        ArtifactPair[] fragments = getFragments();
-        if (skeleton != null) {
+        ArtifactPair[] fragments = getFragmentArtifactPairs();
+        if (skeletonArtifactPair != null) {
             pairs = new ArtifactPair[1 + fragments.length];
-            pairs[0] = skeleton;
+            pairs[0] = skeletonArtifactPair;
             System.arraycopy(fragments, 0, pairs, 1, fragments.length);
         } else {
             pairs = fragments;
@@ -612,11 +611,11 @@ public class SelectArtifactPage extends WizardPage {
 
     boolean validatePage() {
         if (showSkeletonTab) {
-            if (skeleton == null) {
+            if (skeletonArtifactPair == null) {
                 return false;
             }
         } else {
-            if (getFragments().length == 0) {
+            if (getFragmentArtifactPairs().length == 0) {
                 return false;
             }
         }
@@ -645,7 +644,7 @@ public class SelectArtifactPage extends WizardPage {
         if (showSkeletonTab) {
             chooseSkeletonFromTemplatesField.setSelection(true);
             skeletonTemplateListField.setSelection(0, 0);
-            skeletonTemplateDescriptionText.setText(entries[0].getDescription());
+            skeletonTemplateDescriptionText.setText(skeletons[0].getDescription());
             customSkeletonGroupIdLabel.setEnabled(false);
             customSkeletonGroupIdField.setEnabled(false);
             customSkeletonArtifactIdLabel.setEnabled(false);
@@ -702,32 +701,32 @@ public class SelectArtifactPage extends WizardPage {
             setErrorMessage(null);
         }
 
-        SkeletonEntry entry = getSkeletonEntry();
-        if (entry != null) {
-            skeletonArtifactResolver = new SkeletonArtifactResolver(this, context, entry, wait);
+        Skeleton skeleton = getSkeleton();
+        if (skeleton != null) {
+            skeletonArtifactResolver = new SkeletonArtifactResolver(this, context, skeleton, wait);
             skeletonArtifactResolver.start();
         }
     }
 
     private void clearSkeleton() {
-        skeleton = null;
+        skeletonArtifactPair = null;
         customSkeletonDescriptionText.setText(""); //$NON-NLS-1$
 
         ((ISelectArtifactWizard) getWizard()).notifySkeletonCleared();
     }
 
     private void clearFragments() {
-        for (int i = 0; i < fragmentTemplateEntries.length; i++) {
-            TableItem item = fragmentTemplateTable.getItem(i);
+        for (int i = 0; i < fragments.length; i++) {
+            TableItem item = fragmentTable.getItem(i);
             item.setChecked(false);
-            fragmentTemplateArtifacts[i] = null;
+            fragmentArtifactPairs[i] = null;
         }
         customFragmentListField.removeAll();
         customFragmentDescriptionText.setText(""); //$NON-NLS-1$
         customFragmentListModel.clear();
     }
 
-    private Artifact resolveFragmentArtifact(FragmentEntry fragment) {
+    private Artifact resolveFragmentArtifact(Fragment fragment) {
         return resolveFragmentArtifact(fragment.getGroupId(), fragment.getArtifactId(), fragment.getVersion());
     }
 
@@ -772,20 +771,20 @@ public class SelectArtifactPage extends WizardPage {
         }
     }
 
-    private SkeletonEntry getSkeletonEntry() {
+    private Skeleton getSkeleton() {
         if (isChosenSkeletonFromTemplate()) {
             int index = skeletonTemplateListField.getSelectionIndex();
             if (index == -1) {
                 return null;
             } else {
-                return entries[index];
+                return skeletons[index];
             }
         } else {
             String version = getCustomSkeletonVersion();
             if (version.length() == 0) {
                 version = null;
             }
-            return new SkeletonEntry(getCustomSkeletonGroupId(), getCustomSkeletonArtifactId(), version, "", ""); //$NON-NLS-1$ //$NON-NLS-2$
+            return new Skeleton(getCustomSkeletonGroupId(), getCustomSkeletonArtifactId(), version, "", ""); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -799,7 +798,7 @@ public class SelectArtifactPage extends WizardPage {
             if (index == -1) {
                 return ""; //$NON-NLS-1$
             } else {
-                return entries[index].getGroupId();
+                return skeletons[index].getGroupId();
             }
         } else {
             return customSkeletonGroupIdField.getText();
@@ -812,7 +811,7 @@ public class SelectArtifactPage extends WizardPage {
             if (index == -1) {
                 return ""; //$NON-NLS-1$
             } else {
-                return entries[index].getArtifactId();
+                return skeletons[index].getArtifactId();
             }
         } else {
             return customSkeletonArtifactIdField.getText();
@@ -831,10 +830,10 @@ public class SelectArtifactPage extends WizardPage {
         }
     }
 
-    public ArtifactPair[] getFragments() {
+    public ArtifactPair[] getFragmentArtifactPairs() {
         Map<String, ArtifactPair> map = new LinkedHashMap<String, ArtifactPair>();
 
-        for (ArtifactPair fragment : fragmentTemplateArtifacts) {
+        for (ArtifactPair fragment : fragmentArtifactPairs) {
             if (fragment != null) {
                 map.put(ArtifactUtils.getUniqueId(fragment.getArtifact()), fragment);
             }
@@ -845,37 +844,37 @@ public class SelectArtifactPage extends WizardPage {
         return map.values().toArray(new ArtifactPair[0]);
     }
 
-    public ArtifactPair getSkeleton() {
-        return skeleton;
+    public ArtifactPair getSkeletonArtifactPair() {
+        return skeletonArtifactPair;
     }
 
-    void setSkeletonAndFragments(ArtifactPair skeleton, ArtifactPair[] fragments) {
-        this.skeleton = skeleton;
+    void setSkeletonAndFragments(ArtifactPair skeletonArtifactPair, ArtifactPair[] fragmentArtifactPairs) {
+        this.skeletonArtifactPair = skeletonArtifactPair;
         if (!isChosenSkeletonFromTemplate()) {
-            customSkeletonDescriptionText.setText(skeleton.getBehavior().getDescription());
+            customSkeletonDescriptionText.setText(skeletonArtifactPair.getBehavior().getDescription());
         }
 
         // クリアしているのは、フラグメントつきスケルトンテンプレートを選択されている状態から別のスケルトンに変更された場合に
         // 前のスケルトンに付属しているフラグメントが残るのを避けるため。
         clearFragments();
 
-        for (ArtifactPair fragment : fragments) {
-            Artifact artifact = fragment.getArtifact();
-            ViliBehavior behavior = fragment.getBehavior();
+        for (ArtifactPair fragmentArtifactPair : fragmentArtifactPairs) {
+            Artifact artifact = fragmentArtifactPair.getArtifact();
+            ViliBehavior behavior = fragmentArtifactPair.getBehavior();
 
             boolean matched = false;
-            for (int j = 0; j < fragmentTemplateEntries.length; j++) {
-                if (artifact.getGroupId().equals(fragmentTemplateEntries[j].getGroupId())
-                        && artifact.getArtifactId().equals(fragmentTemplateEntries[j].getArtifactId())) {
-                    fragmentTemplateTable.getItem(j).setChecked(true);
-                    fragmentTemplateArtifacts[j] = fragment;
+            for (int j = 0; j < fragments.length; j++) {
+                if (artifact.getGroupId().equals(fragments[j].getGroupId())
+                        && artifact.getArtifactId().equals(fragments[j].getArtifactId())) {
+                    fragmentTable.getItem(j).setChecked(true);
+                    fragmentArtifactPairs[j] = fragmentArtifactPair;
                     matched = true;
                     break;
                 }
             }
             if (!matched) {
                 customFragmentListField.add(behavior.getLabel());
-                customFragmentListModel.add(fragment);
+                customFragmentListModel.add(fragmentArtifactPair);
             }
         }
 

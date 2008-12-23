@@ -8,16 +8,16 @@ import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.vili.ArtifactType;
-import org.seasar.ymir.vili.model.FragmentEntry;
+import org.seasar.ymir.vili.model.Fragment;
 import org.seasar.ymir.vili.model.MavenArtifact;
-import org.seasar.ymir.vili.model.SkeletonEntry;
+import org.seasar.ymir.vili.model.Skeleton;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class SkeletonArtifactResolver implements Runnable {
     private SelectArtifactPage page;
 
-    private SkeletonEntry entry;
+    private Skeleton skeleton;
 
     private long wait;
 
@@ -27,10 +27,10 @@ public class SkeletonArtifactResolver implements Runnable {
 
     private volatile boolean cancelled;
 
-    public SkeletonArtifactResolver(SelectArtifactPage page, ExtendedContext context, SkeletonEntry entry, long wait) {
+    public SkeletonArtifactResolver(SelectArtifactPage page, ExtendedContext context, Skeleton skeleton, long wait) {
         this.page = page;
         this.context = context;
-        this.entry = entry;
+        this.skeleton = skeleton;
         this.wait = wait;
     }
 
@@ -54,35 +54,35 @@ public class SkeletonArtifactResolver implements Runnable {
 
         page.getShell().getDisplay().asyncExec(new Runnable() {
             public void run() {
-                Artifact skeleton = null;
+                Artifact skeletonArtifact = null;
                 List<ArtifactPair> fragmentList = new ArrayList<ArtifactPair>();
                 boolean failed = false;
                 do {
-                    skeleton = resolveArtifact(entry, page.useSkeletonSnapshot());
+                    skeletonArtifact = resolveArtifact(skeleton, page.useSkeletonSnapshot());
                     if (cancelled) {
                         return;
                     }
-                    if (skeleton == null) {
+                    if (skeletonArtifact == null) {
                         failed = true;
                         break;
                     }
 
-                    for (FragmentEntry fragment : entry.getAllFragments()) {
-                        Artifact artifact = resolveArtifact(fragment, page.useFragmentSnapshot());
+                    for (Fragment fragment : skeleton.getAllFragments()) {
+                        Artifact fragmentArtifact = resolveArtifact(fragment, page.useFragmentSnapshot());
                         if (cancelled) {
                             return;
                         }
-                        if (artifact == null) {
+                        if (fragmentArtifact == null) {
                             failed = true;
                             break;
                         }
-                        fragmentList.add(ArtifactPair.newInstance(artifact, page.getProjectClassLoader()));
+                        fragmentList.add(ArtifactPair.newInstance(fragmentArtifact, page.getProjectClassLoader()));
                     }
                 } while (false);
 
                 String errorMessage;
                 if (!failed) {
-                    ArtifactPair pair = ArtifactPair.newInstance(skeleton, page.getProjectClassLoader());
+                    ArtifactPair pair = ArtifactPair.newInstance(skeletonArtifact, page.getProjectClassLoader());
                     if (pair.getBehavior().getArtifactType() == ArtifactType.SKELETON) {
                         page.setSkeletonAndFragments(pair, fragmentList.toArray(new ArtifactPair[0]));
                         errorMessage = null;

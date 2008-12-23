@@ -18,7 +18,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.vili.maven.Project;
+import org.seasar.ymir.vili.model.maven.Project;
 
 public class MavenUtils {
     private static final String POM_ENCODING = "UTF-8"; //$NON-NLS-1$

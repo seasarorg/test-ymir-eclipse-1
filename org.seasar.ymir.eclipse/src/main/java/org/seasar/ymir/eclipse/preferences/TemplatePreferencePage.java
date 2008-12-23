@@ -44,17 +44,23 @@ public class TemplatePreferencePage extends PreferencePage implements IWorkbench
     @Override
     public boolean performOk() {
         IPreferenceStore store = getPreferenceStore();
-        String template = templateControl.getTemplate().trim();
+        String templateXML = templateControl.getTemplate().trim();
         try {
-            Activator.getDefault().createTemplateEntry(template);
+            Activator.getDefault().createTemplate(templateXML);
         } catch (ValidationException ex) {
-            MessageDialog.openInformation(getControl().getShell(), Messages.getString("TemplatePreferencePage.1"), Messages.getString("TemplatePreferencePage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+            MessageDialog
+                    .openInformation(
+                            getControl().getShell(),
+                            Messages.getString("TemplatePreferencePage.1"), Messages.getString("TemplatePreferencePage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         } catch (IllegalSyntaxException ex) {
-            MessageDialog.openInformation(getControl().getShell(), Messages.getString("TemplatePreferencePage.1"), Messages.getString("TemplatePreferencePage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+            MessageDialog
+                    .openInformation(
+                            getControl().getShell(),
+                            Messages.getString("TemplatePreferencePage.1"), Messages.getString("TemplatePreferencePage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         }
-        store.setValue(PreferenceConstants.P_TEMPLATE, template);
+        store.setValue(PreferenceConstants.P_TEMPLATE, templateXML);
         try {
             ((IPersistentPreferenceStore) store).save();
         } catch (IOException ex) {

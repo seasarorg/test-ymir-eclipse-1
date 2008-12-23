@@ -13,6 +13,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
+import org.seasar.ymir.eclipse.util.ProjectClassLoader;
 import org.seasar.ymir.vili.IAction;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;

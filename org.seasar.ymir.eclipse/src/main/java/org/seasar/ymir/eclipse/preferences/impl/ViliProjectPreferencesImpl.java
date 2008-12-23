@@ -24,10 +24,10 @@ import org.seasar.ymir.eclipse.impl.PlatformDelegateImpl;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.MapAdapter;
-import org.seasar.ymir.vili.DatabaseEntry;
 import org.seasar.ymir.vili.PlatformDelegate;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
+import org.seasar.ymir.vili.model.Database;
 
 public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     private static final Map<String, String> JRE_VERSION_MAP;
@@ -48,9 +48,9 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     private boolean useDatabase;
 
-    private DatabaseEntry databaseEntry;
+    private Database database;
 
-    private DatabaseEntry emptyDatabaseEntry;
+    private Database emptyDatabase;
 
     private String projectName;
 
@@ -95,8 +95,8 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         setRootPackageName(provider.getRootPackageName());
         viewEncoding = provider.getViewEncoding();
         useDatabase = provider.isUseDatabase();
-        databaseEntry = provider.getDatabaseEntry();
-        emptyDatabaseEntry = new DatabaseEntry("", "", "", "", "", "", null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+        database = provider.getDatabase();
+        emptyDatabase = new Database("", "", "", "", "", "", null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
         projectName = provider.getProjectName();
         groupId = provider.getGroupId();
         artifactId = provider.getArtifactId();
@@ -117,9 +117,8 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
                 prop.load(is);
                 return prop.getProperty(Globals.KEY_VERSION);
             } catch (IOException ex) {
-                Activator.getDefault().getLog().log(
-                        new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " //$NON-NLS-1$
-                                + Globals.PATH_VILI_API_POM_PROPERTIES, ex));
+                Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't read " //$NON-NLS-1$
+                        + Globals.PATH_VILI_API_POM_PROPERTIES, ex));
             } finally {
                 IOUtils.closeQuietly(is);
             }
@@ -147,19 +146,19 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         return viewEncoding;
     }
 
-    public DatabaseEntry[] getDatabaseEntries() {
-        return provider.getDatabaseEntries();
+    public Database[] getDatabases() {
+        return provider.getDatabases();
     }
 
     public boolean isUseDatabase() {
         return useDatabase;
     }
 
-    public DatabaseEntry getDatabaseEntry() {
+    public Database getDatabase() {
         if (isUseDatabase()) {
-            return databaseEntry;
+            return database;
         } else {
-            return emptyDatabaseEntry;
+            return emptyDatabase;
         }
     }
 
@@ -197,14 +196,14 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
             isYmirProject = false;
         }
 
-        DatabaseEntry entry = getDatabaseEntry();
-        store.putValue(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, entry.getDriverClassName());
-        store.putValue(ParameterKeys.DATABASE_PASSWORD, entry.getPassword());
-        store.putValue(ParameterKeys.DATABASE_NAME, entry.getName());
-        store.putValue(ParameterKeys.DATABASE_TYPE, entry.getType());
-        store.putValue(ParameterKeys.DATABASE_URL, entry.getURL());
+        Database database = getDatabase();
+        store.putValue(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, database.getDriverClassName());
+        store.putValue(ParameterKeys.DATABASE_PASSWORD, database.getPassword());
+        store.putValue(ParameterKeys.DATABASE_NAME, database.getName());
+        store.putValue(ParameterKeys.DATABASE_TYPE, database.getType());
+        store.putValue(ParameterKeys.DATABASE_URL, database.getURL());
         store.putValue(ParameterKeys.USE_DATABASE, String.valueOf(useDatabase));
-        store.putValue(ParameterKeys.DATABASE_USER, entry.getUser());
+        store.putValue(ParameterKeys.DATABASE_USER, database.getUser());
         if (isYmirProject) {
             applicationProperties.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, rootPackageName);
         } else {
@@ -312,10 +311,6 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     public void setApplicationProperties(MapProperties applicationProperties) {
         this.applicationProperties = applicationProperties;
         ymir = new MapAdapter(this.applicationProperties);
-    }
-
-    public DatabaseEntry getDatabase() {
-        return getDatabaseEntry();
     }
 
     public String getViliVersion() {

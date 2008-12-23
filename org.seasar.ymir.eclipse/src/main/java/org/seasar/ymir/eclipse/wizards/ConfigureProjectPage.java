@@ -302,8 +302,8 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
         super.setVisible(visible);
         if (visible) {
             if (!conrtolsPrepared) {
-                javaProject = ((NewProjectWizard) getWizard()).getSkeleton().getBehavior()
-                        .isProjectOf(ProjectType.JAVA);
+                javaProject = ((NewProjectWizard) getWizard()).getSkeletonArtifactPair().getBehavior().isProjectOf(
+                        ProjectType.JAVA);
                 prepareForControls();
 
                 setPageComplete(validatePage());

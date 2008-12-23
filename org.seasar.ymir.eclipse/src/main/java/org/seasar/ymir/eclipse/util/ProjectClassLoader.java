@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.seasar.ymir.eclipse;
+package org.seasar.ymir.eclipse.util;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.seasar.kvasir.util.ClassUtils;
+import org.seasar.ymir.eclipse.Activator;
 
 /**
  * @author Masataka Kurihara (Gluegent, Inc.)

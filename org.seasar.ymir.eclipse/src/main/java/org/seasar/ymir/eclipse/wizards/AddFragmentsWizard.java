@@ -17,8 +17,8 @@ import org.eclipse.jface.wizard.Wizard;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.Globals;
-import org.seasar.ymir.eclipse.ProjectClassLoader;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
+import org.seasar.ymir.eclipse.util.ProjectClassLoader;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 
 public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard {
@@ -84,7 +84,7 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
     public boolean performFinish() {
         secondPage.populateSkeletonParameters();
         try {
-            final ArtifactPair[] fragments = firstPage.getFragments();
+            final ArtifactPair[] fragments = firstPage.getFragmentArtifactPairs();
             IRunnableWithProgress op = new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask(Messages.getString("AddFragmentsWizard.3"), 1); //$NON-NLS-1$
@@ -129,12 +129,12 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
         secondPage.notifySkeletonAndFragmentsCleared();
     }
 
-    public ArtifactPair[] getFragments() {
-        return firstPage.getFragments();
+    public ArtifactPair[] getFragmentArtifactPairs() {
+        return firstPage.getFragmentArtifactPairs();
     }
 
-    public ArtifactPair getSkeleton() {
-        return firstPage.getSkeleton();
+    public ArtifactPair getSkeletonArtifactPair() {
+        return firstPage.getSkeletonArtifactPair();
     }
 
     public void notifyFragmentsChanged() {

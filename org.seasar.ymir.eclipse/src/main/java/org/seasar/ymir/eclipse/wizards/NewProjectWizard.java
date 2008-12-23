@@ -61,10 +61,10 @@ import org.seasar.ymir.eclipse.util.JdtUtils;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
-import org.seasar.ymir.vili.maven.Dependencies;
-import org.seasar.ymir.vili.maven.Dependency;
-import org.seasar.ymir.vili.maven.Project;
 import org.seasar.ymir.vili.model.Actions;
+import org.seasar.ymir.vili.model.maven.Dependencies;
+import org.seasar.ymir.vili.model.maven.Dependency;
+import org.seasar.ymir.vili.model.maven.Project;
 
 public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtifactWizard {
     private static final char PACKAGE_DELIMITER = '.';
@@ -146,8 +146,8 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
     public boolean performFinish() {
         thirdPage.populateSkeletonParameters();
         try {
-            final ArtifactPair skeleton = firstPage.getSkeleton();
-            final ArtifactPair[] fragments = firstPage.getFragments();
+            final ArtifactPair skeleton = firstPage.getSkeletonArtifactPair();
+            final ArtifactPair[] fragments = firstPage.getFragmentArtifactPairs();
             final IProject project = secondPage.getProjectHandle();
             final IPath locationPath = secondPage.getLocationPath();
             final IPath jreContainerPath = preferences.getJREContainerPath();
@@ -366,7 +366,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
     private void addDatabaseDependenciesToPom(IProject project, IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("NewProjectWizard.28"), 1); //$NON-NLS-1$
         try {
-            Dependency databaseDependency = preferences.getDatabaseEntry().getDependency();
+            Dependency databaseDependency = preferences.getDatabase().getDependency();
             if (databaseDependency != null) {
                 Project pom = new Project();
                 Dependencies dependencies = new Dependencies();
@@ -601,12 +601,12 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
         thirdPage.notifySkeletonAndFragmentsCleared();
     }
 
-    public ArtifactPair getSkeleton() {
-        return firstPage.getSkeleton();
+    public ArtifactPair getSkeletonArtifactPair() {
+        return firstPage.getSkeletonArtifactPair();
     }
 
-    public ArtifactPair[] getFragments() {
-        return firstPage.getFragments();
+    public ArtifactPair[] getFragmentArtifactPairs() {
+        return firstPage.getFragmentArtifactPairs();
     }
 
     public void notifyFragmentsChanged() {

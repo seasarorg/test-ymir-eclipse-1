@@ -99,7 +99,7 @@ public class ViliPropertyPage extends PropertyPage {
         if (templateProjectSpecificSettingsEnabled) {
             String template = templateControl.getTemplate().trim();
             try {
-                Activator.getDefault().createTemplateEntry(template);
+                Activator.getDefault().createTemplate(template);
             } catch (ValidationException ex) {
                 MessageDialog.openInformation(getControl().getShell(), Messages.getString("ViliPropertyPage.1"), Messages.getString("ViliPropertyPage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
                 return false;

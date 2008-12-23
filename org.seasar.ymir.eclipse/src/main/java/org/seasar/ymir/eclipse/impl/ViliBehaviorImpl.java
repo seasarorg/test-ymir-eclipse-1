@@ -31,13 +31,13 @@ import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.IConfigurator;
 import org.seasar.ymir.vili.InclusionType;
+import org.seasar.ymir.vili.NullConfigurator;
 import org.seasar.ymir.vili.ParameterType;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
-import org.seasar.ymir.vili.impl.NullConfigurator;
-import org.seasar.ymir.vili.maven.Project;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
+import org.seasar.ymir.vili.model.maven.Project;
 import org.seasar.ymir.vili.util.AntPathPatterns;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
