@@ -13,6 +13,7 @@ abstract public class AbstractConfigurator implements IConfigurator {
     public void processBeforeExpanding(IProject project, ViliBehavior behavior,
             ViliProjectPreferences preferences, Map<String, Object> parameters,
             IProgressMonitor monitor) {
+        monitor.done();
     }
 
     public InclusionType shouldExpand(String path, String resolvedPath,
@@ -24,5 +25,6 @@ abstract public class AbstractConfigurator implements IConfigurator {
     public void processAfterExpanded(IProject project, ViliBehavior behavior,
             ViliProjectPreferences preferences, Map<String, Object> parameters,
             IProgressMonitor monitor) {
+        monitor.done();
     }
 }

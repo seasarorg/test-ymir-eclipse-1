@@ -9,7 +9,9 @@ public interface ViliBehavior {
 
     String EXPANSION_EXCLUDES = "expansion.excludes"; //$NON-NLS-1$
 
-    String EXPANSION_MERGES = "expansion.merges"; //$NON-NLS-1$
+    String EXPANSION_MERGE_INCLUDES = "expansion.merge.includes"; //$NON-NLS-1$
+
+    String EXPANSION_MERGE_EXCLUDES = "expansion.merge.excludes"; //$NON-NLS-1$
 
     String TEMPLATE_INCLUDES = "template.includes"; //$NON-NLS-1$
 
@@ -49,7 +51,7 @@ public interface ViliBehavior {
 
     InclusionType shouldExpand(String path);
 
-    InclusionType shouldMerge(String path);
+    InclusionType shouldMergeWhenExpanding(String path);
 
     InclusionType shouldEvaluateAsTemplate(String path);
 
