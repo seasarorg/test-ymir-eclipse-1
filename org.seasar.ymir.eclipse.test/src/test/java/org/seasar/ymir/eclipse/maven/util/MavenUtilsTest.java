@@ -17,15 +17,15 @@ import net.skirnir.xom.XOMapperFactory;
 import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 import org.seasar.kvasir.util.io.IOUtils;
-import org.seasar.ymir.vili.maven.Dependencies;
-import org.seasar.ymir.vili.maven.Dependency;
-import org.seasar.ymir.vili.maven.PluginRepositories;
-import org.seasar.ymir.vili.maven.PluginRepository;
-import org.seasar.ymir.vili.maven.Profile;
-import org.seasar.ymir.vili.maven.Profiles;
-import org.seasar.ymir.vili.maven.Project;
-import org.seasar.ymir.vili.maven.Repositories;
-import org.seasar.ymir.vili.maven.Repository;
+import org.seasar.ymir.vili.model.maven.Dependencies;
+import org.seasar.ymir.vili.model.maven.Dependency;
+import org.seasar.ymir.vili.model.maven.PluginRepositories;
+import org.seasar.ymir.vili.model.maven.PluginRepository;
+import org.seasar.ymir.vili.model.maven.Profile;
+import org.seasar.ymir.vili.model.maven.Profiles;
+import org.seasar.ymir.vili.model.maven.Project;
+import org.seasar.ymir.vili.model.maven.Repositories;
+import org.seasar.ymir.vili.model.maven.Repository;
 
 public class MavenUtilsTest extends TestCase {
     @Override
