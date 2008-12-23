@@ -134,7 +134,6 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void propertyChange(PropertyChangeEvent event) {
         String property = event.getProperty();
         if (PreferenceConstants.P_ACTIONS.equals(property)) {

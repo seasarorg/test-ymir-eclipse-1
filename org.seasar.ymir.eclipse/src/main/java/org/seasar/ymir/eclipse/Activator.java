@@ -140,7 +140,7 @@ public class Activator extends AbstractUIPlugin {
 
     private Map<IProject, ProjectRelative> projectRelativeMap = new HashMap<IProject, ProjectRelative>();
 
-    /**
+    /*
      * The constructor
      */
     public Activator() {
@@ -211,20 +211,20 @@ public class Activator extends AbstractUIPlugin {
         super.stop(context);
     }
 
-    /**
+    /*
      * Returns the shared instance
-     *
+     * 
      * @return the shared instance
      */
     public static Activator getDefault() {
         return plugin;
     }
 
-    /**
-     * Returns an image descriptor for the image file at the given
-     * plug-in relative path
-     *
+    /*
+     * Returns an image descriptor for the image file at the given plug-in relative path
+     * 
      * @param path the path
+     * 
      * @return the image descriptor
      */
     public static ImageDescriptor getImageDescriptor(String path) {
@@ -259,7 +259,6 @@ public class Activator extends AbstractUIPlugin {
         });
     }
 
-    @SuppressWarnings("unchecked")//$NON-NLS-1$
     public void expandArtifact(IProject project, ViliProjectPreferences preferences, ArtifactPair pair,
             Map<String, Object> parameters, IProgressMonitor monitor) throws IOException, CoreException {
         monitor.beginTask(Messages.getString("Activator.15"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
@@ -908,7 +907,6 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    @SuppressWarnings("unchecked")//$NON-NLS-1$
     public void addFragments(IProject project, ViliProjectPreferences preferences, ArtifactPair[] fragments,
             IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("Activator.8"), fragments.length + 1); //$NON-NLS-1$
