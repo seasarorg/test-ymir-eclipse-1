@@ -67,6 +67,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.kvasir.util.io.IOUtils;
+import org.seasar.ymir.eclipse.impl.ViliBehaviorImpl;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.util.MavenUtils;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
@@ -93,6 +94,7 @@ import org.seasar.ymir.vili.maven.Repositories;
 import org.seasar.ymir.vili.maven.Repository;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
+import org.seasar.ymir.vili.model.TemplateEntry;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import freemarker.cache.TemplateLoader;

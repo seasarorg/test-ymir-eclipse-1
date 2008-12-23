@@ -5,12 +5,12 @@ import java.util.List;
 
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ArtifactPair;
-import org.seasar.ymir.eclipse.FragmentEntry;
-import org.seasar.ymir.eclipse.MavenArtifact;
-import org.seasar.ymir.eclipse.SkeletonEntry;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.vili.ArtifactType;
+import org.seasar.ymir.vili.model.FragmentEntry;
+import org.seasar.ymir.vili.model.MavenArtifact;
+import org.seasar.ymir.vili.model.SkeletonEntry;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 

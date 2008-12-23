@@ -8,11 +8,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.seasar.ymir.eclipse.maven.ExtendedRepository;
-import org.seasar.ymir.eclipse.maven.Metadata;
-import org.seasar.ymir.eclipse.maven.Snapshot;
-import org.seasar.ymir.eclipse.maven.Versioning;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
+import org.seasar.ymir.vili.model.maven.Metadata;
+import org.seasar.ymir.vili.model.maven.Snapshot;
+import org.seasar.ymir.vili.model.maven.Versioning;
 
 import werkzeugkasten.common.util.UrlUtil;
 import werkzeugkasten.mvnhack.Constants;

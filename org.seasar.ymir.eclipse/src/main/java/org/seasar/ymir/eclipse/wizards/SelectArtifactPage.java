@@ -33,8 +33,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ArtifactPair;
-import org.seasar.ymir.eclipse.FragmentEntry;
-import org.seasar.ymir.eclipse.SkeletonEntry;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
@@ -42,6 +40,8 @@ import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.ViliBehavior;
+import org.seasar.ymir.vili.model.FragmentEntry;
+import org.seasar.ymir.vili.model.SkeletonEntry;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 

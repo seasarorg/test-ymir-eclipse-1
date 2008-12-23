@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse;
+package org.seasar.ymir.eclipse.impl;
 
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;

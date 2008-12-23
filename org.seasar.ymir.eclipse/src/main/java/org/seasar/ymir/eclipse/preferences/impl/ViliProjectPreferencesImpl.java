@@ -20,7 +20,7 @@ import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
-import org.seasar.ymir.eclipse.PlatformDelegateImpl;
+import org.seasar.ymir.eclipse.impl.PlatformDelegateImpl;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.MapAdapter;

@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse;
+package org.seasar.ymir.eclipse.impl;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +23,8 @@ import org.seasar.kvasir.util.LocaleUtils;
 import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.kvasir.util.io.IOUtils;
+import org.seasar.ymir.eclipse.Activator;
+import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.util.ArrayUtils;
 import org.seasar.ymir.eclipse.util.JarClassLoader;
 import org.seasar.ymir.eclipse.util.StreamUtils;
@@ -32,6 +34,7 @@ import org.seasar.ymir.vili.InclusionType;
 import org.seasar.ymir.vili.ParameterType;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
+import org.seasar.ymir.vili.impl.NullConfigurator;
 import org.seasar.ymir.vili.maven.Project;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;

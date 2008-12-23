@@ -10,10 +10,10 @@ import java.util.regex.Pattern;
 
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
-import org.seasar.ymir.eclipse.maven.Metadata;
-import org.seasar.ymir.eclipse.maven.Snapshot;
-import org.seasar.ymir.eclipse.maven.Versioning;
-import org.seasar.ymir.eclipse.maven.Versions;
+import org.seasar.ymir.vili.model.maven.Metadata;
+import org.seasar.ymir.vili.model.maven.Snapshot;
+import org.seasar.ymir.vili.model.maven.Versioning;
+import org.seasar.ymir.vili.model.maven.Versions;
 
 import werkzeugkasten.mvnhack.Constants;
 import werkzeugkasten.mvnhack.repository.Artifact;

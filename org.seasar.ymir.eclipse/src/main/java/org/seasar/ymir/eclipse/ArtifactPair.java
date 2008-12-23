@@ -3,6 +3,7 @@ package org.seasar.ymir.eclipse;
 import java.io.IOException;
 import java.util.Map;
 
+import org.seasar.ymir.eclipse.impl.ViliBehaviorImpl;
 import org.seasar.ymir.vili.ViliBehavior;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
