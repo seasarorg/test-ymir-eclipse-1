@@ -83,6 +83,8 @@ public interface ViliBehavior {
 
     MapProperties getProperties();
 
+    void notifyPropertiesChanged();
+
     ClassLoader getClassLoader();
 
     Actions getActions();
