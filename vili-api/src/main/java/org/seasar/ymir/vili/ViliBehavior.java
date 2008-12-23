@@ -29,6 +29,8 @@ public interface ViliBehavior {
 
     String SUFFIX_TEMPLATE_PARAMETER_DEFAULT = ".default"; //$NON-NLS-1$
 
+    String SUFFIX_TEMPLATE_PARAMETER_CANDIDATES = ".candidates";
+
     String SUFFIX_TEMPLATE_PARAMETER_REQUIRED = ".required"; //$NON-NLS-1$
 
     String SUFFIX_TEMPLATE_PARAMETER_LABEL = ".label"; //$NON-NLS-1$
@@ -58,6 +60,8 @@ public interface ViliBehavior {
     ParameterType getTemplateParameterType(String name);
 
     String getTemplateParameterDefault(String name);
+
+    String[] getTemplateParameterCandidates(String name);
 
     boolean isTemplateParameterRequired(String name);
 
