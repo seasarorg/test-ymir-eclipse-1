@@ -120,10 +120,11 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
     }
 
     public void resourceChanged(IResourceChangeEvent event) {
-        if (event.getResource().getType() != IResource.PROJECT) {
+        IResource resource = event.getResource();
+        if (resource == null || resource.getType() != IResource.PROJECT) {
             return;
         }
-        if (!event.getResource().getProject().equals(project)) {
+        if (!resource.getProject().equals(project)) {
             return;
         }
 
