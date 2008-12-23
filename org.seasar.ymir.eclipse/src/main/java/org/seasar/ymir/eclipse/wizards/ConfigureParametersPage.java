@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
@@ -238,40 +239,90 @@ public class ConfigureParametersPage extends WizardPage {
                 String name = names[j];
                 String description = behavior.getTemplateParameterDescription(name);
                 switch (behavior.getTemplateParameterType(name)) {
-                case TEXT:
+                case TEXT: {
                     new Label(group, SWT.NONE).setText(behavior.getTemplateParameterLabel(name));
                     Text text = new Text(group, SWT.BORDER);
-                    {
-                        ParameterModel model = new TextParameterModel(pair, name, text);
-                        modelMap.put(name, model);
-                        GridData data = new GridData(GridData.FILL_HORIZONTAL);
-                        data.widthHint = 250;
-                        text.setLayoutData(data);
-                        text.setText(behavior.getTemplateParameterDefault(name));
-                        if (description.length() > 0) {
-                            text.setToolTipText(description);
-                        }
-                        if (behavior.isTemplateParameterRequired(name)) {
-                            requiredList.add(model);
-                            text.addListener(SWT.Modify, validationListener);
-                        }
+                    ParameterModel model = new TextParameterModel(pair, name, text);
+                    modelMap.put(name, model);
+                    GridData data = new GridData(GridData.FILL_HORIZONTAL);
+                    data.widthHint = 250;
+                    text.setLayoutData(data);
+                    text.setText(behavior.getTemplateParameterDefault(name));
+                    if (description.length() > 0) {
+                        text.setToolTipText(description);
                     }
+                    if (behavior.isTemplateParameterRequired(name)) {
+                        requiredList.add(model);
+                        text.addListener(SWT.Modify, validationListener);
+                    }
+                }
                     break;
 
-                case CHECKBOX:
+                case CHECKBOX: {
                     Button button = new Button(group, SWT.CHECK | SWT.LEFT);
-                    {
-                        ParameterModel model = new ButtonParameterModel(pair, name, button);
-                        modelMap.put(name, model);
-                        GridData data = new GridData();
-                        data.horizontalSpan = 2;
-                        button.setLayoutData(data);
-                        button.setSelection(PropertyUtils.valueOf(behavior.getTemplateParameterDefault(name), false));
-                        button.setText(behavior.getTemplateParameterLabel(name));
-                        if (description.length() > 0) {
-                            button.setToolTipText(description);
+                    ParameterModel model = new ButtonParameterModel(pair, name, button);
+                    modelMap.put(name, model);
+                    GridData data = new GridData();
+                    data.horizontalSpan = 2;
+                    button.setLayoutData(data);
+                    button.setSelection(PropertyUtils.valueOf(behavior.getTemplateParameterDefault(name), false));
+                    button.setText(behavior.getTemplateParameterLabel(name));
+                    if (description.length() > 0) {
+                        button.setToolTipText(description);
+                    }
+                }
+                    break;
+
+                case SELECT: {
+                    Combo combo = new Combo(group, SWT.READ_ONLY);
+                    ParameterModel model = new ComboParameterModel(pair, name, combo);
+                    modelMap.put(name, model);
+                    GridData data = new GridData();
+                    data.horizontalSpan = 2;
+                    combo.setLayoutData(data);
+                    String defaultValue = behavior.getTemplateParameterDefault(name);
+                    String[] candidates = behavior.getTemplateParameterCandidates(name);
+                    int selectedIndex = -1;
+                    for (int k = 0; k < candidates.length; k++) {
+                        combo.add(candidates[k]);
+                        if (candidates[k].equals(defaultValue)) {
+                            selectedIndex = k;
                         }
                     }
+                    if (selectedIndex >= 0) {
+                        combo.select(selectedIndex);
+                    }
+                    if (description.length() > 0) {
+                        combo.setToolTipText(description);
+                    }
+                }
+                    break;
+
+                case COMBOBOX: {
+                    Combo combo = new Combo(group, SWT.DROP_DOWN);
+                    ParameterModel model = new ComboParameterModel(pair, name, combo);
+                    modelMap.put(name, model);
+                    GridData data = new GridData();
+                    data.horizontalSpan = 2;
+                    combo.setLayoutData(data);
+                    String defaultValue = behavior.getTemplateParameterDefault(name);
+                    String[] candidates = behavior.getTemplateParameterCandidates(name);
+                    int selectedIndex = -1;
+                    for (int k = 0; k < candidates.length; k++) {
+                        combo.add(candidates[k]);
+                        if (candidates[k].equals(defaultValue)) {
+                            selectedIndex = k;
+                        }
+                    }
+                    if (selectedIndex >= 0) {
+                        combo.select(selectedIndex);
+                    } else if (defaultValue != null) {
+                        combo.setText(defaultValue);
+                    }
+                    if (description.length() > 0) {
+                        combo.setToolTipText(description);
+                    }
+                }
                     break;
 
                 default:
@@ -471,6 +522,32 @@ public class ConfigureParametersPage extends WizardPage {
 
         public Object getObject() {
             return Boolean.valueOf(button.getSelection());
+        }
+    }
+
+    static class ComboParameterModel implements ParameterModel {
+        private ArtifactPair pair;
+
+        private String name;
+
+        private Combo combo;
+
+        ComboParameterModel(ArtifactPair pair, String name, Combo combo) {
+            this.pair = pair;
+            this.name = name;
+            this.combo = combo;
+        }
+
+        public boolean valueExists() {
+            return true;
+        }
+
+        public String getLabel() {
+            return pair.getBehavior().getTemplateParameterLabel(name);
+        }
+
+        public Object getObject() {
+            return combo.getText();
         }
     }
 }

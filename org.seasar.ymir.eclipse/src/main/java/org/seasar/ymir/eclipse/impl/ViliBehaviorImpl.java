@@ -248,6 +248,11 @@ public class ViliBehaviorImpl implements ViliBehavior {
                 + SUFFIX_TEMPLATE_PARAMETER_TYPE));
     }
 
+    public String[] getTemplateParameterCandidates(String name) {
+        return PropertyUtils.toLines(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name
+                + SUFFIX_TEMPLATE_PARAMETER_CANDIDATES));
+    }
+
     public String getTemplateParameterDefault(String name) {
         return properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_DEFAULT, ""); //$NON-NLS-1$
     }
