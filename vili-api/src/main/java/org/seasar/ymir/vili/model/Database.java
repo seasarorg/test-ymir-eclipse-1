@@ -1,4 +1,4 @@
-package org.seasar.ymir.vili;
+package org.seasar.ymir.vili.model;
 
 import org.seasar.ymir.vili.model.maven.Dependency;
 

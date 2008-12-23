@@ -2,6 +2,7 @@ package org.seasar.ymir.vili;
 
 import org.eclipse.core.runtime.IPath;
 import org.seasar.kvasir.util.collection.MapProperties;
+import org.seasar.ymir.vili.model.Database;
 
 public interface ViliProjectPreferencesProvider {
     boolean isProjectSpecificTemplateEnabled();
@@ -12,11 +13,11 @@ public interface ViliProjectPreferencesProvider {
 
     String getViewEncoding();
 
-    Database[] getDatabaseEntries();
+    Database[] getDatabases();
 
     boolean isUseDatabase();
 
-    Database getDatabaseEntry();
+    Database getDatabase();
 
     String getProjectName();
 
