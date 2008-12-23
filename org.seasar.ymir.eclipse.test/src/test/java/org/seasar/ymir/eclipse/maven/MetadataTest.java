@@ -3,6 +3,8 @@ package org.seasar.ymir.eclipse.maven;
 import java.beans.Introspector;
 import java.io.InputStreamReader;
 
+import org.seasar.ymir.vili.model.maven.Metadata;
+
 import junit.framework.TestCase;
 import net.skirnir.xom.BeanAccessor;
 import net.skirnir.xom.BeanAccessorFactory;

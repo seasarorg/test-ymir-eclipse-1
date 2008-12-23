@@ -4,6 +4,12 @@ import java.beans.Introspector;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 
+import org.seasar.ymir.vili.model.FragmentEntries;
+import org.seasar.ymir.vili.model.FragmentEntry;
+import org.seasar.ymir.vili.model.SkeletonEntries;
+import org.seasar.ymir.vili.model.SkeletonEntry;
+import org.seasar.ymir.vili.model.TemplateEntry;
+
 import junit.framework.TestCase;
 import net.skirnir.xom.BeanAccessor;
 import net.skirnir.xom.BeanAccessorFactory;
