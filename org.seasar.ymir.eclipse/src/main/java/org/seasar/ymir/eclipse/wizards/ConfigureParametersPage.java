@@ -37,12 +37,6 @@ import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 
-/**
- * The "New" wizard page allows setting the container for the new file as well
- * as the file name. The page will only accept file name without the extension
- * OR with the extension that matches the expected one (mpe).
- */
-
 public class ConfigureParametersPage extends WizardPage {
     private static final int SCROLL_UNIT = 16;
 
