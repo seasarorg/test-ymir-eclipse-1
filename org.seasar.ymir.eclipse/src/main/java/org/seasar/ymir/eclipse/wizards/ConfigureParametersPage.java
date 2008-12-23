@@ -274,11 +274,12 @@ public class ConfigureParametersPage extends WizardPage {
                     break;
 
                 case SELECT: {
+                    new Label(group, SWT.NONE).setText(behavior.getTemplateParameterLabel(name));
                     Combo combo = new Combo(group, SWT.READ_ONLY);
                     ParameterModel model = new ComboParameterModel(pair, name, combo);
                     modelMap.put(name, model);
-                    GridData data = new GridData();
-                    data.horizontalSpan = 2;
+                    GridData data = new GridData(GridData.FILL_HORIZONTAL);
+                    data.widthHint = 250;
                     combo.setLayoutData(data);
                     String defaultValue = behavior.getTemplateParameterDefault(name);
                     String[] candidates = behavior.getTemplateParameterCandidates(name);
@@ -299,11 +300,12 @@ public class ConfigureParametersPage extends WizardPage {
                     break;
 
                 case COMBOBOX: {
+                    new Label(group, SWT.NONE).setText(behavior.getTemplateParameterLabel(name));
                     Combo combo = new Combo(group, SWT.DROP_DOWN);
                     ParameterModel model = new ComboParameterModel(pair, name, combo);
                     modelMap.put(name, model);
-                    GridData data = new GridData();
-                    data.horizontalSpan = 2;
+                    GridData data = new GridData(GridData.FILL_HORIZONTAL);
+                    data.widthHint = 250;
                     combo.setLayoutData(data);
                     String defaultValue = behavior.getTemplateParameterDefault(name);
                     String[] candidates = behavior.getTemplateParameterCandidates(name);
