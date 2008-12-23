@@ -22,7 +22,7 @@ import org.seasar.ymir.eclipse.util.WorkbenchUtils;
  * <p>このクラスはDoltengのソースコードを基にしています。</p>
  */
 public class TogglePageAndHtmlAction extends AbstractWorkbenchWindowActionDelegate {
-    private static final char PATH_DELIMITER_CHAR = '$';
+    private static final char PATH_DELIMITER_CHAR = '%';
 
     private static final String PATH_DELIMITER = String.valueOf(PATH_DELIMITER_CHAR);
 
