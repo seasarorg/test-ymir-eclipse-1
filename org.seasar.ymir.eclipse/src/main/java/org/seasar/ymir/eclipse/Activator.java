@@ -352,7 +352,7 @@ public class Activator extends AbstractUIPlugin {
             try {
                 IFile outputFile = project.getFile(resolvedPath);
                 if (outputFile.exists()) {
-                    if (shouldMergeWhenExpanding(path, behavior)) {
+                    if (evaluateAsTemplate && shouldMergeWhenExpanding(path, behavior)) {
                         in = mergeFile(outputFile, in);
                     }
                     outputFile.setContents(in, false, false, new SubProgressMonitor(monitor, 1));
@@ -658,7 +658,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public <T> T getAsBean(String content, Class<T> clazz) {
-        if (content == null) {
+        if (content == null || content.trim().length() == 0) {
             return null;
         }
         try {

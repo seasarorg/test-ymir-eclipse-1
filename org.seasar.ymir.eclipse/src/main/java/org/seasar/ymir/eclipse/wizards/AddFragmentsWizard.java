@@ -9,7 +9,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -18,15 +17,12 @@ import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
-import org.seasar.ymir.eclipse.util.ProjectClassLoader;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 
 public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard {
     static final String DS_SECTION = "AddFragmentsWizard"; //$NON-NLS-1$
 
     private IProject project;
-
-    private ClassLoader projectClassLoader;
 
     private ViliProjectPreferences preferences;
 
@@ -40,13 +36,6 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
         super();
 
         this.project = project;
-
-        try {
-            if (project.hasNature(Globals.NATURE_ID_JAVA)) {
-                projectClassLoader = new ProjectClassLoader(JavaCore.create(project), getClass().getClassLoader());
-            }
-        } catch (CoreException ignore) {
-        }
 
         setNeedsProgressMonitor(true);
         setWindowTitle(Messages.getString("AddFragmentsWizard.1")); //$NON-NLS-1$
@@ -68,7 +57,8 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
      */
 
     public void addPages() {
-        firstPage = new SelectArtifactPage(projectClassLoader, nonTransitiveContext, false);
+        firstPage = new SelectArtifactPage(Activator.getDefault().getProjectRelative(project).getProjectClassLoader(),
+                nonTransitiveContext, false);
         firstPage.setTitle(Messages.getString("AddFragmentsWizard.1")); //$NON-NLS-1$
         firstPage.setDescription(Messages.getString("AddFragmentsWizard.2")); //$NON-NLS-1$
         addPage(firstPage);

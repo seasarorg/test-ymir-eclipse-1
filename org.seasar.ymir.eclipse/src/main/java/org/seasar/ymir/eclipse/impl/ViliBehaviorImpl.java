@@ -97,16 +97,11 @@ public class ViliBehaviorImpl implements ViliBehavior {
         initialize(properties);
     }
 
-    private ClassLoader createViliClassLoader(ClassLoader parent) {
-        try {
-            JarClassLoader classLoader = new JarClassLoader(Activator.getDefault().getURL(artifact), parent);
-            classLoader.setClassesPath(Globals.PATH_CLASSES);
-            classLoader.setLibPath(Globals.PATH_LIB);
-            return classLoader;
-        } catch (IOException ex) {
-            Activator.getDefault().log(ex);
-            return parent;
-        }
+    private ClassLoader createViliClassLoader(ClassLoader parent) throws IOException {
+        JarClassLoader classLoader = new JarClassLoader(Activator.getDefault().getURL(artifact), parent);
+        classLoader.setClassesPath(Globals.PATH_CLASSES);
+        classLoader.setLibPath(Globals.PATH_LIB);
+        return classLoader;
     }
 
     private void initializeTieUpBundleSet(Artifact artifact) throws IOException {
@@ -310,6 +305,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
             } catch (Throwable t) {
                 Activator.getDefault().getLog().log(
                         new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create configurator", t)); //$NON-NLS-1$
+                throw new RuntimeException(t);
             }
         }
 

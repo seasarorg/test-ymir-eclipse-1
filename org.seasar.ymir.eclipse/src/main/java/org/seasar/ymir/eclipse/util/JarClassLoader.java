@@ -35,13 +35,13 @@ public class JarClassLoader extends ClassLoader {
 
     private File tempDir;
 
-    public JarClassLoader(URL jarURL) throws IOException {
+    public JarClassLoader(URL jarURL) {
         this.jarURL = jarURL;
 
         initialize();
     }
 
-    public JarClassLoader(URL jarURL, ClassLoader parent) throws IOException {
+    public JarClassLoader(URL jarURL, ClassLoader parent) {
         super(parent);
         this.jarURL = jarURL;
 
@@ -54,7 +54,8 @@ public class JarClassLoader extends ClassLoader {
             tempDir.delete();
             tempDir.mkdirs();
             tempDir.deleteOnExit();
-        } catch (IOException ignore) {
+        } catch (IOException ex) {
+            tempDir = null;
         }
     }
 
