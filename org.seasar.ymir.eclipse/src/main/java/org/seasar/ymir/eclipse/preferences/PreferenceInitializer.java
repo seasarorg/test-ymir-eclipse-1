@@ -36,9 +36,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                                 Messages.getString("PreferenceInitializer.10")), //$NON-NLS-1$
                         new Skeleton(
                                 "ymir-skeleton-generic", Messages.getString("PreferenceInitializer.66"), //$NON-NLS-1$ //$NON-NLS-2$
-                                Messages.getString("PreferenceInitializer.13"), new Fragment("ymir-fragment-dbflute", "", "")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                                Messages.getString("PreferenceInitializer.13"), new Fragment("dbflute-fragment-generic", "", "")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                         new Skeleton("ymir-skeleton-generic", "Ymir標準プロジェクト（YSP）",
-                                "The Ymir Projectで規定している標準構成のプロジェクトを作成します。", new Fragment("ymir-fragment-dbflute", "",
+                                "The Ymir Projectで規定している標準構成のプロジェクトを作成します。", new Fragment("dbflute-fragment-generic", "",
                                         ""), new Fragment("ymir-fragment-utility", "", ""), new Fragment(
                                         "org.seasar.ymir.skeleton.ysp", "ysp-base", "", "")),
                         new Skeleton(
@@ -53,12 +53,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                         new Fragment(
                                 "ymir-fragment-utility", Messages.getString("PreferenceInitializer.63"), Messages.getString("PreferenceInitializer.64")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         new Fragment(
-                                "ymir-fragment-dbflute", Messages.getString("PreferenceInitializer.4"), Messages.getString("PreferenceInitializer.3")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                                "dbflute-fragment-generic", Messages.getString("PreferenceInitializer.4"), Messages.getString("PreferenceInitializer.3")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         new Fragment(
                                 "ymir-fragment-json", Messages.getString("PreferenceInitializer.1"), Messages.getString("PreferenceInitializer.0")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         new Fragment("ymir-fragment-amf", Messages.getString("PreferenceInitializer.60"), //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("PreferenceInitializer.61")), //$NON-NLS-1$
-                        new Fragment("ymir-fragment-yonex", Messages.getString("PreferenceInitializer.76"), //$NON-NLS-1$ //$NON-NLS-2$
+                        new Fragment("yonex-fragment-generic", Messages.getString("PreferenceInitializer.76"), //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("PreferenceInitializer.77")), //$NON-NLS-1$
                         new Fragment("org.seasar.ymir.skeleton.ysp", "ysp-base", "[YSP] 基本リソース",
                                 "[Ymir標準プロジェクト] Ymir標準プロジェクトを構築するための基本となるリソースを追加します。"), new Fragment(
