@@ -2,17 +2,24 @@ package org.seasar.ymir.eclipse.maven.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.skirnir.xom.ValidationException;
+
+import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.maven.ExtendedRepository;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
 import org.seasar.ymir.vili.model.maven.Metadata;
 import org.seasar.ymir.vili.model.maven.Snapshot;
 import org.seasar.ymir.vili.model.maven.Versioning;
+import org.seasar.ymir.vili.model.maven.Versions;
 
 import werkzeugkasten.common.util.UrlUtil;
 import werkzeugkasten.mvnhack.Constants;
@@ -37,10 +44,53 @@ public class ExtendedLocalRepository extends LocalRepository implements Extended
 
     public byte[] resolveMetadata(String groupId, String artifactId, String version) {
         URL location = getMetadataLocation(groupId, artifactId, version);
-        try {
-            return StreamUtils.read(location);
-        } catch (IOException ex) {
-            return null;
+        if (location == null && version == null) {
+            // version無指定でmetadataがない場合は、バージョン番号を取得するためのダミーのmetadataを生成する。
+            File dir = new File(root, toArtifactDirectoryPath(groupId, artifactId));
+            if (!dir.exists() || !dir.isDirectory()) {
+                return null;
+            }
+            String latestVersion = null;
+            long lastUpdated = 0L;
+            for (File file : dir.listFiles()) {
+                String v = file.getName();
+                if (ArtifactUtils.compareVersions(v, latestVersion) > 0) {
+                    latestVersion = v;
+                    lastUpdated = file.lastModified();
+                }
+            }
+            if (latestVersion == null) {
+                return null;
+            }
+            Metadata metadata = new Metadata();
+            metadata.setGroupId(groupId);
+            metadata.setArtifactId(artifactId);
+            metadata.setVersion(latestVersion);
+            Versioning versioning = new Versioning();
+            Versions versions = new Versions();
+            versions.addVersion(latestVersion);
+            versioning.setVersions(versions);
+            versioning.setLastUpdatedDate(new Date(lastUpdated));
+            metadata.setVersioning(versioning);
+            StringWriter sw = new StringWriter();
+            try {
+                Activator.getDefault().getXOMapper().toXML(metadata, sw);
+            } catch (ValidationException ex) {
+                throw new RuntimeException("Can't happen!", ex);
+            } catch (IOException ex) {
+                throw new RuntimeException("Can't happen!", ex);
+            }
+            try {
+                return sw.toString().getBytes("UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+                throw new RuntimeException("Can't happen!", ex);
+            }
+        } else {
+            try {
+                return StreamUtils.read(location);
+            } catch (IOException ex) {
+                return null;
+            }
         }
     }
 
@@ -55,6 +105,15 @@ public class ExtendedLocalRepository extends LocalRepository implements Extended
         } else {
             return null;
         }
+    }
+
+    private String toArtifactDirectoryPath(String groupId, String artifactId) {
+        char ps = '/';
+        StringBuilder sb = new StringBuilder();
+        sb.append(groupId.replace('.', ps));
+        sb.append(ps);
+        sb.append(artifactId);
+        return sb.toString();
     }
 
     protected String toMetadataPath(String groupId, String artifactId, String version) {
@@ -91,8 +150,9 @@ public class ExtendedLocalRepository extends LocalRepository implements Extended
                 Snapshot snapshot = versioning.getSnapshot();
                 if (snapshot != null && snapshot.isLocalCopy()) {
                     actualVersion = version;
-                    if (versioning.getLastUpdated() != null) {
-                        lastUpdated = versioning.getLastUpdated().longValue();
+                    Date date = versioning.getLastUpdatedDate();
+                    if (date != null) {
+                        lastUpdated = date.getTime();
                     }
                 }
             }

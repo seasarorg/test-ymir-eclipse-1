@@ -2,6 +2,7 @@ package org.seasar.ymir.eclipse.maven.impl;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -81,8 +82,9 @@ public class ExtendedRemoteRepository extends RemoteRepository implements Extend
         if (actualVersion != null) {
             Versioning versioning = metadata.getVersioning();
             if (versioning != null) {
-                if (versioning.getLastUpdated() != null) {
-                    lastUpdated = versioning.getLastUpdated().longValue();
+                Date date = versioning.getLastUpdatedDate();
+                if (date != null) {
+                    lastUpdated = date.getTime();
                 }
             }
         }
