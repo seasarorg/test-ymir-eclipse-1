@@ -18,11 +18,13 @@ package org.seasar.ymir.eclipse.util;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.seasar.kvasir.util.ClassUtils;
 import org.seasar.ymir.eclipse.Activator;
@@ -36,15 +38,15 @@ public class ProjectClassLoader extends URLClassLoader {
 
     public ProjectClassLoader(IJavaProject project) {
         super(new URL[0]);
-        getClassPaths(project);
+        addClasspathURLsOf(project, true);
     }
 
     public ProjectClassLoader(IJavaProject project, ClassLoader parent) {
         super(new URL[0], parent);
-        getClassPaths(project);
+        addClasspathURLsOf(project, true);
     }
 
-    private void getClassPaths(IJavaProject project) {
+    private void addClasspathURLsOf(IJavaProject project, boolean recursive) {
         if (project == null) {
             throw new NullPointerException();
         }
@@ -52,39 +54,52 @@ public class ProjectClassLoader extends URLClassLoader {
             IClasspathEntry[] entries = project.getResolvedClasspath(true);
             for (int i = 0; i < entries.length; i++) {
                 int kind = entries[i].getEntryKind();
-                URL url = null;
                 if (kind == IClasspathEntry.CPE_SOURCE) {
-                    try {
-                        IPath outputLocation = entries[i].getOutputLocation();
+                    IPath outputLocation = entries[i].getOutputLocation();
+                    if (outputLocation == null) {
+                        outputLocation = project.getOutputLocation();
                         if (outputLocation == null) {
-                            outputLocation = project.getOutputLocation();
-                            if (outputLocation == null) {
-                                // TODO こういうケースはあるのか？
+                            // TODO こういうケースはあるのか？
+                            Activator.getDefault().getLog().log(
+                                    new Status(IStatus.WARNING, Activator.PLUGIN_ID,
+                                            "ProjectClassLoader: Can't construct URL for classLoader because default output location is null: entry=" //$NON-NLS-1$
+                                                    + entries[i].getPath()));
+                            continue;
+                        }
+                    }
+
+                    URL url = ClassUtils.getURLForURLClassLoader(project.getProject().getParent().getFolder(
+                            outputLocation).getLocation().toFile());
+                    if (url == null) {
+                        Activator.getDefault().getLog().log(
+                                new Status(IStatus.WARNING, Activator.PLUGIN_ID,
+                                        "ProjectClassLoader: Can't construct URL for classLoader: entry=" //$NON-NLS-1$
+                                                + entries[i].getPath()));
+                        continue;
+                    }
+                    addURL(url);
+                } else {
+                    if (recursive) {
+                        if (kind == IClasspathEntry.CPE_PROJECT) {
+                            addClasspathURLsOf(JavaCore.create(ResourcesPlugin.getWorkspace().getRoot().getProject(
+                                    entries[i].getPath().toFile().getName())), false);
+                        } else {
+                            URL url = ClassUtils.getURLForURLClassLoader(entries[i].getPath().toFile());
+                            if (url == null) {
                                 Activator.getDefault().getLog().log(
                                         new Status(IStatus.WARNING, Activator.PLUGIN_ID,
-                                                "Can't construct URL for classLoader because default output location is null: entry=" //$NON-NLS-1$
+                                                "ProjectClassLoader: Can't construct URL for classLoader: entry=" //$NON-NLS-1$
                                                         + entries[i].getPath()));
                                 continue;
                             }
+                            addURL(url);
                         }
-
-                        url = ClassUtils.getURLForURLClassLoader(project.getProject().getParent().getFolder(
-                                outputLocation).getLocation().toFile());
-                    } catch (RuntimeException e1) {
-                        Activator.getDefault().getLog().log(
-                                new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                                        "Can't construct URL for classLoader: entry=" + entries[i].getPath(), e1)); //$NON-NLS-1$
-                        continue;
                     }
-                } else {
-                    url = ClassUtils.getURLForURLClassLoader(entries[i].getPath().toFile());
-                    // "jar:file:///" + entries[i].getPath().toString()
-                    // + "!/";
                 }
-                addURL(url);
             }
-        } catch (JavaModelException e) {
-            throw new RuntimeException(e);
+        } catch (JavaModelException ex) {
+            Activator.getDefault().log("ProjectClassLoader: Can't construct ClassLoader", ex);
+            throw new RuntimeException(ex);
         }
     }
 

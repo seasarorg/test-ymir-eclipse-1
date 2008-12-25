@@ -1036,11 +1036,19 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public void log(Throwable t) {
+        log("Problem has occured", t);
+    }
+
+    public void log(String message) {
+        log(message, null);
+    }
+
+    public void log(String message, Throwable t) {
         IStatus status;
         if (t instanceof CoreException) {
             status = ((CoreException) t).getStatus();
         } else {
-            status = new Status(IStatus.ERROR, PLUGIN_ID, "Problem has occured", t);
+            status = new Status(IStatus.ERROR, PLUGIN_ID, message, t);
         }
         getLog().log(status);
     }
