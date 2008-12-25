@@ -6,7 +6,7 @@ import junit.framework.TestCase;
 
 public class ArtifactUtilsTest extends TestCase {
     public void testCompareVersion() throws Exception {
-        assertTrue(ArtifactUtils.compareVersions(null, null) == 0);
+        assertTrue(ArtifactUtils.compareVersions((String) null, (String) null) == 0);
         assertTrue(ArtifactUtils.compareVersions(null, "1.0.0") < 0);
         assertTrue(ArtifactUtils.compareVersions("1.0.0", null) > 0);
         assertTrue(ArtifactUtils.compareVersions("1.0.0", "1.0.0") == 0);
