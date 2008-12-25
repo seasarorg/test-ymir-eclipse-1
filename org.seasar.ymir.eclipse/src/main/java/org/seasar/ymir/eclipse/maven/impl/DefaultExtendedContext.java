@@ -122,8 +122,7 @@ public class DefaultExtendedContext implements ExtendedContext {
                         resolvedFromRemoteRepository = true;
                     }
 
-                    if (artifact == null
-                            || ArtifactUtils.compareVersions(artifact.getActualVersion(), a.getActualVersion()) < 0) {
+                    if (artifact == null || ArtifactUtils.compareVersions(artifact, a) < 0) {
                         artifact = a;
                         repo = r;
                     }

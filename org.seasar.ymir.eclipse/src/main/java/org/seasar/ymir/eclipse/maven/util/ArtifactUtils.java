@@ -34,6 +34,18 @@ public class ArtifactUtils {
     private ArtifactUtils() {
     }
 
+    public static int compareVersions(ExtendedArtifact artifact1, ExtendedArtifact artifact2) {
+        int cmp = compareVersions(artifact1.getVersion(), artifact2.getVersion());
+        if (cmp == 0 && isSnapshot(artifact1.getVersion())) {
+            // 同じバージョンでかつSNAPSHOTの場合はlastUpdatedを比較する。
+            // actualVersionはリモートリポジトリの場合はXXX-YYYYMMDD.HHMMSS-B形式で取れるのに対して
+            // ローカルリポジトリの場合XXX-SNAPSHOT形式で取れてしまうため、actualVersionの比較では
+            // リモートにローカルより新しいSNAPSHOTがあった場合に正しい比較が行なわれない。
+            cmp = (int) (artifact1.getLastUpdated() - artifact2.getLastUpdated());
+        }
+        return cmp;
+    }
+
     public static int compareVersions(String version1, String version2) {
         if (version1 == null) {
             if (version2 == null) {
