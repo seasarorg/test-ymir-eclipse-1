@@ -1,15 +1,23 @@
 package org.seasar.ymir.vili.model.maven;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 import net.skirnir.xom.annotation.Child;
 
 public class Versioning {
+    private static final String FORMAT = "yyyyMMddHHmmss";
+
     private String release;
 
     private Snapshot snapshot;
 
     private Versions versions;
 
-    private Long lastUpdated;
+    private String lastUpdated;
 
     public Versions getVersions() {
         return versions;
@@ -38,12 +46,38 @@ public class Versioning {
         this.versions = versions;
     }
 
-    public Long getLastUpdated() {
+    public String getLastUpdated() {
         return lastUpdated;
     }
 
+    public Date getLastUpdatedDate() {
+        if (lastUpdated == null) {
+            return null;
+        } else {
+            try {
+                return getDateFormat().parse(lastUpdated);
+            } catch (ParseException ex) {
+                return null;
+            }
+        }
+    }
+
     @Child(order = 4)
-    public void setLastUpdated(Long lastUpdated) {
+    public void setLastUpdated(String lastUpdated) {
         this.lastUpdated = lastUpdated;
+    }
+
+    public void setLastUpdatedDate(Date lastUpdatedDate) {
+        if (lastUpdatedDate == null) {
+            lastUpdated = null;
+        } else {
+            lastUpdated = getDateFormat().format(lastUpdatedDate);
+        }
+    }
+
+    DateFormat getDateFormat() {
+        SimpleDateFormat sdf = new SimpleDateFormat(FORMAT);
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return sdf;
     }
 }
