@@ -620,7 +620,6 @@ public class SelectArtifactPage extends WizardPage {
             }
         }
 
-        setErrorMessage(null);
         return true;
     }
 
