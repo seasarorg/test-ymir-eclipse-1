@@ -55,6 +55,8 @@ public class ConfigureParametersPage extends WizardPage {
 
     private CTabFolder tabFolder;
 
+    private Label tabLabel;
+
     private ViliProjectPreferencesControl preferencesControl;
 
     private Composite skeletonTabContent;
@@ -110,7 +112,8 @@ public class ConfigureParametersPage extends WizardPage {
             tabFolder.setSimple(false);
             tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
         } else {
-            new Label(tabFolderParent, SWT.NULL).setText(Messages.getString("ConfigureParametersPage.13")); //$NON-NLS-1$
+            tabLabel = new Label(tabFolderParent, SWT.NULL);
+            tabLabel.setText(Messages.getString("ConfigureParametersPage.13")); //$NON-NLS-1$
         }
 
         if (skeleton != null) {
@@ -296,6 +299,10 @@ public class ConfigureParametersPage extends WizardPage {
                     if (description.length() > 0) {
                         combo.setToolTipText(description);
                     }
+                    if (behavior.isTemplateParameterRequired(name)) {
+                        requiredList.add(model);
+                        combo.addListener(SWT.Modify, validationListener);
+                    }
                 }
                     break;
 
@@ -323,6 +330,10 @@ public class ConfigureParametersPage extends WizardPage {
                     }
                     if (description.length() > 0) {
                         combo.setToolTipText(description);
+                    }
+                    if (behavior.isTemplateParameterRequired(name)) {
+                        requiredList.add(model);
+                        combo.addListener(SWT.Modify, validationListener);
                     }
                 }
                     break;
@@ -379,6 +390,10 @@ public class ConfigureParametersPage extends WizardPage {
             tabFolder.dispose();
             tabFolder = null;
         }
+        if (tabLabel != null) {
+            tabLabel.dispose();
+            tabLabel = null;
+        }
         tabPrepared = false;
 
         skeletonTabContent = null;
@@ -399,6 +414,10 @@ public class ConfigureParametersPage extends WizardPage {
         if (tabFolder != null) {
             tabFolder.dispose();
             tabFolder = null;
+        }
+        if (tabLabel != null) {
+            tabLabel.dispose();
+            tabLabel = null;
         }
         tabPrepared = false;
 
@@ -489,7 +508,7 @@ public class ConfigureParametersPage extends WizardPage {
         }
 
         public boolean valueExists() {
-            return text.getText().length() > 0;
+            return text.getText().trim().length() > 0;
         }
 
         public String getLabel() {
@@ -497,7 +516,7 @@ public class ConfigureParametersPage extends WizardPage {
         }
 
         public Object getObject() {
-            return text.getText();
+            return text.getText().trim();
         }
     }
 
@@ -541,7 +560,7 @@ public class ConfigureParametersPage extends WizardPage {
         }
 
         public boolean valueExists() {
-            return true;
+            return combo.getText().trim().length() > 0;
         }
 
         public String getLabel() {
@@ -549,7 +568,7 @@ public class ConfigureParametersPage extends WizardPage {
         }
 
         public Object getObject() {
-            return combo.getText();
+            return combo.getText().trim();
         }
     }
 }
