@@ -119,7 +119,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
      */
 
     public void addPages() {
-        firstPage = new SelectArtifactPage(getClass().getClassLoader(), nonTransitiveContext, true);
+        firstPage = new SelectArtifactPage(getClass().getClassLoader(), preferences, nonTransitiveContext, true);
         firstPage.setTitle(Messages.getString("NewProjectWizard.26")); //$NON-NLS-1$
         firstPage.setDescription(Messages.getString("NewProjectWizard.27")); //$NON-NLS-1$
         addPage(firstPage);

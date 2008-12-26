@@ -35,6 +35,7 @@ import org.seasar.ymir.vili.NullConfigurator;
 import org.seasar.ymir.vili.ParameterType;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
+import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
 import org.seasar.ymir.vili.model.maven.Project;
@@ -43,6 +44,8 @@ import org.seasar.ymir.vili.util.AntPathPatterns;
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class ViliBehaviorImpl implements ViliBehavior {
+    private static final String DEFAULT_VILIVERSION = "0.0.1";
+
     private Artifact artifact;
 
     private MapProperties properties;
@@ -70,6 +73,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
     private String[] templateParameters;
 
     private EnumSet<ProjectType> projectTypeSet;
+
+    private ArtifactVersion viliVersion;
 
     private Pair[] templateEncodingPairs = new Pair[0];
 
@@ -235,6 +240,9 @@ public class ViliBehaviorImpl implements ViliBehavior {
         }
 
         projectTypeSet = ProjectType.createEnumSet(properties.getProperty(PROJECTTYPE));
+
+        String viliVersionString = properties.getProperty(VILIVERSION);
+        viliVersion = new ArtifactVersion(viliVersionString != null ? viliVersionString : DEFAULT_VILIVERSION);
     }
 
     public String[] getTemplateParameters() {
@@ -278,6 +286,10 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     public ArtifactType getArtifactType() {
         return ArtifactType.enumOf(properties.getProperty(TYPE));
+    }
+
+    public ArtifactVersion getViliVersion() {
+        return viliVersion;
     }
 
     public String getTemplateEncoding(String path) {

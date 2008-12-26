@@ -9,9 +9,12 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.skirnir.xom.IllegalSyntaxException;
+import net.skirnir.xom.ValidationException;
+import net.skirnir.xom.XMLParserFactory;
+
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
-import org.seasar.ymir.eclipse.maven.versioning.ArtifactVersion;
 import org.seasar.ymir.vili.model.maven.Metadata;
 import org.seasar.ymir.vili.model.maven.Snapshot;
 import org.seasar.ymir.vili.model.maven.Versioning;
@@ -20,12 +23,14 @@ import org.seasar.ymir.vili.model.maven.Versions;
 import werkzeugkasten.mvnhack.Constants;
 import werkzeugkasten.mvnhack.repository.Artifact;
 
-import net.skirnir.xom.IllegalSyntaxException;
-import net.skirnir.xom.ValidationException;
-import net.skirnir.xom.XMLParserFactory;
-
 public class ArtifactUtils {
+    private static final Pattern PATTERN_COMPARE_VRESIONS_SEGMENT = Pattern.compile("([^\\.-]+)(.*)"); //$NON-NLS-1$
+
+    private static final Pattern PATTERN_COMPARE_VERSIONS_DELIMITER = Pattern.compile("([\\.-]+)(.*)"); //$NON-NLS-1$
+
     private static final Pattern PATTERN_GET_ARTIFACT_NAME_DELIMITER = Pattern.compile("-\\d"); //$NON-NLS-1$
+
+    private static final String SNAPSHOT = "-SNAPSHOT"; //$NON-NLS-1$
 
     private ArtifactUtils() {
     }
@@ -55,7 +60,80 @@ public class ArtifactUtils {
             }
         }
 
-        return new ArtifactVersion(version1).compareTo(new ArtifactVersion(version2));
+        while (true) {
+            Matcher matcher1 = PATTERN_COMPARE_VRESIONS_SEGMENT.matcher(version1);
+            Matcher matcher2 = PATTERN_COMPARE_VRESIONS_SEGMENT.matcher(version2);
+            if (matcher1.matches() && matcher2.matches()) {
+                int cmp = compareSegment(matcher1.group(1), matcher2.group(1));
+                if (cmp != 0) {
+                    return cmp;
+                }
+                version1 = matcher1.group(2);
+                version2 = matcher2.group(2);
+
+                // SNAPSHOTは正式リリースより前だが他のどのリリースよりも後。
+                if (version1.equals(SNAPSHOT)) {
+                    if (version2.equals(SNAPSHOT)) {
+                        return 0;
+                    } else if (version2.length() == 0) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                } else if (version2.equals(SNAPSHOT)) {
+                    if (version1.length() == 0) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                }
+
+                matcher1 = PATTERN_COMPARE_VERSIONS_DELIMITER.matcher(version1);
+                matcher2 = PATTERN_COMPARE_VERSIONS_DELIMITER.matcher(version2);
+                if (matcher1.matches() && matcher2.matches()) {
+                    cmp = matcher1.group(1).compareTo(matcher2.group(1));
+                    if (cmp != 0) {
+                        return cmp;
+                    }
+                    version1 = matcher1.group(2);
+                    version2 = matcher2.group(2);
+                } else {
+                    return version1.compareTo(version2);
+                }
+            } else {
+                return version1.compareTo(version2);
+            }
+        }
+    }
+
+    static int compareSegment(String segment1, String segment2) {
+        long long1 = 0L;
+        boolean isSegment1Number = false;
+        try {
+            long1 = Long.parseLong(segment1);
+            isSegment1Number = true;
+        } catch (NumberFormatException ignore) {
+        }
+        long long2 = 0L;
+        boolean isSegment2Number = false;
+        try {
+            long2 = Long.parseLong(segment2);
+            isSegment2Number = true;
+        } catch (NumberFormatException ignore) {
+        }
+        if (isSegment1Number) {
+            if (isSegment2Number) {
+                return (int) (long1 - long2);
+            } else {
+                return 1;
+            }
+        } else {
+            if (isSegment2Number) {
+                return -1;
+            } else {
+                return segment1.compareTo(segment2);
+            }
+        }
     }
 
     public static String getFileName(Artifact artifact) {

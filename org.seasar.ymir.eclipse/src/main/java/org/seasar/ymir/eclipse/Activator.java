@@ -83,6 +83,7 @@ import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
+import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
 import org.seasar.ymir.vili.model.Template;
@@ -1051,5 +1052,17 @@ public class Activator extends AbstractUIPlugin {
             status = new Status(IStatus.ERROR, PLUGIN_ID, message, t);
         }
         getLog().log(status);
+    }
+
+    public boolean viliVersionEquals(ArtifactVersion version1, ArtifactVersion version2) {
+        if (version1 == null) {
+            return version2 == null;
+        } else {
+            if (version2 == null) {
+                return false;
+            } else {
+                return version1.getWithoutQualifier().equals(version2.getWithoutQualifier());
+            }
+        }
     }
 }

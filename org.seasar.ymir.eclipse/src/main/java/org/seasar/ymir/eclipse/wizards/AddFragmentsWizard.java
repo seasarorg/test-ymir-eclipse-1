@@ -58,7 +58,7 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
 
     public void addPages() {
         firstPage = new SelectArtifactPage(Activator.getDefault().getProjectRelative(project).getProjectClassLoader(),
-                nonTransitiveContext, false);
+                preferences, nonTransitiveContext, false);
         firstPage.setTitle(Messages.getString("AddFragmentsWizard.1")); //$NON-NLS-1$
         firstPage.setDescription(Messages.getString("AddFragmentsWizard.2")); //$NON-NLS-1$
         addPage(firstPage);

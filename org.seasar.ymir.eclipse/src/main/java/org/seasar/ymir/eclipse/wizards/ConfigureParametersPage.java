@@ -32,11 +32,13 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.ymir.eclipse.ArtifactPair;
+import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.ui.ViliProjectPreferencesControl;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
+import org.seasar.ymir.vili.maven.ArtifactVersion;
 
 public class ConfigureParametersPage extends WizardPage {
     private static final int SCROLL_UNIT = 16;
@@ -478,6 +480,10 @@ public class ConfigureParametersPage extends WizardPage {
                 Map.Entry<String, ParameterModel> entry = itr.next();
                 parameterMap.put(entry.getKey(), entry.getValue().getObject());
             }
+
+            // アーティファクト情報を追加する。
+            parameterMap.put(ParameterKeys.ARTIFACT_VERSION, new ArtifactVersion(pairs[i].getArtifact().getVersion()));
+
             pairs[i].setParameterMap(parameterMap);
         }
     }

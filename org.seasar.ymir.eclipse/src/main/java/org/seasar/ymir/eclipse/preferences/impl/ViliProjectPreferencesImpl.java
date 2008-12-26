@@ -27,6 +27,7 @@ import org.seasar.ymir.eclipse.util.MapAdapter;
 import org.seasar.ymir.vili.PlatformDelegate;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
+import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Database;
 
 public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
@@ -76,7 +77,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     private String fieldSpecialPrefix;
 
-    private String viliVersion;
+    private ArtifactVersion viliVersion;
 
     static {
         Map<String, String> map = new HashMap<String, String>();
@@ -106,7 +107,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         fieldSuffix = provider.getFieldSuffix();
         fieldSpecialPrefix = provider.getFieldSpecialPrefix();
         setApplicationProperties(provider.getApplicationProperties());
-        viliVersion = readViliVersion();
+        viliVersion = newArtifactVersion(readViliVersion());
     }
 
     String readViliVersion() {
@@ -123,7 +124,14 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
                 IOUtils.closeQuietly(is);
             }
         }
-        return ""; //$NON-NLS-1$
+        return null;
+    }
+
+    ArtifactVersion newArtifactVersion(String version) {
+        if (version == null) {
+            return null;
+        }
+        return new ArtifactVersion(version);
     }
 
     public boolean isProjectSpecificTemplateEnabled() {
@@ -313,7 +321,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         ymir = new MapAdapter(this.applicationProperties);
     }
 
-    public String getViliVersion() {
+    public ArtifactVersion getViliVersion() {
         return viliVersion;
     }
 }

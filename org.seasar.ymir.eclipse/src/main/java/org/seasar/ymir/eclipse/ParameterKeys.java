@@ -46,4 +46,6 @@ public interface ParameterKeys {
     String FIELD_SPECIAL_PREFIX = "fieldSpecialPrefix"; //$NON-NLS-1$
 
     String YMIR = "ymir"; //$NON-NLS-1$
+
+    String ARTIFACT_VERSION = "artifactVersion";
 }
