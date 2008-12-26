@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.seasar.kvasir.util.collection.MapProperties;
+import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Database;
 
 public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
@@ -45,5 +46,5 @@ public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
 
     Database getDatabase();
 
-    String getViliVersion();
+    ArtifactVersion getViliVersion();
 }
