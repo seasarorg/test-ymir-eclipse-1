@@ -13,7 +13,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.launching,
  org.eclipse.jdt.ui,
  org.eclipse.jface.text,
- org.eclipse.ui.editors
+ org.eclipse.ui.editors,
+ org.eclipse.ui.console,
+ org.eclipse.debug.core
 Eclipse-LazyStart: true
 Bundle-ClassPath: .,
  lib/mvnhack-0.0.3.jar,
