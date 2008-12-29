@@ -86,6 +86,10 @@ public class ProjectClassLoader extends URLClassLoader {
                         } else {
                             URL url = ClassUtils.getURLForURLClassLoader(entries[i].getPath().toFile());
                             if (url == null) {
+                                url = ClassUtils.getURLForURLClassLoader(project.getProject().getParent().getFile(
+                                        entries[i].getPath()).getLocation().toFile());
+                            }
+                            if (url == null) {
                                 Activator.getDefault().getLog().log(
                                         new Status(IStatus.WARNING, Activator.PLUGIN_ID,
                                                 "ProjectClassLoader: Can't construct URL for classLoader: entry=" //$NON-NLS-1$
