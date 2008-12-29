@@ -468,17 +468,15 @@ public class ConfigureParametersPage extends WizardPage {
     }
 
     public void populateSkeletonParameters() {
-        if (parameterModelMaps == null) {
-            return;
-        }
-
         ArtifactPair[] pairs = getArtifactPairs();
-        for (int i = 0; i < parameterModelMaps.length; i++) {
-            Map<String, ParameterModel> modelMap = parameterModelMaps[i];
+        for (int i = 0; i < pairs.length; i++) {
             Map<String, Object> parameterMap = new HashMap<String, Object>();
-            for (Iterator<Map.Entry<String, ParameterModel>> itr = modelMap.entrySet().iterator(); itr.hasNext();) {
-                Map.Entry<String, ParameterModel> entry = itr.next();
-                parameterMap.put(entry.getKey(), entry.getValue().getObject());
+            if (parameterModelMaps != null) {
+                Map<String, ParameterModel> modelMap = parameterModelMaps[i];
+                for (Iterator<Map.Entry<String, ParameterModel>> itr = modelMap.entrySet().iterator(); itr.hasNext();) {
+                    Map.Entry<String, ParameterModel> entry = itr.next();
+                    parameterMap.put(entry.getKey(), entry.getValue().getObject());
+                }
             }
 
             // アーティファクト情報を追加する。
