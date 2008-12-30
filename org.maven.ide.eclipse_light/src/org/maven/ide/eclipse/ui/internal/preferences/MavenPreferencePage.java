@@ -10,9 +10,6 @@ package org.maven.ide.eclipse.ui.internal.preferences;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -76,7 +73,6 @@ public class MavenPreferencePage extends FieldEditorPreferencePage implements IW
      */
 
 //    addSeparator();
-
 //    String[] goals = new String[] { //
 //        "generate-sources", //
 //        "process-sources", //
@@ -87,7 +83,6 @@ public class MavenPreferencePage extends FieldEditorPreferencePage implements IW
 //        "process-test-sources", // 
 //        "generate-test-resources", // 
 //        "process-test-resources"};
-
 //    GridData comboCompositeGridData = new GridData();
 //    // comboCompositeGridData.verticalIndent = 15;
 //    comboCompositeGridData.horizontalSpan = 3;
@@ -97,19 +92,18 @@ public class MavenPreferencePage extends FieldEditorPreferencePage implements IW
 //    Composite comboComposite = new Composite(getFieldEditorParent(), SWT.NONE);
 //    comboComposite.setLayoutData(comboCompositeGridData);
 //    comboComposite.setLayout(new GridLayout(2, false));
-
     // addSeparator();
   }
-
-  private void addSeparator() {
-    Label separator = new Label(getFieldEditorParent(), SWT.HORIZONTAL | SWT.SEPARATOR);
-    // separator.setVisible(false);
-    GridData separatorGridData = new GridData();
-    separatorGridData.horizontalSpan = 4;
-    separatorGridData.grabExcessHorizontalSpace = true;
-    separatorGridData.horizontalAlignment = GridData.FILL;
-    separatorGridData.verticalIndent = 10;
-    separator.setLayoutData(separatorGridData);
-  }
-
+//
+//  private void addSeparator() {
+//    Label separator = new Label(getFieldEditorParent(), SWT.HORIZONTAL | SWT.SEPARATOR);
+//    // separator.setVisible(false);
+//    GridData separatorGridData = new GridData();
+//    separatorGridData.horizontalSpan = 4;
+//    separatorGridData.grabExcessHorizontalSpace = true;
+//    separatorGridData.horizontalAlignment = GridData.FILL;
+//    separatorGridData.verticalIndent = 10;
+//    separator.setLayoutData(separatorGridData);
+//  }
+//
 }

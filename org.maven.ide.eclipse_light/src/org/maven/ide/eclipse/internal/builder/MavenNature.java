@@ -21,6 +21,7 @@ public class MavenNature implements IProjectNature {
    * 
    * @see org.eclipse.core.resources.IProjectNature#configure()
    */
+  @SuppressWarnings("unused")
   public void configure() throws CoreException {
   }
 
@@ -29,6 +30,7 @@ public class MavenNature implements IProjectNature {
    * 
    * @see org.eclipse.core.resources.IProjectNature#deconfigure()
    */
+  @SuppressWarnings("unused")
   public void deconfigure() throws CoreException {
   }
 

@@ -14,11 +14,9 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.WorkspaceJob;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
@@ -109,7 +107,6 @@ public class ChangeNatureAction implements IObjectActionDelegate {
     }
 
     public IStatus runInWorkspace(IProgressMonitor monitor) {
-      MultiStatus status = null;
       for(IProject project : projects) {
         if(monitor.isCanceled()) {
           throw new OperationCanceledException();
@@ -117,14 +114,7 @@ public class ChangeNatureAction implements IObjectActionDelegate {
 
         monitor.subTask(project.getName());
 
-        try {
-          changeNature(project, monitor);
-        } catch(CoreException ex) {
-          if(status == null) {
-            status = new MultiStatus(IMavenConstants.PLUGIN_ID, IStatus.ERROR, "Can't change nature", null);
-          }
-          status.add(ex.getStatus());
-        }
+        changeNature(project, monitor);
       }
 
       boolean offline = runtimeManager.isOffline();
@@ -132,10 +122,10 @@ public class ChangeNatureAction implements IObjectActionDelegate {
       projectManager.refresh(new MavenUpdateRequest(projects.toArray(new IProject[projects.size()]), //
           offline, updateSnapshots));
 
-      return status != null ? status : Status.OK_STATUS;
+      return Status.OK_STATUS;
     }
 
-    private void changeNature(final IProject project, IProgressMonitor monitor) throws CoreException {
+    private void changeNature(final IProject project, IProgressMonitor monitor) {
       MavenPlugin plugin = MavenPlugin.getDefault();
       MavenProjectManager projectManager = plugin.getMavenProjectManager();
 

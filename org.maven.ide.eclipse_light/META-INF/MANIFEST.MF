@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Maven Integration for Eclipse (Light)
 Bundle-SymbolicName: org.maven.ide.eclipse_light;singleton:=true
-Bundle-Version: 0.9.7.qualifier
+Bundle-Version: 0.9.7.200811301758
 Bundle-Activator: org.maven.ide.eclipse.MavenPlugin
 Bundle-Vendor: The Seasar Project
 Bundle-Localization: plugin

@@ -26,8 +26,10 @@ import java.util.Stack;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.ui.progress.IProgressConstants;
 
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
@@ -42,6 +44,7 @@ import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.sonatype.nexus.index.ArtifactInfo;
 import org.sonatype.nexus.index.context.IndexingContext;
 
+import org.maven.ide.eclipse.actions.OpenMavenConsoleAction;
 import org.maven.ide.eclipse.core.MavenConsole;
 import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.embedder.ArtifactKey;
@@ -205,6 +208,11 @@ public abstract class IndexManager {
 
   public abstract void removeDocument(String indexName, File pomFile, String documentKey);
 
+  /**
+   * Identify file in the index
+   */
+  public abstract IndexedArtifactFile identify(File file) throws CoreException;
+  
   /**
    * @param term - search term
    * @param searchType - query type. Should be one of the SEARCH_* values.
@@ -411,6 +419,7 @@ public abstract class IndexManager {
 
     public void run(IndexManager indexManager, MavenConsole console, IProgressMonitor monitor) {
       monitor.setTaskName("Updating index " + info.getIndexName());
+      console.logMessage("Updating index " + info.getIndexName());
       try {
         Date indexTime = indexManager.fetchAndUpdateIndex(info.getIndexName(), force, monitor);
         if(indexTime==null) {
@@ -422,6 +431,8 @@ public abstract class IndexManager {
         String msg = "Unable to update index for " + info.getIndexName() + " " + info.getRepositoryUrl();
         MavenLogger.log(msg, ex);
         console.logError(msg);
+      } catch (OperationCanceledException ex) {
+        console.logMessage("Updating index " + info.getIndexName() + " is canceled");
       }
     }
   }
@@ -518,6 +529,7 @@ public abstract class IndexManager {
       super("Updating indexes");
       this.indexManager = indexManager;
       this.console = console;
+      setProperty(IProgressConstants.ACTION_PROPERTY, new OpenMavenConsoleAction());
     }
 
     public void addCommand(IndexCommand indexCommand) {
