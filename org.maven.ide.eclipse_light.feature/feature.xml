@@ -2,7 +2,7 @@
 <feature
       id="org.maven.ide.eclipse_light.feature"
       label="m2eclipse-light (Optional)"
-      version="0.9.7.qualifier"
+      version="0.9.7.200811301758"
       provider-name="The Seasar Project"
       plugin="org.maven.ide.eclipse_light">
    <install-handler/>
@@ -28,35 +28,35 @@ http://www.eclipse.org/legal/epl-v10.html
 
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.maven.ide.components.maven_embedder"/>
+      <import plugin="org.maven.ide.components.nexus_indexer"/>
+      <import plugin="org.eclipse.jdt.ui"/>
+      <import plugin="org.eclipse.jface"/>
+      <import plugin="org.eclipse.ui.workbench"/>
+      <import plugin="org.eclipse.debug.core"/>
       <import plugin="org.eclipse.core.variables"/>
       <import plugin="org.eclipse.core.expressions"/>
       <import plugin="org.eclipse.core.filesystem"/>
       <import plugin="org.eclipse.jface.text"/>
-      <import plugin="org.eclipse.jdt.core"/>
-      <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.debug.ui"/>
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.ui.ide"/>
       <import plugin="org.eclipse.ui.console"/>
       <import plugin="org.eclipse.ltk.core.refactoring"/>
-      <import plugin="org.maven.ide.components.maven_embedder"/>
       <import plugin="org.maven.ide.components.archetype_common"/>
-      <import plugin="org.maven.ide.components.nexus_indexer"/>
       <import plugin="org.maven.ide.components.maven_model_edit"/>
-      <import plugin="org.eclipse.jface"/>
-      <import plugin="org.eclipse.ui.workbench"/>
-      <import plugin="org.eclipse.debug.core"/>
    </requires>
 
    <plugin
-         id="org.maven.ide.eclipse_light"
+         id="org.maven.ide.eclipse_light.jdt"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.maven.ide.eclipse_light.jdt"
+         id="org.maven.ide.eclipse_light"
          download-size="0"
          install-size="0"
          version="0.0.0"
