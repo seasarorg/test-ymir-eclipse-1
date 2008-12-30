@@ -58,6 +58,12 @@
             </or>
          </enabledWhen>
       </page>
+      <page
+            category="org.seasar.ymir.eclipse.properties.viliPropertyPage"
+            class="org.seasar.ymir.eclipse.properties.TemplatePropertyPage"
+            id="org.seasar.ymir.eclipse.properties.templatePropertyPage"
+            name="Template">
+      </page>
    </extension>
    <extension
          id="org.seasar.ymir.eclipse.viliProjectNature"

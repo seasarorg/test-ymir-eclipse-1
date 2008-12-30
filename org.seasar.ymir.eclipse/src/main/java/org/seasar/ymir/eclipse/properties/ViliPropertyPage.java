@@ -2,122 +2,76 @@ package org.seasar.ymir.eclipse.properties;
 
 import java.io.IOException;
 
-import net.skirnir.xom.IllegalSyntaxException;
-import net.skirnir.xom.ValidationException;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.eclipse.ui.TemplateControl;
+import org.seasar.ymir.eclipse.natures.ViliProjectNature;
+import org.seasar.ymir.eclipse.util.ProjectUtils;
 
 public class ViliPropertyPage extends PropertyPage {
-    private Composite tabFolderParent;
-
-    private CTabFolder tabFolder;
-
-    private TemplateControl templateControl;
-
-    /**
-     * Constructor for ViliPropertyPage.
-     */
-    public ViliPropertyPage() {
-        super();
-    }
+    private Button enableViliProjectNatureButton_;
 
     /**
      * @see PreferencePage#createContents(Composite)
      */
     protected Control createContents(Composite parent) {
-        tabFolderParent = new Composite(parent, SWT.NULL);
-        tabFolderParent.setLayout(new FillLayout());
-        createTabFolder();
-        return tabFolderParent;
-    }
+        Composite composite = new Composite(parent, SWT.NONE);
+        GridLayout layout = new GridLayout();
+        composite.setLayout(layout);
+        GridData data = new GridData(GridData.FILL);
+        data.grabExcessHorizontalSpace = true;
+        composite.setLayoutData(data);
 
-    void createTabFolder() {
-        IPreferenceStore store = getPreferenceStore();
-        if (store == null) {
-            return;
+        try {
+            createEnableNatureSection(composite);
+        } catch (CoreException ex) {
+            Activator.getDefault().getLog().log(ex.getStatus());
+            throw new RuntimeException(ex);
         }
 
-        tabFolder = new CTabFolder(tabFolderParent, SWT.NULL);
-        tabFolder.setLayout(new FillLayout());
-        tabFolder.setSimple(false);
-        tabFolder.setTabHeight(tabFolder.getTabHeight() + 2);
+        return composite;
+    }
 
-        CTabItem templateTabItem = new CTabItem(tabFolder, SWT.NONE);
-        templateTabItem.setText(Messages.getString("ViliPropertyPage.0")); //$NON-NLS-1$
-
-        Composite templateTabContent = new Composite(tabFolder, SWT.NULL);
-        templateTabContent.setLayout(new GridLayout());
-        templateTabContent.setLayoutData(new GridData(GridData.FILL_BOTH));
-        templateTabItem.setControl(templateTabContent);
-
-        templateControl = new TemplateControl(templateTabContent, true);
-        templateControl.createControl();
-
-        templateControl.setProjectSpecificSettingsEnabled(store
-                .getBoolean(PreferenceConstants.P_TEMPLATE_PROJECTSPECIFICSETTINGSENABLED));
-        templateControl.setTemplate(store.getString(PreferenceConstants.P_TEMPLATE));
-
-        tabFolderParent.layout();
-        tabFolder.setSelection(0);
+    private void createEnableNatureSection(Composite parent) throws CoreException {
+        enableViliProjectNatureButton_ = new Button(parent, SWT.CHECK);
+        enableViliProjectNatureButton_.setText("Viliプロジェクト");
+        enableViliProjectNatureButton_.setSelection(getProject().hasNature(ViliProjectNature.ID));
     }
 
     protected void performDefaults() {
-        templateControl.setProjectSpecificSettingsEnabled(false);
-        templateControl.setTemplate(Activator.getDefault().getPreferenceStore().getString(
-                PreferenceConstants.P_TEMPLATE));
     }
 
     public boolean performOk() {
-        IPreferenceStore store = getPreferenceStore();
-        if (store == null) {
-            return false;
-        }
-
-        boolean templateProjectSpecificSettingsEnabled = templateControl.isProjectSpecificSettingsEnabled();
-        if (templateProjectSpecificSettingsEnabled) {
-            String template = templateControl.getTemplate().trim();
-            try {
-                Activator.getDefault().createTemplate(template);
-            } catch (ValidationException ex) {
-                MessageDialog.openInformation(getControl().getShell(), Messages.getString("ViliPropertyPage.1"), Messages.getString("ViliPropertyPage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
-                return false;
-            } catch (IllegalSyntaxException ex) {
-                MessageDialog.openInformation(getControl().getShell(), Messages.getString("ViliPropertyPage.1"), Messages.getString("ViliPropertyPage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
-                return false;
-            }
-            store.putValue(PreferenceConstants.P_TEMPLATE, template);
-        } else {
-            store.setToDefault(PreferenceConstants.P_TEMPLATE);
-        }
-        store.setValue(PreferenceConstants.P_TEMPLATE_PROJECTSPECIFICSETTINGSENABLED,
-                templateProjectSpecificSettingsEnabled);
-
         try {
+            IPreferenceStore store = getPreferenceStore();
+
+            if (enableViliProjectNatureButton_.getSelection()) {
+                ProjectUtils.addNature(getProject(), ViliProjectNature.ID, new NullProgressMonitor());
+            } else {
+                ProjectUtils.removeNature(getProject(), ViliProjectNature.ID, new NullProgressMonitor());
+            }
+
             ((IPersistentPreferenceStore) store).save();
         } catch (IOException ex) {
-            return false;
+            Activator.getDefault().log(ex);
+        } catch (CoreException ex) {
+            Activator.getDefault().getLog().log(ex.getStatus());
         }
 
         return true;
@@ -129,7 +83,7 @@ public class ViliPropertyPage extends PropertyPage {
             return Activator.getDefault().getPreferenceStore(getProject());
         } catch (CoreException ex) {
             Activator.getDefault().getLog().log(ex.getStatus());
-            return null;
+            throw new RuntimeException(ex);
         }
     }
 
