@@ -6,8 +6,8 @@ import org.eclipse.core.runtime.IPath;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.eclipse.util.JdtUtils;
 import org.seasar.ymir.vili.model.Database;
+import org.seasar.ymir.vili.util.JdtUtils;
 
 public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesProviderBase {
     @SuppressWarnings("unchecked")//$NON-NLS-1$

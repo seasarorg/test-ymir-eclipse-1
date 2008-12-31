@@ -25,11 +25,6 @@ import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.Globals;
-import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
-import org.seasar.ymir.eclipse.util.ArrayUtils;
-import org.seasar.ymir.eclipse.util.JarClassLoader;
-import org.seasar.ymir.eclipse.util.StreamUtils;
-import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.IConfigurator;
 import org.seasar.ymir.vili.InclusionType;
@@ -38,10 +33,15 @@ import org.seasar.ymir.vili.ParameterType;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
+import org.seasar.ymir.vili.maven.util.ArtifactUtils;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
 import org.seasar.ymir.vili.model.maven.Project;
 import org.seasar.ymir.vili.util.AntPathPatterns;
+import org.seasar.ymir.vili.util.ArrayUtils;
+import org.seasar.ymir.vili.util.JarClassLoader;
+import org.seasar.ymir.vili.util.StreamUtils;
+import org.seasar.ymir.vili.util.XOMUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 

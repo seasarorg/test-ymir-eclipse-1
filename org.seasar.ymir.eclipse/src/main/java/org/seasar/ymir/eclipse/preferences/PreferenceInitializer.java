@@ -8,12 +8,12 @@ import net.skirnir.xom.ValidationException;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.model.Fragment;
 import org.seasar.ymir.vili.model.Fragments;
 import org.seasar.ymir.vili.model.Skeleton;
 import org.seasar.ymir.vili.model.Skeletons;
 import org.seasar.ymir.vili.model.Template;
+import org.seasar.ymir.vili.util.XOMUtils;
 
 /**
  * Class used to initialize default preference values.

@@ -9,9 +9,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.seasar.ymir.eclipse.maven.ExtendedConfiguration;
-import org.seasar.ymir.eclipse.maven.ExtendedRepository;
-import org.seasar.ymir.eclipse.maven.ExtendedRepository.Type;
+import org.seasar.ymir.vili.maven.ExtendedConfiguration;
+import org.seasar.ymir.vili.maven.ExtendedRepository;
+import org.seasar.ymir.vili.maven.ExtendedRepository.Type;
 
 import werkzeugkasten.common.util.StringUtil;
 import werkzeugkasten.common.util.UrlUtil;
@@ -29,11 +29,11 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
 
     protected ArtifactBuilder builder = new StAXArtifactBuilder();
 
-    protected Set<LocalExtendedRepository> localRepositories = new LinkedHashSet<LocalExtendedRepository>();;
+    protected Set<ExtendedRepository> localRepositories = new LinkedHashSet<ExtendedRepository>();;
 
-    protected Set<RemoteExtendedRepository> remoteRepositories = new LinkedHashSet<RemoteExtendedRepository>();;
+    protected Set<ExtendedRepository> remoteRepositories = new LinkedHashSet<ExtendedRepository>();;
 
-    protected Set<RemoteExtendedRepository> snapshotRepositories = new LinkedHashSet<RemoteExtendedRepository>();;
+    protected Set<ExtendedRepository> snapshotRepositories = new LinkedHashSet<ExtendedRepository>();;
 
     protected boolean offline;
 
@@ -102,11 +102,11 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
         ExtendedRepository er = (ExtendedRepository) repository;
         Type type = er.getType();
         if (type == Type.LOCAL) {
-            this.localRepositories.add((LocalExtendedRepository) er);
+            this.localRepositories.add(er);
         } else if (type == Type.SNAPSHOT) {
-            this.snapshotRepositories.add((RemoteExtendedRepository) er);
+            this.snapshotRepositories.add(er);
         } else {
-            this.remoteRepositories.add((RemoteExtendedRepository) er);
+            this.remoteRepositories.add(er);
         }
 
         this.repositories.add(repository);
@@ -120,21 +120,21 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
         return this.repositories;
     }
 
-    public Set<LocalExtendedRepository> getLocalRepositories() {
+    public Set<ExtendedRepository> getLocalRepositories() {
         return this.localRepositories;
     }
 
-    public Set<RemoteExtendedRepository> getRemoteRepositories() {
+    public Set<ExtendedRepository> getRemoteRepositories() {
         return this.remoteRepositories;
     }
 
-    public Set<RemoteExtendedRepository> getSnapshotRepositories() {
+    public Set<ExtendedRepository> getSnapshotRepositories() {
         return this.snapshotRepositories;
     }
 
     public Iterable<ExtendedRepository> getRepositoriesToResolveRelased() {
         return new Iterable<ExtendedRepository>() {
-            @SuppressWarnings("unchecked") //$NON-NLS-1$
+            @SuppressWarnings("unchecked")//$NON-NLS-1$
             public Iterator<ExtendedRepository> iterator() {
                 if (offline) {
                     return new CompositeIterator<ExtendedRepository>(localRepositories.iterator());
@@ -148,7 +148,7 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
 
     public Iterable<ExtendedRepository> getRepositoriesToResolveSnapshot() {
         return new Iterable<ExtendedRepository>() {
-            @SuppressWarnings("unchecked") //$NON-NLS-1$
+            @SuppressWarnings("unchecked")//$NON-NLS-1$
             public Iterator<ExtendedRepository> iterator() {
                 if (offline) {
                     return new CompositeIterator<ExtendedRepository>(localRepositories.iterator());
@@ -162,7 +162,7 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
 
     public Iterable<ExtendedRepository> getRepositoriesToGetLatestVersion(final boolean containsSnapshot) {
         return new Iterable<ExtendedRepository>() {
-            @SuppressWarnings("unchecked") //$NON-NLS-1$
+            @SuppressWarnings("unchecked")//$NON-NLS-1$
             public Iterator<ExtendedRepository> iterator() {
                 if (containsSnapshot) {
                     if (offline) {

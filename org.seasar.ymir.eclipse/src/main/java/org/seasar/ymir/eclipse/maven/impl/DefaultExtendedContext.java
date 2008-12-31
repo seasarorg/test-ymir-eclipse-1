@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
-import org.seasar.ymir.eclipse.maven.ExtendedConfiguration;
-import org.seasar.ymir.eclipse.maven.ExtendedContext;
-import org.seasar.ymir.eclipse.maven.ExtendedRepository;
-import org.seasar.ymir.eclipse.maven.ExtendedRepository.Type;
-import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
-import org.seasar.ymir.eclipse.util.StreamUtils;
+import org.seasar.ymir.vili.maven.ExtendedArtifact;
+import org.seasar.ymir.vili.maven.ExtendedConfiguration;
+import org.seasar.ymir.vili.maven.ExtendedContext;
+import org.seasar.ymir.vili.maven.ExtendedRepository;
+import org.seasar.ymir.vili.maven.ExtendedRepository.Type;
+import org.seasar.ymir.vili.maven.util.ArtifactUtils;
 import org.seasar.ymir.vili.model.maven.Metadata;
+import org.seasar.ymir.vili.util.StreamUtils;
 
 import werkzeugkasten.common.util.UrlUtil;
 import werkzeugkasten.mvnhack.Constants;

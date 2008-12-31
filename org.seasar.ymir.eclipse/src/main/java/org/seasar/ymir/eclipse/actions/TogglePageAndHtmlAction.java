@@ -16,7 +16,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.Globals;
-import org.seasar.ymir.eclipse.util.WorkbenchUtils;
+import org.seasar.ymir.vili.util.WorkbenchUtils;
 
 /**
  * <p>このクラスはDoltengのソースコードを基にしています。</p>

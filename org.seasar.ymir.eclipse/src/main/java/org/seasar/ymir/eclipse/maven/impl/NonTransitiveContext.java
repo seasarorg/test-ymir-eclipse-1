@@ -1,6 +1,6 @@
 package org.seasar.ymir.eclipse.maven.impl;
 
-import org.seasar.ymir.eclipse.maven.ExtendedConfiguration;
+import org.seasar.ymir.vili.maven.ExtendedConfiguration;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 

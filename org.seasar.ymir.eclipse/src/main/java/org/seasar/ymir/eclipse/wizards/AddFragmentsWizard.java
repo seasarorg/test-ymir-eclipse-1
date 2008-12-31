@@ -15,9 +15,9 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.Globals;
-import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.vili.ArtifactPair;
 import org.seasar.ymir.vili.ViliProjectPreferences;
+import org.seasar.ymir.vili.maven.ExtendedContext;
 
 public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard {
     static final String DS_SECTION = "AddFragmentsWizard"; //$NON-NLS-1$

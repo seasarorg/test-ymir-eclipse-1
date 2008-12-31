@@ -2,7 +2,7 @@ package org.seasar.ymir.eclipse.maven.impl;
 
 import java.util.Set;
 
-import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
+import org.seasar.ymir.vili.maven.ExtendedArtifact;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 

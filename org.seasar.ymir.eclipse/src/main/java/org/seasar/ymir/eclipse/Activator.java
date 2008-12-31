@@ -24,18 +24,18 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 import org.seasar.ymir.eclipse.impl.ProjectBuilderImpl;
-import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.impl.ArtifactResolverImpl;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.preferences.impl.ViliNewProjectPreferencesProvider;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesImpl;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesProviderImpl;
-import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.ProjectBuilder;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
+import org.seasar.ymir.vili.maven.ArtifactResolver;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Template;
+import org.seasar.ymir.vili.util.XOMUtils;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -141,9 +141,8 @@ public class Activator extends AbstractUIPlugin {
         return PLUGIN_ID;
     }
 
-    public void throwCoreException(String message, Throwable cause) throws CoreException {
-        IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.OK, message, cause);
-        throw new CoreException(status);
+    public void throwCoreException(String message, Throwable t) throws CoreException {
+        throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.OK, message, t));
     }
 
     public void log(Throwable t) {

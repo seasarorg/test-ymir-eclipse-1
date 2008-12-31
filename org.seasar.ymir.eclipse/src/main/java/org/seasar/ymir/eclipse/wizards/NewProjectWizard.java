@@ -26,12 +26,12 @@ import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
-import org.seasar.ymir.eclipse.maven.ExtendedContext;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
-import org.seasar.ymir.eclipse.util.JdtUtils;
 import org.seasar.ymir.vili.ArtifactPair;
 import org.seasar.ymir.vili.ProjectBuilder;
 import org.seasar.ymir.vili.ViliProjectPreferences;
+import org.seasar.ymir.vili.maven.ExtendedContext;
+import org.seasar.ymir.vili.util.JdtUtils;
 
 public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtifactWizard {
     static final String REQUIRED_TEMPLATE = Messages.getString("NewProjectWizard.2"); //$NON-NLS-1$

@@ -12,14 +12,14 @@ import java.util.Set;
 
 import net.skirnir.xom.ValidationException;
 
-import org.seasar.ymir.eclipse.maven.ExtendedRepository;
-import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
-import org.seasar.ymir.eclipse.util.StreamUtils;
-import org.seasar.ymir.eclipse.util.XOMUtils;
+import org.seasar.ymir.vili.maven.ExtendedRepository;
+import org.seasar.ymir.vili.maven.util.ArtifactUtils;
 import org.seasar.ymir.vili.model.maven.Metadata;
 import org.seasar.ymir.vili.model.maven.Snapshot;
 import org.seasar.ymir.vili.model.maven.Versioning;
 import org.seasar.ymir.vili.model.maven.Versions;
+import org.seasar.ymir.vili.util.StreamUtils;
+import org.seasar.ymir.vili.util.XOMUtils;
 
 import werkzeugkasten.common.util.UrlUtil;
 import werkzeugkasten.mvnhack.Constants;

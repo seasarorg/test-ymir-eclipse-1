@@ -13,12 +13,12 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.eclipse.util.ProjectClassLoader;
-import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.ArtifactPair;
 import org.seasar.ymir.vili.IAction;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
+import org.seasar.ymir.vili.util.ProjectClassLoader;
+import org.seasar.ymir.vili.util.XOMUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 

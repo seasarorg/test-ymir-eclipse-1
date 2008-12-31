@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.natures.ViliProjectNature;
-import org.seasar.ymir.eclipse.util.ProjectUtils;
+import org.seasar.ymir.vili.util.ProjectUtils;
 
 public class ViliPropertyPage extends PropertyPage {
     private Button enableViliProjectNatureButton_;

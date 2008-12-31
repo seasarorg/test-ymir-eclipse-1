@@ -12,8 +12,8 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.popup.dialogs.AddFragmentsWizardDialog;
-import org.seasar.ymir.eclipse.util.AdaptableUtils;
-import org.seasar.ymir.eclipse.util.WorkbenchUtils;
+import org.seasar.ymir.vili.util.AdaptableUtils;
+import org.seasar.ymir.vili.util.WorkbenchUtils;
 
 public class AddFragmentsAction implements IObjectActionDelegate {
     private IProject project;

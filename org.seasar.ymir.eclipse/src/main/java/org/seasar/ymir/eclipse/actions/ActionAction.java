@@ -21,7 +21,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ProjectRelative;
-import org.seasar.ymir.eclipse.util.AdaptableUtils;
+import org.seasar.ymir.vili.util.AdaptableUtils;
 
 public class ActionAction implements IObjectActionDelegate, IMenuCreator {
     private ISelection selection;

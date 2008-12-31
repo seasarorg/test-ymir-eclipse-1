@@ -15,11 +15,11 @@ import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.eclipse.util.JdtUtils;
-import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.model.Database;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.Project;
+import org.seasar.ymir.vili.util.JdtUtils;
+import org.seasar.ymir.vili.util.XOMUtils;
 
 public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesProviderBase {
     private static final String PATH_JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER"; //$NON-NLS-1$

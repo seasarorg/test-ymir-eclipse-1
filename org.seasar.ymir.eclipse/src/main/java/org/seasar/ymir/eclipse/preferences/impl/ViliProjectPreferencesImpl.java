@@ -23,12 +23,12 @@ import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.impl.PlatformDelegateImpl;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.eclipse.util.MapAdapter;
 import org.seasar.ymir.vili.PlatformDelegate;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Database;
+import org.seasar.ymir.vili.util.MapAdapter;
 
 public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     private static final Map<String, String> JRE_VERSION_MAP;

@@ -3,11 +3,11 @@ package org.seasar.ymir.eclipse.maven.impl;
 import java.net.URL;
 import java.util.Properties;
 
-import org.seasar.ymir.eclipse.maven.ArtifactResolver;
-import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
-import org.seasar.ymir.eclipse.maven.ExtendedConfiguration;
-import org.seasar.ymir.eclipse.maven.ExtendedContext;
-import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
+import org.seasar.ymir.vili.maven.ArtifactResolver;
+import org.seasar.ymir.vili.maven.ExtendedArtifact;
+import org.seasar.ymir.vili.maven.ExtendedConfiguration;
+import org.seasar.ymir.vili.maven.ExtendedContext;
+import org.seasar.ymir.vili.maven.util.ArtifactUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 import werkzeugkasten.mvnhack.repository.ArtifactBuilder;
