@@ -20,9 +20,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.seasar.eclipse.common.util.ProjectUtils;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.natures.ViliProjectNature;
+import org.seasar.ymir.eclipse.util.ProjectUtils;
 
 public class ViliPropertyPage extends PropertyPage {
     private Button enableViliProjectNatureButton_;

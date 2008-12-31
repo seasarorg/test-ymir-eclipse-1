@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.seasar.eclipse.common.util;
+package org.seasar.ymir.eclipse.util;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IMember;

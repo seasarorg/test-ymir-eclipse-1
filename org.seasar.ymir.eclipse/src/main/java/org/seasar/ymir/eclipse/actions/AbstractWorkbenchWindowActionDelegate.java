@@ -13,10 +13,10 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.seasar.eclipse.common.util.AdaptableUtils;
-import org.seasar.eclipse.common.util.ResouceUtils;
-import org.seasar.eclipse.common.util.TextEditorUtils;
 import org.seasar.ymir.eclipse.Activator;
+import org.seasar.ymir.eclipse.util.AdaptableUtils;
+import org.seasar.ymir.eclipse.util.ResouceUtils;
+import org.seasar.ymir.eclipse.util.TextEditorUtils;
 import org.seasar.ymir.eclipse.util.WorkbenchUtils;
 
 /**

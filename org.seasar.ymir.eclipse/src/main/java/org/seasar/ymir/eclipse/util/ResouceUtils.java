@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.seasar.eclipse.common.util;
+package org.seasar.ymir.eclipse.util;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
@@ -22,7 +22,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.seasar.ymir.eclipse.util.WorkbenchUtils;
 
 /**
  * @author taichi
