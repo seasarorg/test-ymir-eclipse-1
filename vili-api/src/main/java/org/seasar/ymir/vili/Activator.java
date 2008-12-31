@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
@@ -13,6 +14,10 @@ public class Activator {
     private static final String METHOD_GETDEFAULT = "getDefault";
 
     private static final String METHOD_GETLOG = "getLog";
+
+    private static final String METHOD_GETARTIFACTRESOLVER = "getArtifactResolver";
+
+    private static final String METHOD_GETPROJECTBUILDER = "getProjectBuilder";
 
     private Activator() {
     }
@@ -41,9 +46,39 @@ public class Activator {
         }
     }
 
+    public static void throwCoreException(String message, Throwable t)
+            throws CoreException {
+        throw new CoreException(new Status(IStatus.ERROR, Globals.PLUGIN_ID,
+                IStatus.OK, message, t));
+    }
+
     public static ViliBehavior newViliBehavior(Artifact artifact,
             ClassLoader projectClassLoader) throws CoreException {
         // TODO 
         return null;
+    }
+
+    public static ArtifactResolver getArtifactResolver() {
+        try {
+            Class<?> activatorClass = Class.forName(CLASS_ACTIVATOR);
+            Object activator = activatorClass.getMethod(METHOD_GETDEFAULT)
+                    .invoke(null);
+            return (ArtifactResolver) activatorClass.getMethod(
+                    METHOD_GETARTIFACTRESOLVER).invoke(activator);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    public static ProjectBuilder getProjectBuilder() {
+        try {
+            Class<?> activatorClass = Class.forName(CLASS_ACTIVATOR);
+            Object activator = activatorClass.getMethod(METHOD_GETDEFAULT)
+                    .invoke(null);
+            return (ProjectBuilder) activatorClass.getMethod(
+                    METHOD_GETPROJECTBUILDER).invoke(activator);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 }
