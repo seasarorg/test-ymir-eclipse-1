@@ -2,7 +2,7 @@
 <feature
       id="org.seasar.ymir.eclipse.feature"
       label="Vili Feature"
-      version="0.0.4.qualifier"
+      version="0.0.5.qualifier"
       provider-name="The Seasar Project"
       plugin="org.seasar.ymir.eclipse">
 
