@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.seasar.ymir.eclipse.util;
+package org.seasar.ymir.vili.util;
 
 import java.net.MalformedURLException;
 import java.net.URL;

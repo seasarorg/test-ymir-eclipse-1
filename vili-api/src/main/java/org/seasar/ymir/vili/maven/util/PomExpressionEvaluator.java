@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.maven.util;
+package org.seasar.ymir.vili.maven.util;
 
 import net.skirnir.freyja.ExpressionEvaluator;
 import net.skirnir.freyja.TemplateContext;

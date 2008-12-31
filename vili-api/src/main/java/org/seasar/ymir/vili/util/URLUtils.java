@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.util;
+package org.seasar.ymir.vili.util;
 
 import java.io.File;
 import java.net.URISyntaxException;

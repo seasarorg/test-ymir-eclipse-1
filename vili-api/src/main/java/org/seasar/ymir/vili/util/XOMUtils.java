@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.util;
+package org.seasar.ymir.vili.util;
 
 import java.beans.Introspector;
 import java.io.InputStreamReader;

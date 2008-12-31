@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.maven.util;
+package org.seasar.ymir.vili.maven.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,17 +21,17 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.seasar.kvasir.util.collection.MapProperties;
-import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
-import org.seasar.ymir.eclipse.util.JarUtils;
-import org.seasar.ymir.eclipse.util.StreamUtils;
-import org.seasar.ymir.eclipse.util.URLUtils;
-import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.Activator;
 import org.seasar.ymir.vili.Globals;
+import org.seasar.ymir.vili.maven.ExtendedArtifact;
 import org.seasar.ymir.vili.model.maven.Metadata;
 import org.seasar.ymir.vili.model.maven.Snapshot;
 import org.seasar.ymir.vili.model.maven.Versioning;
 import org.seasar.ymir.vili.model.maven.Versions;
+import org.seasar.ymir.vili.util.JarUtils;
+import org.seasar.ymir.vili.util.StreamUtils;
+import org.seasar.ymir.vili.util.URLUtils;
+import org.seasar.ymir.vili.util.XOMUtils;
 
 import werkzeugkasten.mvnhack.Constants;
 import werkzeugkasten.mvnhack.repository.Artifact;

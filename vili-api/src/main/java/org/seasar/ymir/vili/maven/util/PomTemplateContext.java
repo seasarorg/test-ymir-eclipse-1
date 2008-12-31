@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.maven.util;
+package org.seasar.ymir.vili.maven.util;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -14,12 +14,12 @@ import net.skirnir.freyja.TagEvaluatorUtils;
 import net.skirnir.freyja.impl.TemplateContextImpl;
 import net.skirnir.xom.ValidationException;
 
-import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.PluginRepository;
 import org.seasar.ymir.vili.model.maven.Profile;
 import org.seasar.ymir.vili.model.maven.Project;
 import org.seasar.ymir.vili.model.maven.Repository;
+import org.seasar.ymir.vili.util.XOMUtils;
 
 class PomTemplateContext extends TemplateContextImpl {
     private Set<Dependency> dependencySet = new HashSet<Dependency>();

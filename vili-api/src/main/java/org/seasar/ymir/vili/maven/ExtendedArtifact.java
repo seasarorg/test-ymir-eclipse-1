@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.maven;
+package org.seasar.ymir.vili.maven;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 

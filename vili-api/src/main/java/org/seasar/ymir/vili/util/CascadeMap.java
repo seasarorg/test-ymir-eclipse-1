@@ -1,4 +1,4 @@
-package org.seasar.ymir.eclipse.util;
+package org.seasar.ymir.vili.util;
 
 import java.util.ArrayList;
 import java.util.Collection;

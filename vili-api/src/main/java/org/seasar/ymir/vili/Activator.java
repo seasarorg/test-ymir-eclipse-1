@@ -4,7 +4,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.seasar.ymir.eclipse.maven.ArtifactResolver;
+import org.seasar.ymir.vili.maven.ArtifactResolver;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
