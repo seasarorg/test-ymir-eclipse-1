@@ -30,6 +30,10 @@ public class ArtifactResolverImpl implements ArtifactResolver {
         configuration.addRepository(new RemoteExtendedRepository(url, snapshot, builder));
     }
 
+    public void setOffline(boolean offline) {
+        configuration.setOffline(offline);
+    }
+
     public ExtendedContext newContext(boolean transitive) {
         return transitive ? new DefaultExtendedContext(configuration) : new NonTransitiveContext(configuration);
     }
@@ -56,14 +60,17 @@ public class ArtifactResolverImpl implements ArtifactResolver {
 
     public String getLatestVersion(String groupId, String artifactId, boolean containsSnapshot) {
         return getLatestVersion(newContext(false), groupId, artifactId, containsSnapshot);
-
     }
 
     public String getLatestVersion(ExtendedContext context, String groupId, String artifactId, boolean containsSnapshot) {
         return context.getLatestVersion(groupId, artifactId, containsSnapshot);
     }
 
-    public void setOffline(boolean offline) {
-        configuration.setOffline(offline);
+    public String[] getVersions(String groupId, String artifactId, boolean containsSnapshot) {
+        return getVersions(newContext(false), groupId, artifactId, containsSnapshot);
+    }
+
+    public String[] getVersions(ExtendedContext context, String groupId, String artifactId, boolean containsSnapshot) {
+        return context.getVersions(groupId, artifactId, containsSnapshot);
     }
 }

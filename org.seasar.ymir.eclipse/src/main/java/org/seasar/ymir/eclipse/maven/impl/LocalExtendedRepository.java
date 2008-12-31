@@ -6,9 +6,11 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import net.skirnir.xom.ValidationException;
 
@@ -51,15 +53,21 @@ public class LocalExtendedRepository extends LocalRepository implements Extended
                 return null;
             }
             String latestVersion = null;
+            Set<String> versionSet = new TreeSet<String>(new Comparator<String>() {
+                public int compare(String o1, String o2) {
+                    return ArtifactUtils.compareVersions(o1, o2);
+                }
+            });
             long lastUpdated = 0L;
             for (File file : dir.listFiles()) {
                 String v = file.getName();
+                versionSet.add(v);
                 if (ArtifactUtils.compareVersions(v, latestVersion) > 0) {
                     latestVersion = v;
                     lastUpdated = file.lastModified();
                 }
             }
-            if (latestVersion == null) {
+            if (versionSet.isEmpty()) {
                 return null;
             }
             Metadata metadata = new Metadata();
@@ -68,7 +76,9 @@ public class LocalExtendedRepository extends LocalRepository implements Extended
             metadata.setVersion(latestVersion);
             Versioning versioning = new Versioning();
             Versions versions = new Versions();
-            versions.addVersion(latestVersion);
+            for (String v : versionSet) {
+                versions.addVersion(v);
+            }
             versioning.setVersions(versions);
             versioning.setLastUpdatedDate(new Date(lastUpdated));
             metadata.setVersioning(versioning);

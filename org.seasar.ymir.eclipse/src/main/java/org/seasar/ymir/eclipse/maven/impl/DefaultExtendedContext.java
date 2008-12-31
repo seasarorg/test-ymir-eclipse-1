@@ -4,9 +4,13 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 
 import org.seasar.ymir.vili.maven.ExtendedArtifact;
@@ -30,7 +34,9 @@ public class DefaultExtendedContext implements ExtendedContext {
 
     protected Map<String, Metadata[]> resolvedMetadatas;
 
-    private Map<String, String> resolvedVersion;
+    private Map<String, String> resolvedLatestVersion;
+
+    private Map<String, String[]> resolvedVersions;
 
     protected ExtendedConfiguration configuration;
 
@@ -44,7 +50,8 @@ public class DefaultExtendedContext implements ExtendedContext {
         this.configuration = configuration;
         this.resolved = resolved;
         this.resolvedMetadatas = new HashMap<String, Metadata[]>();
-        this.resolvedVersion = new HashMap<String, String>();
+        this.resolvedLatestVersion = new HashMap<String, String>();
+        this.resolvedVersions = new HashMap<String, String[]>();
         this.managedDependencies = new HashMap<String, String>();
     }
 
@@ -172,7 +179,7 @@ public class DefaultExtendedContext implements ExtendedContext {
 
     public String getLatestVersion(String groupId, String artifactId, boolean containsSnapshot) {
         String id = toId(groupId, artifactId, containsSnapshot);
-        String version = resolvedVersion.get(id);
+        String version = resolvedLatestVersion.get(id);
         if (version == null) {
             for (Metadata metadata : resolveMetadatas(groupId, artifactId, containsSnapshot)) {
                 String v = ArtifactUtils.getLatestVersion(metadata, containsSnapshot);
@@ -180,9 +187,27 @@ public class DefaultExtendedContext implements ExtendedContext {
                     version = v;
                 }
             }
-            resolvedVersion.put(id, version);
+            resolvedLatestVersion.put(id, version);
         }
         return version;
+    }
+
+    public String[] getVersions(String groupId, String artifactId, boolean containsSnapshot) {
+        String id = toId(groupId, artifactId, containsSnapshot);
+        String[] versions = resolvedVersions.get(id);
+        if (versions == null) {
+            Set<String> set = new TreeSet<String>(new Comparator<String>() {
+                public int compare(String o1, String o2) {
+                    return ArtifactUtils.compareVersions(o2, o1);
+                }
+            });
+            for (Metadata metadata : resolveMetadatas(groupId, artifactId, containsSnapshot)) {
+                set.addAll(Arrays.asList(ArtifactUtils.getVersions(metadata, containsSnapshot)));
+            }
+            versions = set.toArray(new String[0]);
+            resolvedVersions.put(id, versions);
+        }
+        return versions;
     }
 
     public Metadata[] resolveMetadatas(String groupId, String artifactId, boolean containsSnapshot) {
