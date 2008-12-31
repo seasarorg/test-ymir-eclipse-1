@@ -49,7 +49,7 @@ public class ArtifactUtils {
     private static final Pattern PATTERN_GET_ARTIFACT_NAME_DELIMITER = Pattern
             .compile("-\\d"); //$NON-NLS-1$
 
-    private static final String SUFFIX_SNAPSHOT = "-SUFFIX_SNAPSHOT"; //$NON-NLS-1$
+    private static final String SUFFIX_SNAPSHOT = "-SNAPSHOT"; //$NON-NLS-1$
 
     private ArtifactUtils() {
     }

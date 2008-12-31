@@ -128,6 +128,61 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.eclipse.jdt</groupId>
+      <artifactId>ui</artifactId>
+      <version>3.3.0-v20070607-0010</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>commands</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>expressions</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.jface</groupId>
+          <artifactId>databinding</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>databinding</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.jface</groupId>
+          <artifactId>text</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.ui.workbench</groupId>
+          <artifactId>texteditor</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>variables</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.ui</groupId>
+          <artifactId>forms</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>resources</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>filesystem</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse</groupId>
+          <artifactId>ui</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse</groupId>
+          <artifactId>jface</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.ui</groupId>
       <artifactId>workbench</artifactId>
       <version>3.3.0-I20070608-1100</version>
@@ -151,6 +206,29 @@
         <exclusion>
           <groupId>org.eclipse</groupId>
           <artifactId>jface</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.ui.workbench</groupId>
+      <artifactId>texteditor</artifactId>
+      <version>3.3.0-v20070606-0010</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse</groupId>
+          <artifactId>swt</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse</groupId>
+          <artifactId>ui</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.jface</groupId>
+          <artifactId>text</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>filesystem</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

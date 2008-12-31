@@ -14,23 +14,26 @@ import net.skirnir.xom.XOMapperFactory;
 import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 public class MetadataTest extends TestCase {
-    private XOMapper mapper = XOMapperFactory.newInstance().setBeanAccessorFactory(new BeanAccessorFactory() {
-        public BeanAccessor newInstance() {
-            return new AnnotationBeanAccessor() {
-                @Override
-                protected String toXMLName(String javaName) {
-                    return Introspector.decapitalize(javaName);
+    private XOMapper mapper = XOMapperFactory.newInstance()
+            .setBeanAccessorFactory(new BeanAccessorFactory() {
+                public BeanAccessor newInstance() {
+                    return new AnnotationBeanAccessor() {
+                        @Override
+                        protected String toXMLName(String javaName) {
+                            return Introspector.decapitalize(javaName);
+                        }
+                    };
                 }
-            };
-        }
-    }).setStrict(true);
+            }).setStrict(true);
 
     public void testToBean() throws Exception {
         Metadata actual = mapper.toBean(XMLParserFactory.newInstance().parse(
-                new InputStreamReader(getClass().getClassLoader().getResourceAsStream(
-                        getClass().getName().replace('.', '/').concat("_metadata1.xml")), "UTF-8")).getRootElement(),
-                Metadata.class);
+                new InputStreamReader(getClass().getClassLoader()
+                        .getResourceAsStream(
+                                getClass().getName().replace('.', '/').concat(
+                                        "_metadata1.xml")), "UTF-8"))
+                .getRootElement(), Metadata.class);
         assertEquals("1.0.2", actual.getVersion());
-        assertEquals(new Long("20080120101219"), actual.getVersioning().getLastUpdated());
+        assertEquals("20080120101219", actual.getVersioning().getLastUpdated());
     }
 }

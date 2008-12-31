@@ -13,6 +13,7 @@ import net.skirnir.freyja.TagElement;
 import net.skirnir.freyja.TagEvaluatorUtils;
 import net.skirnir.freyja.impl.TemplateContextImpl;
 import net.skirnir.xom.ValidationException;
+import net.skirnir.xom.XOMapper;
 
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.PluginRepository;
@@ -42,16 +43,20 @@ class PomTemplateContext extends TemplateContextImpl {
 
     public void setMetadataToAdd(Project project) {
         if (project.getDependencies() != null) {
-            dependencySet.addAll(Arrays.asList(project.getDependencies().getDependencies()));
+            dependencySet.addAll(Arrays.asList(project.getDependencies()
+                    .getDependencies()));
         }
         if (project.getRepositories() != null) {
-            repositorySet.addAll(Arrays.asList(project.getRepositories().getRepositories()));
+            repositorySet.addAll(Arrays.asList(project.getRepositories()
+                    .getRepositories()));
         }
         if (project.getPluginRepositories() != null) {
-            pluginRepositorySet.addAll(Arrays.asList(project.getPluginRepositories().getPluginRepositories()));
+            pluginRepositorySet.addAll(Arrays.asList(project
+                    .getPluginRepositories().getPluginRepositories()));
         }
         if (project.getProfiles() != null) {
-            profileList.addAll(Arrays.asList(project.getProfiles().getProfiles()));
+            profileList.addAll(Arrays.asList(project.getProfiles()
+                    .getProfiles()));
         }
     }
 
@@ -75,9 +80,11 @@ class PomTemplateContext extends TemplateContextImpl {
             }
             TagElement tag = (TagElement) elem;
             if ("groupId".equals(tag.getName())) { //$NON-NLS-1$
-                dependency.setGroupId(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
+                dependency.setGroupId(TagEvaluatorUtils.evaluateElements(this,
+                        tag.getBodyElements()).trim());
             } else if ("artifactId".equals(tag.getName())) { //$NON-NLS-1$
-                dependency.setArtifactId(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
+                dependency.setArtifactId(TagEvaluatorUtils.evaluateElements(
+                        this, tag.getBodyElements()).trim());
             }
         }
         dependencySet.remove(dependency);
@@ -91,7 +98,8 @@ class PomTemplateContext extends TemplateContextImpl {
             }
             TagElement tag = (TagElement) elem;
             if ("url".equals(tag.getName())) { //$NON-NLS-1$
-                repository.setUrl(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
+                repository.setUrl(TagEvaluatorUtils.evaluateElements(this,
+                        tag.getBodyElements()).trim());
             }
         }
         repositorySet.remove(repository);
@@ -105,7 +113,8 @@ class PomTemplateContext extends TemplateContextImpl {
             }
             TagElement tag = (TagElement) elem;
             if ("url".equals(tag.getName())) { //$NON-NLS-1$
-                pluginRepository.setUrl(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
+                pluginRepository.setUrl(TagEvaluatorUtils.evaluateElements(
+                        this, tag.getBodyElements()).trim());
             }
         }
         pluginRepositorySet.remove(pluginRepository);
@@ -115,7 +124,7 @@ class PomTemplateContext extends TemplateContextImpl {
         StringWriter sw = new StringWriter();
         for (Dependency dependency : dependencySet) {
             try {
-                XOMUtils.getXOMapper().toXML(dependency, sw);
+                getXOMapper().toXML(dependency, sw);
             } catch (ValidationException ex) {
                 throw new RuntimeException(ex);
             } catch (IOException ex) {
@@ -130,7 +139,7 @@ class PomTemplateContext extends TemplateContextImpl {
         StringWriter sw = new StringWriter();
         for (Repository repository : repositorySet) {
             try {
-                XOMUtils.getXOMapper().toXML(repository, sw);
+                getXOMapper().toXML(repository, sw);
             } catch (ValidationException ex) {
                 throw new RuntimeException(ex);
             } catch (IOException ex) {
@@ -145,7 +154,7 @@ class PomTemplateContext extends TemplateContextImpl {
         StringWriter sw = new StringWriter();
         for (PluginRepository pluginRepository : pluginRepositorySet) {
             try {
-                XOMUtils.getXOMapper().toXML(pluginRepository, sw);
+                getXOMapper().toXML(pluginRepository, sw);
             } catch (ValidationException ex) {
                 throw new RuntimeException(ex);
             } catch (IOException ex) {
@@ -160,7 +169,7 @@ class PomTemplateContext extends TemplateContextImpl {
         StringWriter sw = new StringWriter();
         for (Profile profile : profileList) {
             try {
-                XOMUtils.getXOMapper().toXML(profile, sw);
+                getXOMapper().toXML(profile, sw);
             } catch (ValidationException ex) {
                 throw new RuntimeException(ex);
             } catch (IOException ex) {
@@ -185,5 +194,9 @@ class PomTemplateContext extends TemplateContextImpl {
 
     public boolean isProfilesOutputted() {
         return profilesOutputted;
+    }
+
+    XOMapper getXOMapper() {
+        return XOMUtils.getXOMapper();
     }
 }
