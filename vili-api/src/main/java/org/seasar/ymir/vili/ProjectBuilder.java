@@ -12,6 +12,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.seasar.kvasir.util.collection.MapProperties;
+import org.seasar.ymir.vili.model.maven.Dependency;
+import org.seasar.ymir.vili.model.maven.Project;
 
 public interface ProjectBuilder {
     void createProject(IProject project, IPath locationPath,
@@ -50,4 +52,10 @@ public interface ProjectBuilder {
 
     void saveApplicationProperties(IProject project, MapProperties properties,
             boolean merge) throws CoreException;
+
+    void updatePom(IProject project, Project pom, IProgressMonitor monitor)
+            throws CoreException;
+
+    Dependency getDependency(IProject project, String groupId, String artifactId)
+            throws CoreException;
 }

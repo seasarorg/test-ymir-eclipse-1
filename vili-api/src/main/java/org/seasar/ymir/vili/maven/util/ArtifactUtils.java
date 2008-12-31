@@ -391,7 +391,7 @@ public class ArtifactUtils {
 
     public static MapProperties getPropertiesResource(Artifact artifact,
             String path, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("Activator.58"), 1); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("ArtifactUtils.2"), 1); //$NON-NLS-1$
 
         JarFile jarFile = null;
         try {
@@ -422,7 +422,7 @@ public class ArtifactUtils {
 
     public static String getResourceAsString(Artifact artifact, String path,
             String encoding, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("Activator.55"), 1); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("ArtifactUtils.1"), 1); //$NON-NLS-1$
 
         JarFile jarFile = null;
         InputStream is = null;
