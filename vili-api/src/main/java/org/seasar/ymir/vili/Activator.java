@@ -19,6 +19,8 @@ public class Activator {
 
     private static final String METHOD_GETPROJECTBUILDER = "getProjectBuilder";
 
+    private static final String METHOD_NEWVILIBEHAVIOR = "newViliBehavior";
+
     private Activator() {
     }
 
@@ -54,8 +56,17 @@ public class Activator {
 
     public static ViliBehavior newViliBehavior(Artifact artifact,
             ClassLoader projectClassLoader) throws CoreException {
-        // TODO 
-        return null;
+        try {
+            Class<?> activatorClass = Class.forName(CLASS_ACTIVATOR);
+            Object activator = activatorClass.getMethod(METHOD_GETDEFAULT)
+                    .invoke(null);
+            return (ViliBehavior) activatorClass.getMethod(
+                    METHOD_NEWVILIBEHAVIOR).invoke(activator, artifact,
+                    projectClassLoader);
+        } catch (Throwable t) {
+            throwCoreException("Can't construct ViliBehavior instance", t);
+            return null;
+        }
     }
 
     public static ArtifactResolver getArtifactResolver() {
