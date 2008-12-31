@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
+import org.seasar.ymir.vili.ArtifactPair;
 import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.ArtifactVersion;

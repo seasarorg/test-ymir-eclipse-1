@@ -1,18 +1,36 @@
 package org.seasar.ymir.eclipse.maven.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.URL;
 import java.util.Date;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.skirnir.xom.IllegalSyntaxException;
 import net.skirnir.xom.ValidationException;
-import net.skirnir.xom.XMLParserFactory;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
+import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
+import org.seasar.ymir.eclipse.Messages;
 import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
+import org.seasar.ymir.eclipse.util.StreamUtils;
+import org.seasar.ymir.eclipse.util.URLUtils;
+import org.seasar.ymir.eclipse.util.XOMUtils;
+import org.seasar.ymir.vili.Globals;
 import org.seasar.ymir.vili.model.maven.Metadata;
 import org.seasar.ymir.vili.model.maven.Snapshot;
 import org.seasar.ymir.vili.model.maven.Versioning;
@@ -179,9 +197,9 @@ public class ArtifactUtils {
         }
 
         try {
-            return Activator.getDefault().getXOMapper().toBean(
-                    XMLParserFactory.newInstance().parse(
-                            new InputStreamReader(new ByteArrayInputStream(bytes), "UTF-8")).getRootElement(), //$NON-NLS-1$
+            return XOMUtils.getXOMapper().toBean(
+                    XOMUtils.getXMLParser()
+                            .parse(new InputStreamReader(new ByteArrayInputStream(bytes), "UTF-8")).getRootElement(), //$NON-NLS-1$
                     Metadata.class);
         } catch (ValidationException ex) {
             return null;
@@ -282,5 +300,95 @@ public class ArtifactUtils {
             }
         }
         return version;
+    }
+
+    // TODO JarInputStreamを使って一度ファイルシステムにコピーしないようにできるか検討する。
+    public static File getFile(Artifact artifact) throws IOException {
+        URL artifactURL = Activator.getDefault().getArtifactResolver().getURL(artifact);
+        File artifactFile = URLUtils.toFile(artifactURL);
+        if (artifactFile == null) {
+            artifactFile = File.createTempFile("ymir", ".jar"); //$NON-NLS-1$ //$NON-NLS-2$
+            artifactFile.deleteOnExit();
+            InputStream is = null;
+            OutputStream os = null;
+            try {
+                is = artifactURL.openStream();
+                os = new FileOutputStream(artifactFile);
+                System.out.println("URL=" + artifactURL + ", file=" + artifactFile); //$NON-NLS-1$ //$NON-NLS-2$
+                StreamUtils.copyStream(is, os);
+            } finally {
+                StreamUtils.close(is);
+                StreamUtils.close(os);
+            }
+        }
+        return artifactFile;
+    }
+
+    // TODO JarInputStreamを使って一度ファイルシステムにコピーしないようにできるか検討する。
+    public static JarFile getJarFile(Artifact artifact) throws CoreException {
+        try {
+            return new JarFile(getFile(artifact));
+        } catch (IOException ex) {
+            throw new CoreException(new Status(IStatus.ERROR, Globals.PLUGIN_ID, "Can't create JarFile instance: "
+                    + artifact, ex));
+        }
+    }
+
+    public static MapProperties getPropertiesResource(Artifact artifact, String path, IProgressMonitor monitor)
+            throws CoreException {
+        monitor.beginTask(Messages.getString("Activator.58"), 1); //$NON-NLS-1$
+
+        JarFile jarFile = null;
+        try {
+            jarFile = getJarFile(artifact);
+            if (jarFile == null) {
+                return null;
+            }
+
+            return JarUtils.getPropertiesResource(jarFile, path, new SubProgressMonitor(monitor, 1));
+        } finally {
+            StreamUtils.close(jarFile);
+            monitor.done();
+        }
+    }
+
+    public static boolean exists(Artifact artifact, String path) throws CoreException {
+        JarFile jarFile = null;
+        try {
+            jarFile = getJarFile(artifact);
+
+            return jarFile.getJarEntry(path) != null;
+        } finally {
+            StreamUtils.close(jarFile);
+        }
+    }
+
+    public static String getResourceAsString(Artifact artifact, String path, String encoding, IProgressMonitor monitor)
+            throws CoreException {
+        monitor.beginTask(Messages.getString("Activator.55"), 1); //$NON-NLS-1$
+
+        JarFile jarFile = null;
+        InputStream is = null;
+        try {
+            jarFile = ArtifactUtils.getJarFile(artifact);
+
+            JarEntry entry = jarFile.getJarEntry(path);
+            if (entry == null) {
+                return null;
+            }
+
+            is = jarFile.getInputStream(entry);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            StreamUtils.copyStream(is, baos);
+            return new String(baos.toByteArray(), encoding);
+        } catch (IOException ex) {
+            Activator.getDefault().throwCoreException(
+                    "Can't read resource: artifact=" + artifact + ", path=" + path, ex); //$NON-NLS-1$ //$NON-NLS-2$
+            return null;
+        } finally {
+            StreamUtils.close(is);
+            StreamUtils.close(jarFile);
+            monitor.done();
+        }
     }
 }

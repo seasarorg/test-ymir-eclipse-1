@@ -14,6 +14,8 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.ProjectClassLoader;
+import org.seasar.ymir.eclipse.util.XOMUtils;
+import org.seasar.ymir.vili.ArtifactPair;
 import org.seasar.ymir.vili.IAction;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
@@ -38,7 +40,11 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
     private Actions createActions(String text) {
         Actions actions = null;
         if (text != null && text.length() > 0) {
-            actions = Activator.getDefault().getAsBean(text, Actions.class);
+            try {
+                actions = XOMUtils.getAsBean(text, Actions.class);
+            } catch (CoreException ex) {
+                Activator.getDefault().log(ex);
+            }
         }
         if (actions == null) {
             actions = new Actions();

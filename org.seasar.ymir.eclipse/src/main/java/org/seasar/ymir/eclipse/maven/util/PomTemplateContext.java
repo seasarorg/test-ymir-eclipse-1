@@ -13,9 +13,8 @@ import net.skirnir.freyja.TagElement;
 import net.skirnir.freyja.TagEvaluatorUtils;
 import net.skirnir.freyja.impl.TemplateContextImpl;
 import net.skirnir.xom.ValidationException;
-import net.skirnir.xom.XOMapper;
 
-import org.seasar.ymir.eclipse.Activator;
+import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.PluginRepository;
 import org.seasar.ymir.vili.model.maven.Profile;
@@ -116,7 +115,7 @@ class PomTemplateContext extends TemplateContextImpl {
         StringWriter sw = new StringWriter();
         for (Dependency dependency : dependencySet) {
             try {
-                getXOMapper().toXML(dependency, sw);
+                XOMUtils.getXOMapper().toXML(dependency, sw);
             } catch (ValidationException ex) {
                 throw new RuntimeException(ex);
             } catch (IOException ex) {
@@ -131,7 +130,7 @@ class PomTemplateContext extends TemplateContextImpl {
         StringWriter sw = new StringWriter();
         for (Repository repository : repositorySet) {
             try {
-                getXOMapper().toXML(repository, sw);
+                XOMUtils.getXOMapper().toXML(repository, sw);
             } catch (ValidationException ex) {
                 throw new RuntimeException(ex);
             } catch (IOException ex) {
@@ -146,7 +145,7 @@ class PomTemplateContext extends TemplateContextImpl {
         StringWriter sw = new StringWriter();
         for (PluginRepository pluginRepository : pluginRepositorySet) {
             try {
-                getXOMapper().toXML(pluginRepository, sw);
+                XOMUtils.getXOMapper().toXML(pluginRepository, sw);
             } catch (ValidationException ex) {
                 throw new RuntimeException(ex);
             } catch (IOException ex) {
@@ -161,7 +160,7 @@ class PomTemplateContext extends TemplateContextImpl {
         StringWriter sw = new StringWriter();
         for (Profile profile : profileList) {
             try {
-                getXOMapper().toXML(profile, sw);
+                XOMUtils.getXOMapper().toXML(profile, sw);
             } catch (ValidationException ex) {
                 throw new RuntimeException(ex);
             } catch (IOException ex) {
@@ -170,10 +169,6 @@ class PomTemplateContext extends TemplateContextImpl {
         }
         profilesOutputted = true;
         return sw.toString();
-    }
-
-    XOMapper getXOMapper() {
-        return Activator.getDefault().getXOMapper();
     }
 
     public boolean isDependenciesOutputted() {

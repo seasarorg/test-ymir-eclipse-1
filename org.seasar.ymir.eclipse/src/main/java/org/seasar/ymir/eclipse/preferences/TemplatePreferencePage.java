@@ -2,9 +2,7 @@ package org.seasar.ymir.eclipse.preferences;
 
 import java.io.IOException;
 
-import net.skirnir.xom.IllegalSyntaxException;
-import net.skirnir.xom.ValidationException;
-
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -47,17 +45,11 @@ public class TemplatePreferencePage extends PreferencePage implements IWorkbench
         String templateXML = templateControl.getTemplate().trim();
         try {
             Activator.getDefault().createTemplate(templateXML);
-        } catch (ValidationException ex) {
+        } catch (CoreException ex) {
             MessageDialog
                     .openInformation(
                             getControl().getShell(),
-                            Messages.getString("TemplatePreferencePage.1"), Messages.getString("TemplatePreferencePage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
-            return false;
-        } catch (IllegalSyntaxException ex) {
-            MessageDialog
-                    .openInformation(
-                            getControl().getShell(),
-                            Messages.getString("TemplatePreferencePage.1"), Messages.getString("TemplatePreferencePage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+                            Messages.getString("TemplatePreferencePage.1"), Messages.getString("TemplatePreferencePage.2") + ex.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         }
         store.setValue(PreferenceConstants.P_TEMPLATE, templateXML);

@@ -12,10 +12,10 @@ import java.util.Set;
 
 import net.skirnir.xom.ValidationException;
 
-import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.maven.ExtendedRepository;
 import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.StreamUtils;
+import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.model.maven.Metadata;
 import org.seasar.ymir.vili.model.maven.Snapshot;
 import org.seasar.ymir.vili.model.maven.Versioning;
@@ -74,7 +74,7 @@ public class LocalExtendedRepository extends LocalRepository implements Extended
             metadata.setVersioning(versioning);
             StringWriter sw = new StringWriter();
             try {
-                Activator.getDefault().getXOMapper().toXML(metadata, sw);
+                XOMUtils.getXOMapper().toXML(metadata, sw);
             } catch (ValidationException ex) {
                 throw new RuntimeException("Can't happen!", ex);
             } catch (IOException ex) {

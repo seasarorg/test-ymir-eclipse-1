@@ -16,6 +16,7 @@ import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.util.JdtUtils;
+import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.model.Database;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.Project;
@@ -38,11 +39,7 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
         javaProject = JavaCore.create(project);
         this.store = Activator.getDefault().getPreferenceStore(project);
         isYmirProject = project.hasNature(YmirProjectNature.ID);
-        if (isYmirProject) {
-            applicationProperties = Activator.getDefault().loadApplicationProperties(project);
-        } else {
-            applicationProperties = new MapProperties();
-        }
+        applicationProperties = Activator.getDefault().getProjectBuilder().loadApplicationProperties(project);
     }
 
     public boolean isProjectSpecificTemplateEnabled() {
@@ -92,9 +89,13 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
 
     public String getGroupId() {
         String groupId = null;
-        Project pom = Activator.getDefault().getAsBean(project.getFile(Globals.PATH_POM_XML), Project.class);
-        if (pom != null) {
-            groupId = pom.findGroupId();
+        try {
+            Project pom = XOMUtils.getAsBean(project.getFile(Globals.PATH_POM_XML), Project.class);
+            if (pom != null) {
+                groupId = pom.findGroupId();
+            }
+        } catch (CoreException ex) {
+            Activator.getDefault().log(ex);
         }
         if (groupId == null) {
             groupId = ""; //$NON-NLS-1$
@@ -104,9 +105,13 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
 
     public String getArtifactId() {
         String artifactId = null;
-        Project pom = Activator.getDefault().getAsBean(project.getFile(Globals.PATH_POM_XML), Project.class);
-        if (pom != null) {
-            artifactId = pom.findArtifactId();
+        try {
+            Project pom = XOMUtils.getAsBean(project.getFile(Globals.PATH_POM_XML), Project.class);
+            if (pom != null) {
+                artifactId = pom.findArtifactId();
+            }
+        } catch (CoreException ex) {
+            Activator.getDefault().log(ex);
         }
         if (artifactId == null) {
             artifactId = ""; //$NON-NLS-1$
@@ -116,9 +121,13 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
 
     public String getVersion() {
         String version = null;
-        Project pom = Activator.getDefault().getAsBean(project.getFile(Globals.PATH_POM_XML), Project.class);
-        if (pom != null) {
-            version = pom.findVersion();
+        try {
+            Project pom = XOMUtils.getAsBean(project.getFile(Globals.PATH_POM_XML), Project.class);
+            if (pom != null) {
+                version = pom.findVersion();
+            }
+        } catch (CoreException ex) {
+            Activator.getDefault().log(ex);
         }
         if (version == null) {
             version = ""; //$NON-NLS-1$

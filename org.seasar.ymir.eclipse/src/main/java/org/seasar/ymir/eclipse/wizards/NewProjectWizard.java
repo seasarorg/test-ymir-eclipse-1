@@ -1,42 +1,19 @@
 package org.seasar.ymir.eclipse.wizards;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
-import org.eclipse.core.resources.ICommand;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
-import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.IPersistentPreferenceStore;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.Wizard;
@@ -47,40 +24,16 @@ import org.eclipse.ui.IWorkbenchWizard;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
-import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
-import org.seasar.ymir.eclipse.maven.util.MavenUtils;
-import org.seasar.ymir.eclipse.natures.ViliProjectNature;
-import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
-import org.seasar.ymir.eclipse.util.BeanMap;
-import org.seasar.ymir.eclipse.util.CascadeMap;
 import org.seasar.ymir.eclipse.util.JdtUtils;
-import org.seasar.ymir.vili.ProjectType;
-import org.seasar.ymir.vili.ViliBehavior;
+import org.seasar.ymir.vili.ArtifactPair;
+import org.seasar.ymir.vili.ProjectBuilder;
 import org.seasar.ymir.vili.ViliProjectPreferences;
-import org.seasar.ymir.vili.model.Actions;
-import org.seasar.ymir.vili.model.maven.Dependencies;
-import org.seasar.ymir.vili.model.maven.Dependency;
-import org.seasar.ymir.vili.model.maven.Project;
 
 public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtifactWizard {
-    private static final char PACKAGE_DELIMITER = '.';
-
-    private static final String CREATESUPERCLASS_KEY_PACKAGENAME = "packageName"; //$NON-NLS-1$
-
-    private static final String CREATESUPERCLASS_KEY_CLASSSHORTNAME = "classShortName"; //$NON-NLS-1$
-
-    private static final String TEMPLATEPATH_SUPERCLASS = "templates/Superclass.java.ftl"; //$NON-NLS-1$
-
-    private static final String PATH_JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER"; //$NON-NLS-1$
-
-    private static final String PATH_JDT_CORE_PREFS = ".settings/org.eclipse.jdt.core.prefs"; //$NON-NLS-1$
-
-    private static final String BUNDLE_PATHPREFIX_JDT_CORE_PREFS = "/prefs/compliance/org.eclipse.jdt.core.prefs-"; //$NON-NLS-1$
-
     static final String REQUIRED_TEMPLATE = Messages.getString("NewProjectWizard.2"); //$NON-NLS-1$
 
     static final String DS_SECTION = "NewProjectWizard"; //$NON-NLS-1$
@@ -156,10 +109,10 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask(Messages.getString("NewProjectWizard.1"), 2); //$NON-NLS-1$
                     try {
-                        createProject(project, locationPath, jreContainerPath, skeleton, new SubProgressMonitor(
-                                monitor, 1));
-                        Activator.getDefault().addFragments(project, preferences, fragments,
+                        ProjectBuilder builder = Activator.getDefault().getProjectBuilder();
+                        builder.createProject(project, locationPath, jreContainerPath, skeleton, preferences,
                                 new SubProgressMonitor(monitor, 1));
+                        builder.addFragments(project, preferences, fragments, new SubProgressMonitor(monitor, 1));
                     } catch (CoreException e) {
                         Activator.getDefault().getLog().log(e.getStatus());
                         throw new InvocationTargetException(e);
@@ -256,331 +209,8 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
         return prop;
     }
 
-    private void createProject(IProject project, IPath locationPath, IPath jreContainerPath, ArtifactPair skeleton,
-            IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.12"), 12); //$NON-NLS-1$
-        try {
-            Activator activator = Activator.getDefault();
-
-            if (!project.exists()) {
-                IProjectDescription description = project.getWorkspace().newProjectDescription(project.getName());
-                if (Platform.getLocation().equals(locationPath)) {
-                    locationPath = null;
-                }
-                description.setLocation(locationPath);
-                project.create(description, new SubProgressMonitor(monitor, 1));
-            } else {
-                monitor.worked(1);
-            }
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-
-            project.open(new SubProgressMonitor(monitor, 1));
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-
-            ViliBehavior behavior = skeleton.getBehavior();
-            try {
-                @SuppressWarnings("unchecked")//$NON-NLS-1$
-                Map<String, Object> parameters = new CascadeMap<String, Object>(skeleton.getParameterMap(),
-                        new BeanMap(preferences));
-                Activator.getDefault().expandArtifact(project, preferences, skeleton, parameters,
-                        new SubProgressMonitor(monitor, 1));
-            } catch (IOException ex) {
-                throwCoreException(Messages.getString("NewProjectWizard.13"), ex); //$NON-NLS-1$
-                return;
-            }
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-
-            addDatabaseDependenciesToPom(project, new SubProgressMonitor(monitor, 1));
-
-            if (behavior.isProjectOf(ProjectType.JAVA)) {
-                IJavaProject javaProject = JavaCore.create(project);
-
-                setUpProjectDescription(project, behavior, new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                setUpJRECompliance(project, preferences.getJREVersion(), new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                setUpClasspath(javaProject, behavior, jreContainerPath, new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-            } else {
-                monitor.worked(3);
-            }
-
-            Actions actions = behavior.getActions();
-            if (actions != null) {
-                IPreferenceStore store = activator.getPreferenceStore(project);
-                try {
-                    StringWriter sw = new StringWriter();
-                    activator.getXOMapper().toXML(actions, sw);
-                    store.putValue(org.seasar.ymir.eclipse.preferences.PreferenceConstants.P_ACTIONS, sw.toString());
-                    ((IPersistentPreferenceStore) store).save();
-                } catch (Throwable t) {
-                    activator.log(t);
-                }
-            } else {
-                monitor.worked(1);
-            }
-
-            if (behavior.isProjectOf(ProjectType.YMIR)) {
-                MapProperties applicationProperties = preferences.getApplicationProperties();
-
-                updateApplicationProperties(project, applicationProperties, new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                createSuperclass(project, applicationProperties.getProperty(ApplicationPropertiesKeys.SUPERCLASS),
-                        new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-            } else {
-                monitor.worked(2);
-            }
-
-            try {
-                preferences.save(project);
-            } catch (IOException ex) {
-                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                        "Can't save project preferences", ex)); //$NON-NLS-1$
-            }
-            monitor.worked(1);
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private void addDatabaseDependenciesToPom(IProject project, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.28"), 1); //$NON-NLS-1$
-        try {
-            Dependency databaseDependency = preferences.getDatabase().getDependency();
-            if (databaseDependency != null) {
-                Project pom = new Project();
-                Dependencies dependencies = new Dependencies();
-                dependencies.addDependency(databaseDependency);
-                pom.setDependencies(dependencies);
-                MavenUtils.updatePom(project, pom, monitor);
-            }
-        } finally {
-            monitor.done();
-        }
-    }
-
     public ExtendedContext getNonTransitiveContext() {
         return nonTransitiveContext;
-    }
-
-    private void setUpJRECompliance(IProject project, String jreVersion, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.25"), 1); //$NON-NLS-1$
-        try {
-            if (jreVersion.length() == 0) {
-                return;
-            }
-            URL entry = Activator.getDefault().getBundle().getEntry(BUNDLE_PATHPREFIX_JDT_CORE_PREFS + jreVersion);
-            if (entry != null) {
-                Activator.getDefault().mergeProperties(project.getFile(PATH_JDT_CORE_PREFS), entry,
-                        new SubProgressMonitor(monitor, 1));
-            }
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private void createSuperclass(IProject project, String superclass, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.14"), 2); //$NON-NLS-1$
-        try {
-            if (superclass == null) {
-                return;
-            }
-            IFile file = project.getFile(Globals.PATH_SRC_MAIN_JAVA + "/" //$NON-NLS-1$
-                    + superclass.replace('.', '/').concat(".java")); //$NON-NLS-1$
-            if (file.exists()) {
-                return;
-            }
-
-            String packageName;
-            String classShortName;
-            int dot = superclass.lastIndexOf(PACKAGE_DELIMITER);
-            if (dot < 0) {
-                packageName = ""; //$NON-NLS-1$
-                classShortName = superclass;
-            } else {
-                packageName = superclass.substring(0, dot);
-                classShortName = superclass.substring(dot + 1);
-            }
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put(CREATESUPERCLASS_KEY_PACKAGENAME, packageName);
-            map.put(CREATESUPERCLASS_KEY_CLASSSHORTNAME, classShortName);
-            String body;
-            try {
-                body = Activator.getDefault().evaluateTemplate(TEMPLATEPATH_SUPERCLASS, map);
-            } catch (IOException ex) {
-                throwCoreException(Messages.getString("NewProjectWizard.18") + TEMPLATEPATH_SUPERCLASS, ex); //$NON-NLS-1$
-                return;
-            }
-            monitor.worked(1);
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-
-            Activator.getDefault().writeFile(file, body, new SubProgressMonitor(monitor, 1));
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private void setUpClasspath(IJavaProject javaProject, ViliBehavior behavior, IPath jreContainerPath,
-            IProgressMonitor monitor) throws CoreException {
-        if (behavior.isTieUpWithBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT)
-                && Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null) {
-            setUpClasspathForM2Eclipse(javaProject, jreContainerPath, Globals.CLASSPATH_CONTAINER_M2ECLIPSE_LIGHT,
-                    monitor);
-        } else if (behavior.isTieUpWithBundle(Globals.BUNDLENAME_M2ECLIPSE)
-                && Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
-            setUpClasspathForM2Eclipse(javaProject, jreContainerPath, Globals.CLASSPATH_CONTAINER_M2ECLIPSE, monitor);
-        } else {
-            setUpClasspathForNonM2Eclipse(javaProject, jreContainerPath, monitor);
-        }
-    }
-
-    private void setUpClasspathForM2Eclipse(IJavaProject javaProject, IPath jreContainerPath,
-            String m2EclipseContainerPath, IProgressMonitor monitor) throws JavaModelException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.23"), 1); //$NON-NLS-1$
-
-        List<IClasspathEntry> newEntryList = new ArrayList<IClasspathEntry>();
-        for (IClasspathEntry entry : javaProject.getRawClasspath()) {
-            int kind = entry.getEntryKind();
-            if (kind == IClasspathEntry.CPE_LIBRARY || kind == IClasspathEntry.CPE_PROJECT
-                    || kind == IClasspathEntry.CPE_VARIABLE || kind == IClasspathEntry.CPE_CONTAINER) {
-                continue;
-            }
-            newEntryList.add(entry);
-        }
-        newEntryList.add(JavaCore.newContainerEntry(jreContainerPath));
-        newEntryList.add(JavaCore.newContainerEntry(new Path(m2EclipseContainerPath)));
-
-        javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]), new SubProgressMonitor(monitor, 1));
-    }
-
-    private void setUpClasspathForNonM2Eclipse(IJavaProject javaProject, IPath jreContainerPath,
-            IProgressMonitor monitor) throws JavaModelException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.23"), 1); //$NON-NLS-1$
-        try {
-            List<IClasspathEntry> newEntryList = new ArrayList<IClasspathEntry>();
-            for (IClasspathEntry entry : javaProject.getRawClasspath()) {
-                int kind = entry.getEntryKind();
-                IPath path = entry.getPath();
-                if (kind == IClasspathEntry.CPE_CONTAINER) {
-                    if (Globals.CLASSPATH_CONTAINER_M2ECLIPSE_LIGHT.equals(path.toPortableString())
-                            || Globals.CLASSPATH_CONTAINER_M2ECLIPSE.equals(path.toPortableString())
-                            || PATH_JRE_CONTAINER.equals(path.segment(0))) {
-                        continue;
-                    }
-                }
-                newEntryList.add(entry);
-            }
-            newEntryList.add(JavaCore.newContainerEntry(jreContainerPath));
-
-            javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]),
-                    new SubProgressMonitor(monitor, 1));
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private void setUpProjectDescription(IProject project, ViliBehavior behavior, IProgressMonitor monitor)
-            throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.19"), 1); //$NON-NLS-1$
-        try {
-            IProjectDescription description = project.getDescription();
-
-            List<String> newNatureList = new ArrayList<String>();
-            List<ICommand> newBuilderList = new ArrayList<ICommand>();
-
-            newNatureList.add(JavaCore.NATURE_ID);
-            ICommand command = description.newCommand();
-            command.setBuilderName(JavaCore.BUILDER_ID);
-            newBuilderList.add(command);
-            if (behavior.isProjectOf(ProjectType.WEB)) {
-                if (Platform.getBundle(Globals.BUNDLENAME_TOMCATPLUGIN) != null) {
-                    newNatureList.add(Globals.NATURE_ID_TOMCAT);
-                }
-                if (Platform.getBundle(Globals.BUNDLENAME_WEBLAUNCHER) != null) {
-                    newNatureList.add(Globals.NATURE_ID_WEBLAUNCHER);
-                }
-                if (behavior.isTieUpWithBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL)
-                        && Platform.getBundle(Globals.BUNDLENAME_MAVEN2ADDITIONAL) != null) {
-                    newNatureList.add(Globals.NATURE_ID_MAVEN2ADDITIONAL);
-                }
-            }
-            if (behavior.isTieUpWithBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT)
-                    && Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) != null) {
-                newNatureList.add(Globals.NATURE_ID_M2ECLIPSE_LIGHT);
-            } else if (behavior.isTieUpWithBundle(Globals.BUNDLENAME_M2ECLIPSE)
-                    && Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE) != null) {
-                newNatureList.add(Globals.NATURE_ID_M2ECLIPSE);
-                command = description.newCommand();
-                command.setBuilderName(Globals.BUILDER_ID_M2ECLIPSE);
-                newBuilderList.add(command);
-            }
-
-            newNatureList.add(ViliProjectNature.ID);
-            if (behavior.isProjectOf(ProjectType.YMIR)) {
-                newNatureList.add(YmirProjectNature.ID);
-            }
-
-            addNatures(description, newNatureList);
-            addBuilders(description, newBuilderList);
-
-            project.setDescription(description, new SubProgressMonitor(monitor, 1));
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private void updateApplicationProperties(IProject project, MapProperties applicationProperties,
-            IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("NewProjectWizard.20"), 1); //$NON-NLS-1$
-        try {
-            Activator.getDefault().mergeProperties(project.getFile(Globals.PATH_APP_PROPERTIES), applicationProperties,
-                    new SubProgressMonitor(monitor, 1));
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private void addBuilders(IProjectDescription description, List<ICommand> newBuilderList) {
-        Map<String, ICommand> map = new LinkedHashMap<String, ICommand>();
-        for (ICommand builder : description.getBuildSpec()) {
-            map.put(builder.getBuilderName(), builder);
-        }
-        for (ICommand builder : newBuilderList) {
-            map.put(builder.getBuilderName(), builder);
-        }
-        description.setBuildSpec(map.values().toArray(new ICommand[0]));
-    }
-
-    private void addNatures(IProjectDescription description, List<String> newNatureList) {
-        Set<String> set = new LinkedHashSet<String>();
-        set.addAll(Arrays.asList(description.getNatureIds()));
-        set.addAll(newNatureList);
-        description.setNatureIds(set.toArray(new String[0]));
     }
 
     private void throwCoreException(String message, Throwable cause) throws CoreException {

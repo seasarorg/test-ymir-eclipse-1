@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -16,6 +15,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
@@ -25,9 +25,11 @@ import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.Globals;
+import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 import org.seasar.ymir.eclipse.util.ArrayUtils;
 import org.seasar.ymir.eclipse.util.JarClassLoader;
 import org.seasar.ymir.eclipse.util.StreamUtils;
+import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.IConfigurator;
 import org.seasar.ymir.vili.InclusionType;
@@ -90,38 +92,42 @@ public class ViliBehaviorImpl implements ViliBehavior {
         initialize(properties);
     }
 
-    public ViliBehaviorImpl(Artifact artifact, ClassLoader projectClassLoader) throws IOException {
-        this.artifact = artifact;
-        properties = readProperties(artifact);
-        pom = readPom(artifact);
-        actions = readActions(artifact);
-        classLoader = createViliClassLoader(projectClassLoader);
-        configurator = newConfigurator();
-        initializeTieUpBundleSet(artifact);
+    public ViliBehaviorImpl(Artifact artifact, ClassLoader projectClassLoader) throws CoreException {
+        try {
+            this.artifact = artifact;
+            properties = readProperties(artifact);
+            pom = readPom(artifact);
+            actions = readActions(artifact);
+            classLoader = createViliClassLoader(projectClassLoader);
+            configurator = newConfigurator();
+            initializeTieUpBundleSet(artifact);
 
-        initialize(properties);
+            initialize(properties);
+        } catch (IOException ex) {
+            Activator.getDefault().throwCoreException("Can't create ViliBehavior instance", ex);
+        }
     }
 
     private ClassLoader createViliClassLoader(ClassLoader parent) throws IOException {
-        JarClassLoader classLoader = new JarClassLoader(Activator.getDefault().getURL(artifact), parent);
+        JarClassLoader classLoader = new JarClassLoader(Activator.getDefault().getArtifactResolver().getURL(artifact),
+                parent);
         classLoader.setClassesPath(Globals.PATH_CLASSES);
         classLoader.setLibPath(Globals.PATH_LIB);
         return classLoader;
     }
 
-    private void initializeTieUpBundleSet(Artifact artifact) throws IOException {
+    private void initializeTieUpBundleSet(Artifact artifact) throws CoreException {
         if (getArtifactType() != ArtifactType.SKELETON) {
             return;
         }
 
-        Activator activator = Activator.getDefault();
-        if (activator.exists(artifact, Globals.PATH_M2ECLIPSE_LIGHT_PREFS)) {
+        if (ArtifactUtils.exists(artifact, Globals.PATH_M2ECLIPSE_LIGHT_PREFS)) {
             tieUpBundleSet.add(Globals.BUNDLENAME_M2ECLIPSE_LIGHT);
         }
-        if (activator.exists(artifact, Globals.PATH_M2ECLIPSE_PREFS)) {
+        if (ArtifactUtils.exists(artifact, Globals.PATH_M2ECLIPSE_PREFS)) {
             tieUpBundleSet.add(Globals.BUNDLENAME_M2ECLIPSE);
         }
-        if (activator.exists(artifact, Globals.PATH_MAVEN2ADDITIONAL_PREFS)) {
+        if (ArtifactUtils.exists(artifact, Globals.PATH_MAVEN2ADDITIONAL_PREFS)) {
             tieUpBundleSet.add(Globals.BUNDLENAME_MAVEN2ADDITIONAL);
         }
     }
@@ -138,37 +144,44 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return properties;
     }
 
-    private MapProperties readProperties(Artifact artifact) throws IOException {
-        Activator activator = Activator.getDefault();
-
+    private MapProperties readProperties(Artifact artifact) throws CoreException {
         @SuppressWarnings("unchecked")
         MapProperties properties = new MapProperties(new LinkedHashMap());
-        JarFile jarFile = activator.getJarFile(artifact);
+        JarFile jarFile = ArtifactUtils.getJarFile(artifact);
         try {
             JarEntry entry = jarFile.getJarEntry(Globals.PATH_BEHAVIOR_PROPERTIES);
             if (entry != null) {
-                InputStream is = jarFile.getInputStream(entry);
+                InputStream is = null;
                 try {
+                    is = jarFile.getInputStream(entry);
                     properties.load(is);
+                } catch (IOException ex) {
+                    throw new CoreException(new Status(IStatus.ERROR, Globals.PLUGIN_ID, "Can't load "
+                            + Globals.PATH_BEHAVIOR_PROPERTIES + ": " + artifact, ex));
                 } finally {
                     StreamUtils.close(is);
+                    is = null;
                 }
 
                 String[] suffixes = LocaleUtils.getSuffixes(Locale.getDefault());
                 for (int i = suffixes.length - 1; i >= 0; i--) {
-                    entry = jarFile.getJarEntry(Globals.HEAD_BEHAVIOR_PROPERTIES + suffixes[i]
-                            + Globals.TAIL_BEHAVIOR_PROPERTIES);
+                    String name = Globals.HEAD_BEHAVIOR_PROPERTIES + suffixes[i] + Globals.TAIL_BEHAVIOR_PROPERTIES;
+                    entry = jarFile.getJarEntry(name);
                     if (entry == null) {
                         continue;
                     }
                     @SuppressWarnings("unchecked")
                     MapProperties newProperties = new MapProperties(new LinkedHashMap(), properties);
                     properties = newProperties;
-                    is = jarFile.getInputStream(entry);
                     try {
+                        is = jarFile.getInputStream(entry);
                         properties.load(is);
+                    } catch (IOException ex) {
+                        throw new CoreException(new Status(IStatus.ERROR, Globals.PLUGIN_ID, "Can't load " + name
+                                + ": " + artifact, ex));
                     } finally {
                         StreamUtils.close(is);
+                        is = null;
                     }
                 }
             }
@@ -180,14 +193,9 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private Project readPom(Artifact artifact) throws IOException {
         if (getArtifactType() == ArtifactType.FRAGMENT) {
-            Activator activator = Activator.getDefault();
             try {
-                String text = activator.getResourceAsString(artifact, Globals.PATH_POM_XML, Globals.ENCODING,
-                        new NullProgressMonitor());
-                if (text != null) {
-                    return activator.getXOMapper().toBean(
-                            activator.getXMLParser().parse(new StringReader(text)).getRootElement(), Project.class);
-                }
+                return XOMUtils.getAsBean(ArtifactUtils.getResourceAsString(artifact, Globals.PATH_POM_XML,
+                        Globals.ENCODING, new NullProgressMonitor()), Project.class);
             } catch (Throwable t) {
                 IOException ioe = new IOException("Can't read " + Globals.PATH_POM_XML + " in " + artifact); //$NON-NLS-1$ //$NON-NLS-2$
                 ioe.initCause(t);
@@ -198,10 +206,9 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     private Actions readActions(Artifact artifact) throws IOException {
-        Activator activator = Activator.getDefault();
         Actions actions = null;
         try {
-            actions = activator.getAsBean(activator.getResourceAsString(artifact, Globals.PATH_ACTIONS_XML,
+            actions = XOMUtils.getAsBean(ArtifactUtils.getResourceAsString(artifact, Globals.PATH_ACTIONS_XML,
                     Globals.ENCODING, new NullProgressMonitor()), Actions.class);
         } catch (Throwable t) {
             IOException ioe = new IOException("Can't read " + Globals.PATH_ACTIONS_XML + " in " + artifact); //$NON-NLS-1$ //$NON-NLS-2$

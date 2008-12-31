@@ -8,6 +8,7 @@ import net.skirnir.xom.ValidationException;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.seasar.ymir.eclipse.Activator;
+import org.seasar.ymir.eclipse.util.XOMUtils;
 import org.seasar.ymir.vili.model.Fragment;
 import org.seasar.ymir.vili.model.Fragments;
 import org.seasar.ymir.vili.model.Skeleton;
@@ -38,8 +39,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                                 "ymir-skeleton-generic", Messages.getString("PreferenceInitializer.66"), //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("PreferenceInitializer.13"), new Fragment("dbflute-fragment-generic", "", "")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                         new Skeleton("ymir-skeleton-generic", "Ymir標準プロジェクト（YSP）",
-                                "The Ymir Projectで規定している標準構成のプロジェクトを作成します。", new Fragment("dbflute-fragment-generic", "",
-                                        ""), new Fragment("ymir-fragment-utility", "", ""), new Fragment(
+                                "The Ymir Projectで規定している標準構成のプロジェクトを作成します。", new Fragment("dbflute-fragment-generic",
+                                        "", ""), new Fragment("ymir-fragment-utility", "", ""), new Fragment(
                                         "org.seasar.ymir.skeleton.ysp", "ysp-base", "", "")),
                         new Skeleton(
                                 "ymir-skeleton-skeleton-generic", Messages.getString("PreferenceInitializer.68"), Messages.getString("PreferenceInitializer.69")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -67,7 +68,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                                 "ysp-crud", "[YSP] CRUD用のビューとロジック", "[Ymir標準プロジェクト] CRUD用のビューとロジックを追加します。")));
         StringWriter sw = new StringWriter();
         try {
-            Activator.getDefault().getXOMapper().toXML(defaultTemplate, sw);
+            XOMUtils.getXOMapper().toXML(defaultTemplate, sw);
         } catch (ValidationException ex) {
             throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
         } catch (IOException ex) {

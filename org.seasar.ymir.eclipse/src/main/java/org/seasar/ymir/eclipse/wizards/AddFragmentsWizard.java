@@ -14,9 +14,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.ArtifactPair;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.maven.ExtendedContext;
+import org.seasar.ymir.vili.ArtifactPair;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 
 public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard {
@@ -79,7 +79,7 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask(Messages.getString("AddFragmentsWizard.3"), 1); //$NON-NLS-1$
                     try {
-                        Activator.getDefault().addFragments(project, preferences, fragments,
+                        Activator.getDefault().getProjectBuilder().addFragments(project, preferences, fragments,
                                 new SubProgressMonitor(monitor, 1));
                     } catch (CoreException ex) {
                         throw new InvocationTargetException(ex);

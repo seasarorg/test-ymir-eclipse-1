@@ -2,9 +2,6 @@ package org.seasar.ymir.eclipse.properties;
 
 import java.io.IOException;
 
-import net.skirnir.xom.IllegalSyntaxException;
-import net.skirnir.xom.ValidationException;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -56,17 +53,11 @@ public class TemplatePropertyPage extends PropertyPage {
             String template = templateControl.getTemplate().trim();
             try {
                 Activator.getDefault().createTemplate(template);
-            } catch (ValidationException ex) {
+            } catch (CoreException ex) {
                 MessageDialog
                         .openInformation(
                                 getControl().getShell(),
-                                Messages.getString("TemplatePropertyPage.1"), Messages.getString("TemplatePropertyPage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
-                return false;
-            } catch (IllegalSyntaxException ex) {
-                MessageDialog
-                        .openInformation(
-                                getControl().getShell(),
-                                Messages.getString("TemplatePropertyPage.1"), Messages.getString("TemplatePropertyPage.2") + ex.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+                                Messages.getString("TemplatePropertyPage.1"), Messages.getString("TemplatePropertyPage.2") + ex.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
                 return false;
             }
             store.putValue(PreferenceConstants.P_TEMPLATE, template);

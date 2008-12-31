@@ -1,6 +1,6 @@
 package org.seasar.ymir.eclipse.wizards;
 
-import org.seasar.ymir.eclipse.ArtifactPair;
+import org.seasar.ymir.vili.ArtifactPair;
 
 public interface ISelectArtifactWizard {
     void notifySkeletonCleared();

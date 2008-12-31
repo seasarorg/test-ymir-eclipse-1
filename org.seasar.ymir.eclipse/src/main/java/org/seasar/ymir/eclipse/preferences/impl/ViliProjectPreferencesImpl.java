@@ -195,7 +195,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         this.useDatabase = useDatabase;
     }
 
-    public void save(IProject project) throws IOException {
+    public void save(IProject project) throws CoreException {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore(project);
         boolean isYmirProject;
         try {
@@ -226,10 +226,13 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         }
         store.putValue(ParameterKeys.VIEW_ENCODING, viewEncoding);
 
-        ((IPersistentPreferenceStore) store).save();
-        if (isYmirProject) {
-            Activator.getDefault().saveApplicationProperties(project, applicationProperties, true);
+        try {
+            ((IPersistentPreferenceStore) store).save();
+        } catch (IOException ex) {
+            Activator.getDefault().throwCoreException("Can't store preferences", ex);
+            return;
         }
+        Activator.getDefault().getProjectBuilder().saveApplicationProperties(project, applicationProperties, true);
     }
 
     public String getSlash() {
