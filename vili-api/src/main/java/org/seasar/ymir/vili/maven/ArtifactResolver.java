@@ -9,17 +9,27 @@ public interface ArtifactResolver {
 
     void addRemoteRepository(String url, boolean snapshot);
 
+    void setOffline(boolean offline);
+
     ExtendedContext newContext(boolean transitive);
 
-    ExtendedArtifact resolve(String groupId, String artifactId, String version, boolean transitive);
+    ExtendedArtifact resolve(String groupId, String artifactId, String version,
+            boolean transitive);
 
-    ExtendedArtifact resolve(ExtendedContext context, String groupId, String artifactId, String version);
+    ExtendedArtifact resolve(ExtendedContext context, String groupId,
+            String artifactId, String version);
 
     URL getURL(Artifact artifact);
 
-    String getLatestVersion(String groupId, String artifactId, boolean containsSnapshot);
+    String getLatestVersion(String groupId, String artifactId,
+            boolean containsSnapshot);
 
-    String getLatestVersion(ExtendedContext context, String groupId, String artifactId, boolean containsSnapshot);
+    String getLatestVersion(ExtendedContext context, String groupId,
+            String artifactId, boolean containsSnapshot);
 
-    void setOffline(boolean offline);
+    String[] getVersions(String groupId, String artifactId,
+            boolean containsSnapshot);
+
+    String[] getVersions(ExtendedContext context, String groupId,
+            String artifactId, boolean containsSnapshot);
 }

@@ -9,7 +9,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
@@ -292,6 +295,10 @@ public class ArtifactUtils {
 
     public static String getLatestVersion(Metadata metadata,
             boolean containsSnapshot) {
+        if (metadata == null) {
+            return null;
+        }
+
         String version = null;
         Versioning versioning = metadata.getVersioning();
         if (versioning != null) {
@@ -321,6 +328,31 @@ public class ArtifactUtils {
             }
         }
         return version;
+    }
+
+    public static String[] getVersions(Metadata metadata,
+            boolean containsSnapshot) {
+        if (metadata == null) {
+            return new String[0];
+        }
+
+        Set<String> set = new TreeSet<String>(new Comparator<String>() {
+            public int compare(String o1, String o2) {
+                return compareVersions(o2, o1);
+            }
+        });
+        Versioning versioning = metadata.getVersioning();
+        if (versioning != null) {
+            Versions versions = versioning.getVersions();
+            if (versions != null) {
+                for (String version : versions.getVersions()) {
+                    if (containsSnapshot || !ArtifactUtils.isSnapshot(version)) {
+                        set.add(version);
+                    }
+                }
+            }
+        }
+        return set.toArray(new String[0]);
     }
 
     // TODO JarInputStreamを使って一度ファイルシステムにコピーしないようにできるか検討する。
