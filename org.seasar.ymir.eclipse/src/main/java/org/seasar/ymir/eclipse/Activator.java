@@ -24,18 +24,22 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 import org.seasar.ymir.eclipse.impl.ProjectBuilderImpl;
+import org.seasar.ymir.eclipse.impl.ViliBehaviorImpl;
 import org.seasar.ymir.eclipse.maven.impl.ArtifactResolverImpl;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.preferences.impl.ViliNewProjectPreferencesProvider;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesImpl;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesProviderImpl;
 import org.seasar.ymir.vili.ProjectBuilder;
+import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
 import org.seasar.ymir.vili.maven.ArtifactResolver;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Template;
 import org.seasar.ymir.vili.util.XOMUtils;
+
+import werkzeugkasten.mvnhack.repository.Artifact;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -235,5 +239,9 @@ public class Activator extends AbstractUIPlugin {
                 return version1.getWithoutQualifier().equals(version2.getWithoutQualifier());
             }
         }
+    }
+
+    public ViliBehavior newViliBehavior(Artifact artifact, ClassLoader projectClassLoader) throws CoreException {
+        return new ViliBehaviorImpl(artifact, projectClassLoader);
     }
 }
