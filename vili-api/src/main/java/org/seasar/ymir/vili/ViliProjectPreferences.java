@@ -1,8 +1,7 @@
 package org.seasar.ymir.vili;
 
-import java.io.IOException;
-
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
@@ -32,7 +31,7 @@ public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
 
     void setApplicationProperties(MapProperties applicationProperties);
 
-    void save(IProject project) throws IOException;
+    void save(IProject project) throws CoreException;
 
     String getSlash();
 

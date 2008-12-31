@@ -1,8 +1,11 @@
 package org.seasar.ymir.vili;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+
+import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class Activator {
     private static final String CLASS_ACTIVATOR = "org.seasar.ymir.eclipse.Activator";
@@ -36,5 +39,11 @@ public class Activator {
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
+    }
+
+    public static ViliBehavior newViliBehavior(Artifact artifact,
+            ClassLoader projectClassLoader) throws CoreException {
+        // TODO 
+        return null;
     }
 }
