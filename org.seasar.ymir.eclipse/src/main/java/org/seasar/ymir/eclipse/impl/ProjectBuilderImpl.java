@@ -26,6 +26,11 @@ import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import net.skirnir.freyja.Element;
+import net.skirnir.freyja.FreyjaRuntimeException;
+import net.skirnir.freyja.TemplateEvaluator;
+import net.skirnir.freyja.impl.TemplateEvaluatorImpl;
+
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -63,7 +68,6 @@ import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.util.ArtifactUtils;
-import org.seasar.ymir.vili.maven.util.MavenUtils;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
 import org.seasar.ymir.vili.model.maven.Dependencies;
@@ -107,6 +111,8 @@ public class ProjectBuilderImpl implements ProjectBuilder {
     private static final String EXTENSION_XPROPERTIES = "xproperties"; //$NON-NLS-1$
 
     private static final String EXTENSION_PREFS = "prefs";
+
+    private TemplateEvaluator evaluator = new TemplateEvaluatorImpl(new PomTagEvaluator(), new PomExpressionEvaluator());
 
     private Bundle bundle;
 
@@ -216,7 +222,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 }
             }
 
-            MavenUtils.updatePom(project, pom, new SubProgressMonitor(monitor, 1));
+            updatePom(project, pom, new SubProgressMonitor(monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
@@ -345,7 +351,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 Dependencies dependencies = new Dependencies();
                 dependencies.addDependency(databaseDependency);
                 pom.setDependencies(dependencies);
-                MavenUtils.updatePom(project, pom, monitor);
+                updatePom(project, pom, monitor);
             }
         } finally {
             monitor.done();
@@ -973,5 +979,99 @@ public class ProjectBuilderImpl implements ProjectBuilder {
 
         writeFile(project.getFile(Globals.PATH_APP_PROPERTIES), new ByteArrayInputStream(baos.toByteArray()),
                 new NullProgressMonitor());
+    }
+
+    public void updatePom(IProject project, Project pom, IProgressMonitor monitor) throws CoreException {
+        monitor.beginTask(Messages.getString("ProjectBuilderImpl.1"), 2); //$NON-NLS-1$
+        try {
+            if (project == null) {
+                return;
+            }
+
+            IFile pomFile = project.getFile(Globals.PATH_POM_XML);
+            if (!pomFile.exists()) {
+                return;
+            } else if (isEmpty(pom)) {
+                return;
+            }
+
+            String evaluated;
+            InputStream is = null;
+            try {
+                is = pomFile.getContents();
+                evaluated = addToPom(new InputStreamReader(is, Globals.ENCODING), pom);
+            } catch (UnsupportedEncodingException ex) {
+                Activator.getDefault().throwCoreException("Can't happen!", ex); //$NON-NLS-1$
+                return;
+            } finally {
+                IOUtils.closeQuietly(is);
+            }
+            monitor.worked(1);
+
+            try {
+                pomFile
+                        .setContents(new ByteArrayInputStream(evaluated.getBytes(Globals.ENCODING)), true, true,
+                                monitor);
+            } catch (UnsupportedEncodingException ex) {
+                Activator.getDefault().throwCoreException("Can't happen!", ex); //$NON-NLS-1$
+                return;
+            }
+            monitor.worked(1);
+        } finally {
+            monitor.done();
+        }
+    }
+
+    private boolean isEmpty(Project project) {
+        if (project == null) {
+            return true;
+        }
+        if ((project.getRepositories() == null || project.getRepositories().getRepositories().length == 0)
+                && (project.getDependencies() == null || project.getDependencies().getDependencies().length == 0)) {
+            return true;
+        }
+        return false;
+    }
+
+    String addToPom(Reader reader, Project project) throws CoreException {
+        Element[] elems;
+        try {
+            elems = evaluator.parse(reader);
+        } catch (FreyjaRuntimeException ex) {
+            Activator.getDefault().throwCoreException("Illegal syntax", ex); //$NON-NLS-1$
+            return null;
+        }
+
+        PomTemplateContext ctx = (PomTemplateContext) evaluator.newContext();
+        ctx.setMetadataToAdd(project);
+        return evaluator.evaluate(ctx, elems);
+    }
+
+    /*
+     * for test
+     */
+    void setTemplateEvaluator(TemplateEvaluator evaluator) {
+        this.evaluator = evaluator;
+    }
+
+    public Dependency getDependency(IProject project, String groupId, String artifactId) throws CoreException {
+        if (project == null) {
+            return null;
+        }
+
+        Project pom = XOMUtils.getAsBean(project.getFile(Globals.PATH_POM_XML), Project.class);
+        if (pom == null) {
+            return null;
+        }
+        Dependencies dependencies = pom.getDependencies();
+        if (dependencies == null) {
+            return null;
+        }
+        for (Dependency dependency : dependencies.getDependencies()) {
+            if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
+                return dependency;
+            }
+        }
+        return null;
     }
 }
