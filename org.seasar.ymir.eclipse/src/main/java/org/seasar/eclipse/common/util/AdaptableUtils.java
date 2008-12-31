@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.IAdaptable;
  * @author taichi
  * 
  */
-public class AdaptableUtil {
+public class AdaptableUtils {
     public static IResource toResource(Object adaptable) {
         IResource result = null;
         if (adaptable instanceof IResource) {

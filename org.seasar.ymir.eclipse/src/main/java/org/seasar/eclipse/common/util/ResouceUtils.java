@@ -22,16 +22,16 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.seasar.ymir.eclipse.util.WorkbenchUtils;
 
 /**
  * @author taichi
  * 
  */
-public class ResouceUtil {
-
+public class ResouceUtils {
     public static IResource getCurrentSelectedResouce() {
         IResource result = null;
-        IWorkbenchWindow window = WorkbenchUtil.getWorkbenchWindow();
+        IWorkbenchWindow window = WorkbenchUtils.getWorkbenchWindow();
         if (window != null) {
             IWorkbenchPage page = window.getActivePage();
             if (page != null) {
@@ -39,16 +39,15 @@ public class ResouceUtil {
                 IWorkbenchPart part = page.getActivePart();
                 if (part instanceof IEditorPart) {
                     IEditorPart editor = (IEditorPart) part;
-                    result = AdaptableUtil.toResource(editor.getEditorInput());
+                    result = AdaptableUtils.toResource(editor.getEditorInput());
                 }
             }
             if (result == null) {
-                ISelection selection = window.getSelectionService()
-                        .getSelection();
+                ISelection selection = window.getSelectionService().getSelection();
                 if (selection instanceof IStructuredSelection) {
                     IStructuredSelection ss = (IStructuredSelection) selection;
                     Object o = ss.getFirstElement();
-                    result = AdaptableUtil.toResource(o);
+                    result = AdaptableUtils.toResource(o);
                 }
             }
         }

@@ -13,9 +13,9 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.seasar.eclipse.common.util.AdaptableUtil;
-import org.seasar.eclipse.common.util.ResouceUtil;
-import org.seasar.eclipse.common.util.TextEditorUtil;
+import org.seasar.eclipse.common.util.AdaptableUtils;
+import org.seasar.eclipse.common.util.ResouceUtils;
+import org.seasar.eclipse.common.util.TextEditorUtils;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.util.WorkbenchUtils;
 
@@ -35,7 +35,7 @@ public abstract class AbstractWorkbenchWindowActionDelegate implements IWorkbenc
      * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
      */
     public void run(IAction action) {
-        IResource resource = ResouceUtil.getCurrentSelectedResouce();
+        IResource resource = ResouceUtils.getCurrentSelectedResouce();
         if (resource == null) {
             return;
         }
@@ -54,9 +54,9 @@ public abstract class AbstractWorkbenchWindowActionDelegate implements IWorkbenc
 
     protected IJavaElement getSelectionElement() throws JavaModelException {
         IJavaElement result = null;
-        ITextEditor txtEditor = TextEditorUtil.toTextEditor(WorkbenchUtils.getActiveEditor());
+        ITextEditor txtEditor = TextEditorUtils.toTextEditor(WorkbenchUtils.getActiveEditor());
         if (txtEditor != null) {
-            IResource resource = AdaptableUtil.toResource(txtEditor.getEditorInput());
+            IResource resource = AdaptableUtils.toResource(txtEditor.getEditorInput());
             if (resource != null) {
                 IJavaElement javaElement = JavaCore.create(resource);
                 if (javaElement instanceof ICompilationUnit) {

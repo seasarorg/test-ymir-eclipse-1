@@ -2,17 +2,17 @@ package org.seasar.ymir.eclipse.maven;
 
 import java.util.Set;
 
-import org.seasar.ymir.eclipse.maven.impl.ExtendedLocalRepository;
-import org.seasar.ymir.eclipse.maven.impl.ExtendedRemoteRepository;
+import org.seasar.ymir.eclipse.maven.impl.LocalExtendedRepository;
+import org.seasar.ymir.eclipse.maven.impl.RemoteExtendedRepository;
 
 import werkzeugkasten.mvnhack.repository.Configuration;
 
 public interface ExtendedConfiguration extends Configuration {
-    Set<ExtendedLocalRepository> getLocalRepositories();
+    Set<LocalExtendedRepository> getLocalRepositories();
 
-    Set<ExtendedRemoteRepository> getRemoteRepositories();
+    Set<RemoteExtendedRepository> getRemoteRepositories();
 
-    Set<ExtendedRemoteRepository> getSnapshotRepositories();
+    Set<RemoteExtendedRepository> getSnapshotRepositories();
 
     Iterable<ExtendedRepository> getRepositoriesToResolveRelased();
 

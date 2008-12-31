@@ -28,12 +28,12 @@ import werkzeugkasten.mvnhack.repository.ArtifactBuilder;
 import werkzeugkasten.mvnhack.repository.Context;
 import werkzeugkasten.mvnhack.repository.impl.LocalRepository;
 
-public class ExtendedLocalRepository extends LocalRepository implements ExtendedRepository {
+public class LocalExtendedRepository extends LocalRepository implements ExtendedRepository {
     private static final Object NAME_MAVEN_METADATA = "maven-metadata-local.xml"; //$NON-NLS-1$
 
     private File root;
 
-    public ExtendedLocalRepository(File root, ArtifactBuilder builder) {
+    public LocalExtendedRepository(File root, ArtifactBuilder builder) {
         super(root, builder);
         this.root = root;
     }
@@ -158,7 +158,7 @@ public class ExtendedLocalRepository extends LocalRepository implements Extended
             }
         }
 
-        return ExtendedDefaultArtifact.newInstance(super.load(context, groupId, artifactId, version), actualVersion,
+        return DefaultExtendedArtifact.newInstance(super.load(context, groupId, artifactId, version), actualVersion,
                 lastUpdated);
     }
 

@@ -12,12 +12,14 @@ import net.skirnir.freyja.TemplateEvaluator;
 import net.skirnir.freyja.impl.TemplateEvaluatorImpl;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.Activator;
+import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.vili.model.maven.Project;
 
 public class MavenUtils {
@@ -36,12 +38,17 @@ public class MavenUtils {
         MavenUtils.evaluator = evaluator;
     }
 
-    public static void addToPom(IFile pomFile, Project project, IProgressMonitor monitor) throws CoreException {
+    public static void updatePom(IProject project, Project pom, IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("MavenUtils.1"), 2); //$NON-NLS-1$
         try {
+            if (project == null) {
+                return;
+            }
+
+            IFile pomFile = project.getFile(Globals.PATH_POM_XML);
             if (!pomFile.exists()) {
                 return;
-            } else if (isEmpty(project)) {
+            } else if (isEmpty(pom)) {
                 return;
             }
 
@@ -49,7 +56,7 @@ public class MavenUtils {
             InputStream is = null;
             try {
                 is = pomFile.getContents();
-                evaluated = addToPom(new InputStreamReader(is, POM_ENCODING), project);
+                evaluated = addToPom(new InputStreamReader(is, POM_ENCODING), pom);
             } catch (UnsupportedEncodingException ex) {
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't happen!", ex)); //$NON-NLS-1$
             } finally {

@@ -12,7 +12,6 @@ import java.util.logging.Level;
 import org.seasar.ymir.eclipse.maven.ExtendedConfiguration;
 import org.seasar.ymir.eclipse.maven.ExtendedRepository;
 import org.seasar.ymir.eclipse.maven.ExtendedRepository.Type;
-import org.seasar.ymir.eclipse.maven.util.CompositeIterator;
 
 import werkzeugkasten.common.util.StringUtil;
 import werkzeugkasten.common.util.UrlUtil;
@@ -30,11 +29,11 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
 
     protected ArtifactBuilder builder = new StAXArtifactBuilder();
 
-    protected Set<ExtendedLocalRepository> localRepositories = new LinkedHashSet<ExtendedLocalRepository>();;
+    protected Set<LocalExtendedRepository> localRepositories = new LinkedHashSet<LocalExtendedRepository>();;
 
-    protected Set<ExtendedRemoteRepository> remoteRepositories = new LinkedHashSet<ExtendedRemoteRepository>();;
+    protected Set<RemoteExtendedRepository> remoteRepositories = new LinkedHashSet<RemoteExtendedRepository>();;
 
-    protected Set<ExtendedRemoteRepository> snapshotRepositories = new LinkedHashSet<ExtendedRemoteRepository>();;
+    protected Set<RemoteExtendedRepository> snapshotRepositories = new LinkedHashSet<RemoteExtendedRepository>();;
 
     protected boolean offline;
 
@@ -56,12 +55,12 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
         // .m2ディレクトリがない場合でもローカルリポジトリとして登録しておく。でないとMavenを外で実行したことがないような環境で正しく動作しない。
         addLocalRepository(usr);
 
-        addRepository(new ExtendedRemoteRepository(Constants.CENTRAL_REPOSITORY, false, builder));
+        addRepository(new RemoteExtendedRepository(Constants.CENTRAL_REPOSITORY, false, builder));
     }
 
     protected void addLocalRepository(File rep) {
         Constants.LOG.log(Level.INFO, "LocalRepository :{0}", rep.toString()); //$NON-NLS-1$
-        ExtendedLocalRepository lr = new ExtendedLocalRepository(rep, builder);
+        LocalExtendedRepository lr = new LocalExtendedRepository(rep, builder);
         addRepository(lr);
         addDestination(lr);
     }
@@ -103,11 +102,11 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
         ExtendedRepository er = (ExtendedRepository) repository;
         Type type = er.getType();
         if (type == Type.LOCAL) {
-            this.localRepositories.add((ExtendedLocalRepository) er);
+            this.localRepositories.add((LocalExtendedRepository) er);
         } else if (type == Type.SNAPSHOT) {
-            this.snapshotRepositories.add((ExtendedRemoteRepository) er);
+            this.snapshotRepositories.add((RemoteExtendedRepository) er);
         } else {
-            this.remoteRepositories.add((ExtendedRemoteRepository) er);
+            this.remoteRepositories.add((RemoteExtendedRepository) er);
         }
 
         this.repositories.add(repository);
@@ -121,15 +120,15 @@ public class DefaultExtendedConfiguration implements ExtendedConfiguration {
         return this.repositories;
     }
 
-    public Set<ExtendedLocalRepository> getLocalRepositories() {
+    public Set<LocalExtendedRepository> getLocalRepositories() {
         return this.localRepositories;
     }
 
-    public Set<ExtendedRemoteRepository> getRemoteRepositories() {
+    public Set<RemoteExtendedRepository> getRemoteRepositories() {
         return this.remoteRepositories;
     }
 
-    public Set<ExtendedRemoteRepository> getSnapshotRepositories() {
+    public Set<RemoteExtendedRepository> getSnapshotRepositories() {
         return this.snapshotRepositories;
     }
 

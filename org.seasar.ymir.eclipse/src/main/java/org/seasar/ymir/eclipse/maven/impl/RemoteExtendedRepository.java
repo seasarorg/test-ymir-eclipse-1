@@ -20,12 +20,12 @@ import werkzeugkasten.mvnhack.repository.Context;
 import werkzeugkasten.mvnhack.repository.impl.ArtifactUtil;
 import werkzeugkasten.mvnhack.repository.impl.RemoteRepository;
 
-public class ExtendedRemoteRepository extends RemoteRepository implements ExtendedRepository {
+public class RemoteExtendedRepository extends RemoteRepository implements ExtendedRepository {
     private static final Object NAME_MAVEN_METADATA = "maven-metadata.xml"; //$NON-NLS-1$
 
     private boolean snapshot;
 
-    public ExtendedRemoteRepository(String url, boolean snapshot, ArtifactBuilder builder) {
+    public RemoteExtendedRepository(String url, boolean snapshot, ArtifactBuilder builder) {
         super(url, builder);
         this.snapshot = snapshot;
     }
@@ -69,7 +69,7 @@ public class ExtendedRemoteRepository extends RemoteRepository implements Extend
     @Override
     public Artifact load(Context context, String groupId, String artifactId, String version) {
         if (!ArtifactUtils.isSnapshot(version) || !(context instanceof DefaultExtendedContext)) {
-            return ExtendedDefaultArtifact.newInstance(super.load(context, groupId, artifactId, version));
+            return DefaultExtendedArtifact.newInstance(super.load(context, groupId, artifactId, version));
         }
 
         Metadata metadata = ArtifactUtils.createMetadata(resolveMetadata(groupId, artifactId, version));
@@ -93,7 +93,7 @@ public class ExtendedRemoteRepository extends RemoteRepository implements Extend
         stb.append(baseUrl);
         stb.append(ArtifactUtils.toPom(groupId, artifactId, version, actualVersion));
         URL url = UrlUtil.toURL(stb.toString());
-        return ExtendedDefaultArtifact.newInstance(builder.build(context, context.open(ArtifactUtil.create(groupId,
+        return DefaultExtendedArtifact.newInstance(builder.build(context, context.open(ArtifactUtil.create(groupId,
                 artifactId, version), url)), actualVersion, lastUpdated);
     }
 

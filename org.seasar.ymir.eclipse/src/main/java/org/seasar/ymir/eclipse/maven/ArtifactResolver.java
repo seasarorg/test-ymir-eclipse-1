@@ -1,70 +1,25 @@
 package org.seasar.ymir.eclipse.maven;
 
 import java.net.URL;
-import java.util.Properties;
-
-import org.seasar.ymir.eclipse.maven.impl.DefaultExtendedConfiguration;
-import org.seasar.ymir.eclipse.maven.impl.DefaultExtendedContext;
-import org.seasar.ymir.eclipse.maven.impl.ExtendedRemoteRepository;
-import org.seasar.ymir.eclipse.maven.impl.NonTransitiveContext;
-import org.seasar.ymir.eclipse.maven.util.ArtifactUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
-import werkzeugkasten.mvnhack.repository.ArtifactBuilder;
-import werkzeugkasten.mvnhack.repository.Repository;
-import werkzeugkasten.mvnhack.repository.impl.StAXArtifactBuilder;
 
-public class ArtifactResolver {
-    public static final String SNAPSHOT = "SNAPSHOT"; //$NON-NLS-1$
+public interface ArtifactResolver {
+    String SNAPSHOT = "SNAPSHOT"; //$NON-NLS-1$
 
-    public static final String SUFFIX_SNAPSHOT = "-" + SNAPSHOT; //$NON-NLS-1$
+    void addRemoteRepository(String url, boolean snapshot);
 
-    private ExtendedConfiguration configuration;
+    ExtendedContext newContext(boolean transitive);
 
-    private ArtifactBuilder builder;
+    ExtendedArtifact resolve(String groupId, String artifactId, String version, boolean transitive);
 
-    public ArtifactResolver() {
-        configuration = new DefaultExtendedConfiguration(new Properties());
-        builder = new StAXArtifactBuilder();
-        configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2", false, builder)); //$NON-NLS-1$
-        configuration.addRepository(new ExtendedRemoteRepository("http://maven.seasar.org/maven2-snapshot", true, //$NON-NLS-1$
-                builder));
-    }
+    ExtendedArtifact resolve(ExtendedContext context, String groupId, String artifactId, String version);
 
-    public ExtendedContext newContext(boolean transitive) {
-        return transitive ? new DefaultExtendedContext(configuration) : new NonTransitiveContext(configuration);
-    }
+    URL getURL(Artifact artifact);
 
-    public Artifact resolve(String groupId, String artifactId, String version, boolean transitive) {
-        return resolve(newContext(transitive), groupId, artifactId, version);
-    }
+    String getLatestVersion(String groupId, String artifactId, boolean containsSnapshot);
 
-    public Artifact resolve(ExtendedContext context, String groupId, String artifactId, String version) {
-        return context.resolve(groupId, artifactId, version);
-    }
+    String getLatestVersion(ExtendedContext context, String groupId, String artifactId, boolean containsSnapshot);
 
-    public URL getURL(Artifact artifact) {
-        String suffix = "/" + ArtifactUtils.toPath(artifact); //$NON-NLS-1$
-        for (Repository repo : configuration.getRepositories()) {
-            for (URL url : repo.getLocation(artifact)) {
-                if (url.toExternalForm().endsWith(suffix)) {
-                    return url;
-                }
-            }
-        }
-        return null;
-    }
-
-    public String getLatestVersion(String groupId, String artifactId, boolean containsSnapshot) {
-        return getLatestVersion(newContext(false), groupId, artifactId, containsSnapshot);
-
-    }
-
-    public String getLatestVersion(ExtendedContext context, String groupId, String artifactId, boolean containsSnapshot) {
-        return context.getLatestVersion(groupId, artifactId, containsSnapshot);
-    }
-
-    public void setOffline(boolean offline) {
-        configuration.setOffline(offline);
-    }
+    void setOffline(boolean offline);
 }

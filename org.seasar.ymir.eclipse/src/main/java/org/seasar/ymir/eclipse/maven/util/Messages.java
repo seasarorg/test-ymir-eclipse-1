@@ -3,7 +3,7 @@ package org.seasar.ymir.eclipse.maven.util;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-public class Messages {
+class Messages {
     private static final String BUNDLE_NAME = "org.seasar.ymir.eclipse.maven.util.messages"; //$NON-NLS-1$
 
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);

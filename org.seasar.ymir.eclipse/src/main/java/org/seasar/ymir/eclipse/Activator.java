@@ -69,6 +69,7 @@ import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.impl.ViliBehaviorImpl;
 import org.seasar.ymir.eclipse.maven.ArtifactResolver;
+import org.seasar.ymir.eclipse.maven.impl.ArtifactResolverImpl;
 import org.seasar.ymir.eclipse.maven.util.MavenUtils;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
@@ -159,7 +160,7 @@ public class Activator extends AbstractUIPlugin {
         setUpTemplateEngine();
         readSystemBehavior();
 
-        artifactResolver = new ArtifactResolver();
+        artifactResolver = new ArtifactResolverImpl();
         IPreferenceStore preferenceStore = getPreferenceStore();
         artifactResolver.setOffline(preferenceStore.getBoolean(PreferenceConstants.P_OFFLINE));
 
@@ -984,7 +985,7 @@ public class Activator extends AbstractUIPlugin {
                 }
             }
 
-            MavenUtils.addToPom(project.getFile(Globals.PATH_POM_XML), pom, new SubProgressMonitor(monitor, 1));
+            MavenUtils.updatePom(project, pom, new SubProgressMonitor(monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }

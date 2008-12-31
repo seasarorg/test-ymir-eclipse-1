@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
-import org.seasar.eclipse.common.util.AdaptableUtil;
+import org.seasar.eclipse.common.util.AdaptableUtils;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.popup.dialogs.AddFragmentsWizardDialog;
 import org.seasar.ymir.eclipse.util.WorkbenchUtils;
@@ -44,9 +44,9 @@ public class AddFragmentsAction implements IObjectActionDelegate {
     public void selectionChanged(IAction action, ISelection selection) {
         if (selection instanceof IStructuredSelection) {
             Object o = ((IStructuredSelection) selection).getFirstElement();
-            project = AdaptableUtil.toProject(o);
+            project = AdaptableUtils.toProject(o);
             if (project == null) {
-                IResource r = AdaptableUtil.toResource(o);
+                IResource r = AdaptableUtils.toResource(o);
                 if (r != null) {
                     project = r.getProject();
                 }

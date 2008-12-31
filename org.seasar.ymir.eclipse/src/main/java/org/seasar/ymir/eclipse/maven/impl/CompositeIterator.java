@@ -1,8 +1,8 @@
-package org.seasar.ymir.eclipse.maven.util;
+package org.seasar.ymir.eclipse.maven.impl;
 
 import java.util.Iterator;
 
-public class CompositeIterator<T> implements Iterator<T> {
+class CompositeIterator<T> implements Iterator<T> {
     private Iterator<? extends T>[] iterators;
 
     private int idx;

@@ -1,7 +1,5 @@
 package org.seasar.ymir.eclipse.maven.util;
 
-import static org.seasar.ymir.eclipse.maven.ArtifactResolver.SUFFIX_SNAPSHOT;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,7 +28,7 @@ public class ArtifactUtils {
 
     private static final Pattern PATTERN_GET_ARTIFACT_NAME_DELIMITER = Pattern.compile("-\\d"); //$NON-NLS-1$
 
-    private static final String SNAPSHOT = "-SNAPSHOT"; //$NON-NLS-1$
+    private static final String SUFFIX_SNAPSHOT = "-SUFFIX_SNAPSHOT"; //$NON-NLS-1$
 
     private ArtifactUtils() {
     }
@@ -72,15 +70,15 @@ public class ArtifactUtils {
                 version2 = matcher2.group(2);
 
                 // SNAPSHOTは正式リリースより前だが他のどのリリースよりも後。
-                if (version1.equals(SNAPSHOT)) {
-                    if (version2.equals(SNAPSHOT)) {
+                if (version1.equals(SUFFIX_SNAPSHOT)) {
+                    if (version2.equals(SUFFIX_SNAPSHOT)) {
                         return 0;
                     } else if (version2.length() == 0) {
                         return -1;
                     } else {
                         return 1;
                     }
-                } else if (version2.equals(SNAPSHOT)) {
+                } else if (version2.equals(SUFFIX_SNAPSHOT)) {
                     if (version1.length() == 0) {
                         return 1;
                     } else {

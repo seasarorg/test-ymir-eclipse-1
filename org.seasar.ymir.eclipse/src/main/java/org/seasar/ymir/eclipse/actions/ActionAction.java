@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
-import org.seasar.eclipse.common.util.AdaptableUtil;
+import org.seasar.eclipse.common.util.AdaptableUtils;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ProjectRelative;
 
@@ -40,9 +40,9 @@ public class ActionAction implements IObjectActionDelegate, IMenuCreator {
         this.selection = selection;
         if (selection instanceof IStructuredSelection) {
             Object o = ((IStructuredSelection) selection).getFirstElement();
-            project = AdaptableUtil.toProject(o);
+            project = AdaptableUtils.toProject(o);
             if (project == null) {
-                IResource r = AdaptableUtil.toResource(o);
+                IResource r = AdaptableUtils.toResource(o);
                 if (r != null) {
                     project = r.getProject();
                 }

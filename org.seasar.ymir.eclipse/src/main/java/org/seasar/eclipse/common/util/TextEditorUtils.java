@@ -26,8 +26,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
  * @author taichi
  * 
  */
-public class TextEditorUtil {
-
+public class TextEditorUtils {
     public static ITextEditor toTextEditor(IEditorPart editor) {
         ITextEditor result = null;
         if (editor instanceof ITextEditor) {
@@ -38,10 +37,9 @@ public class TextEditorUtil {
         return result;
     }
 
-    public static ITextEditor selectAndReveal(IMember member)
-            throws CoreException {
+    public static ITextEditor selectAndReveal(IMember member) throws CoreException {
         IEditorPart part = JavaUI.openInEditor(member);
-        ITextEditor editor = TextEditorUtil.toTextEditor(part);
+        ITextEditor editor = TextEditorUtils.toTextEditor(part);
         ISourceRange range = member.getNameRange();
         editor.selectAndReveal(range.getOffset(), 0);
         return editor;

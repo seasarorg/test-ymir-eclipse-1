@@ -372,7 +372,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
                 Dependencies dependencies = new Dependencies();
                 dependencies.addDependency(databaseDependency);
                 pom.setDependencies(dependencies);
-                MavenUtils.addToPom(project.getFile(Globals.PATH_POM_XML), pom, monitor);
+                MavenUtils.updatePom(project, pom, monitor);
             }
         } finally {
             monitor.done();

@@ -15,8 +15,14 @@
  */
 package org.seasar.ymir.eclipse.util;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.IWizard;
@@ -30,6 +36,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.browser.IWebBrowser;
+import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.seasar.ymir.eclipse.Activator;
@@ -39,10 +47,19 @@ import org.seasar.ymir.eclipse.Activator;
  * 
  */
 public class WorkbenchUtils {
-
     public static void selectAndReveal(IResource newResource) {
         IWorkbench workbench = PlatformUI.getWorkbench();
         BasicNewResourceWizard.selectAndReveal(newResource, workbench.getActiveWorkbenchWindow());
+    }
+
+    public static void openUrl(String url) throws CoreException {
+        IWorkbenchBrowserSupport support = PlatformUI.getWorkbench().getBrowserSupport();
+        IWebBrowser browser = support.getExternalBrowser();
+        try {
+            browser.openURL(new URL(url));
+        } catch (MalformedURLException ex) {
+            throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, "URL is not valid: " + url, ex)); //$NON-NLS-1$
+        }
     }
 
     public static IEditorPart openResource(final IFile resource) {

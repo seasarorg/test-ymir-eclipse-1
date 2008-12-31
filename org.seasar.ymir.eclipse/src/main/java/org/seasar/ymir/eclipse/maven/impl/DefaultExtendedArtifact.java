@@ -6,7 +6,7 @@ import org.seasar.ymir.eclipse.maven.ExtendedArtifact;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
-public class ExtendedDefaultArtifact implements ExtendedArtifact {
+public class DefaultExtendedArtifact implements ExtendedArtifact {
     private Artifact artifact;
 
     private String actualVersion;
@@ -17,14 +17,14 @@ public class ExtendedDefaultArtifact implements ExtendedArtifact {
         return newInstance(artifact, null, 0L);
     }
 
-    public static ExtendedDefaultArtifact newInstance(Artifact artifact, String actualVersion, long lastUpdated) {
+    public static DefaultExtendedArtifact newInstance(Artifact artifact, String actualVersion, long lastUpdated) {
         if (artifact == null) {
             return null;
         }
-        return new ExtendedDefaultArtifact(artifact, actualVersion, lastUpdated);
+        return new DefaultExtendedArtifact(artifact, actualVersion, lastUpdated);
     }
 
-    ExtendedDefaultArtifact(Artifact artifact, String actualVersion, long lastUpdated) {
+    DefaultExtendedArtifact(Artifact artifact, String actualVersion, long lastUpdated) {
         this.artifact = artifact;
         this.actualVersion = actualVersion;
         this.lastUpdated = lastUpdated;
