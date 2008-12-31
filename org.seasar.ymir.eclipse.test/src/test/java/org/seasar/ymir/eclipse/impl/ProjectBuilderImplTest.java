@@ -17,9 +17,6 @@ import net.skirnir.xom.XOMapperFactory;
 import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 
 import org.seasar.kvasir.util.io.IOUtils;
-import org.seasar.ymir.eclipse.impl.PomExpressionEvaluator;
-import org.seasar.ymir.eclipse.impl.PomTagEvaluator;
-import org.seasar.ymir.eclipse.impl.PomTemplateContext;
 import org.seasar.ymir.vili.model.maven.Dependencies;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.PluginRepositories;
@@ -30,11 +27,14 @@ import org.seasar.ymir.vili.model.maven.Project;
 import org.seasar.ymir.vili.model.maven.Repositories;
 import org.seasar.ymir.vili.model.maven.Repository;
 
-public class MavenUtilsTest extends TestCase {
+public class ProjectBuilderImplTest extends TestCase {
+    private ProjectBuilderImpl target;
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MavenUtils.setTemplateEvaluator(new TemplateEvaluatorImpl(new PomTagEvaluator() {
+        target = new ProjectBuilderImpl(null);
+        target.setTemplateEvaluator(new TemplateEvaluatorImpl(new PomTagEvaluator() {
             private XOMapper mapper = XOMapperFactory.newInstance().setBeanAccessorFactory(new BeanAccessorFactory() {
                 public BeanAccessor newInstance() {
                     return new AnnotationBeanAccessor() {
@@ -70,7 +70,7 @@ public class MavenUtilsTest extends TestCase {
         Profile profile = new Profile();
         profile.addElement(new Element("id", new Attribute[0], new Node[] { new Text("executable") }));
         project.setProfiles(new Profiles(profile));
-        assertEquals(IOUtils.readString(getClass().getResourceAsStream("pom_expected.xml"), "UTF-8", false), MavenUtils
+        assertEquals(IOUtils.readString(getClass().getResourceAsStream("pom_expected.xml"), "UTF-8", false), target
                 .addToPom(new InputStreamReader(getClass().getResourceAsStream("pom.xml"), "UTF-8"), project));
     }
 }
