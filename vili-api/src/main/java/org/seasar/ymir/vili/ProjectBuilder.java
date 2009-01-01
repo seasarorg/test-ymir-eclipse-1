@@ -1,6 +1,5 @@
 package org.seasar.ymir.vili;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
@@ -27,10 +26,13 @@ public interface ProjectBuilder {
 
     void expandArtifact(IProject project, ViliProjectPreferences preferences,
             ArtifactPair pair, Map<String, Object> parameters,
-            IProgressMonitor monitor) throws IOException, CoreException;
+            IProgressMonitor monitor) throws CoreException;
 
     String evaluateTemplate(String path, Map<String, Object> parameterMap)
-            throws IOException;
+            throws CoreException;
+
+    String evaluate(String content, Map<String, Object> parameterMap)
+            throws CoreException;
 
     void writeFile(IFile file, String body, IProgressMonitor monitor)
             throws CoreException;

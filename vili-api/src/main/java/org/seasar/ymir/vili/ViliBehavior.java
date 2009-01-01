@@ -1,5 +1,7 @@
 package org.seasar.ymir.vili;
 
+import java.util.Map;
+
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Actions;
@@ -86,7 +88,7 @@ public interface ViliBehavior {
 
     boolean isProjectOf(ProjectType type);
 
-    Project getPom();
+    Project getEvaluatedPom(Map<String, Object> parameters);
 
     IConfigurator getConfigurator();
 
