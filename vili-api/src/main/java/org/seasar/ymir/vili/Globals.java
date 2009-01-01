@@ -27,7 +27,9 @@ public interface Globals {
     String NATURE_ID_MAVEN2ADDITIONAL = BUNDLENAME_MAVEN2ADDITIONAL
             + ".mavenAdditionalNature"; //$NON-NLS-1$
 
-    String BUNDLENAME_RESOURCESYNCHRONIZER = "org.seasar.resource.synchronizer"; //$NON-NLS-1$
+    String BUNDLENAME_RESOURCESYNCHRONIZER_SEASAR = "org.seasar.resource.synchronizer"; //$NON-NLS-1$
+
+    String BUNDLENAME_RESOURCESYNCHRONIZER_WERKZAUGKASTEN = "werkzeugkasten.resource.synchronizer"; //$NON-NLS-1$
 
     String BUNDLENAME_WEBLAUNCHER = "werkzeugkasten.weblauncher"; //$NON-NLS-1$
 
