@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -51,8 +52,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
     private Artifact artifact;
 
     private MapProperties properties;
-
-    private Project pom;
 
     private Actions actions;
 
@@ -96,7 +95,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
         try {
             this.artifact = artifact;
             properties = readProperties(artifact);
-            pom = readPom(artifact);
             actions = readActions(artifact);
             classLoader = createViliClassLoader(projectClassLoader);
             configurator = newConfigurator();
@@ -133,7 +131,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     private MapProperties readProperties(URL url) throws IOException {
-        @SuppressWarnings("unchecked") //$NON-NLS-1$
+        @SuppressWarnings("unchecked")//$NON-NLS-1$
         MapProperties properties = new MapProperties(new LinkedHashMap());
         InputStream is = url.openStream();
         try {
@@ -145,7 +143,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     private MapProperties readProperties(Artifact artifact) throws CoreException {
-        @SuppressWarnings("unchecked") //$NON-NLS-1$
+        @SuppressWarnings("unchecked")//$NON-NLS-1$
         MapProperties properties = new MapProperties(new LinkedHashMap());
         JarFile jarFile = ArtifactUtils.getJarFile(artifact);
         try {
@@ -170,7 +168,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
                     if (entry == null) {
                         continue;
                     }
-                    @SuppressWarnings("unchecked") //$NON-NLS-1$
+                    @SuppressWarnings("unchecked")//$NON-NLS-1$
                     MapProperties newProperties = new MapProperties(new LinkedHashMap(), properties);
                     properties = newProperties;
                     try {
@@ -189,20 +187,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
         } finally {
             StreamUtils.close(jarFile);
         }
-    }
-
-    private Project readPom(Artifact artifact) throws IOException {
-        if (getArtifactType() == ArtifactType.FRAGMENT) {
-            try {
-                return XOMUtils.getAsBean(ArtifactUtils.getResourceAsString(artifact, Globals.PATH_POM_XML,
-                        Globals.ENCODING, new NullProgressMonitor()), Project.class);
-            } catch (Throwable t) {
-                IOException ioe = new IOException("Can't read " + Globals.PATH_POM_XML + " in " + artifact); //$NON-NLS-1$ //$NON-NLS-2$
-                ioe.initCause(t);
-                throw ioe;
-            }
-        }
-        return new Project();
     }
 
     private Actions readActions(Artifact artifact) throws IOException {
@@ -312,8 +296,23 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return projectTypeSet.contains(type);
     }
 
-    public Project getPom() {
-        return pom;
+    public Project getEvaluatedPom(Map<String, Object> parameters) {
+        try {
+            return readPom(artifact, parameters);
+        } catch (CoreException ex) {
+            Activator.getDefault().log(ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private Project readPom(Artifact artifact, Map<String, Object> parameters) throws CoreException {
+        if (getArtifactType() == ArtifactType.FRAGMENT) {
+            return XOMUtils.getAsBean(Activator.getDefault().getProjectBuilder().evaluate(
+                    ArtifactUtils.getResourceAsString(artifact, Globals.PATH_POM_XML, Globals.ENCODING,
+                            new NullProgressMonitor()), parameters), Project.class);
+        } else {
+            return new Project();
+        }
     }
 
     IConfigurator newConfigurator() {

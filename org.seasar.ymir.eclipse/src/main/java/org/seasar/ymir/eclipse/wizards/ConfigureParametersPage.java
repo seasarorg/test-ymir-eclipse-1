@@ -2,6 +2,7 @@ package org.seasar.ymir.eclipse.wizards;
 
 import static org.seasar.ymir.eclipse.wizards.NewProjectWizard.REQUIRED_TEMPLATE;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -69,7 +73,7 @@ public class ConfigureParametersPage extends WizardPage {
 
     private ArtifactPair skeleton;
 
-    private ViliBehavior SkeletonBehavior;
+    private ViliBehavior skeletonBehavior;
 
     private ArtifactPair[] fragments;
 
@@ -126,8 +130,8 @@ public class ConfigureParametersPage extends WizardPage {
             genericTabContent.setLayout(new GridLayout());
             genericTabItem.setControl(genericTabContent);
 
-            preferencesControl = new ViliProjectPreferencesControl(genericTabContent, preferences, SkeletonBehavior
-                    .isProjectOf(ProjectType.WEB), SkeletonBehavior.isProjectOf(ProjectType.DATABASE)) {
+            preferencesControl = new ViliProjectPreferencesControl(genericTabContent, preferences, skeletonBehavior
+                    .isProjectOf(ProjectType.WEB), skeletonBehavior.isProjectOf(ProjectType.DATABASE)) {
                 @Override
                 public void setErrorMessage(String message) {
                     ConfigureParametersPage.this.setErrorMessage(message);
@@ -155,7 +159,7 @@ public class ConfigureParametersPage extends WizardPage {
         }
 
         if (skeleton != null) {
-            if (SkeletonBehavior.isProjectOf(ProjectType.YMIR)) {
+            if (skeletonBehavior.isProjectOf(ProjectType.YMIR)) {
                 CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
                 ymirConfigurationTabItem.setText(Messages.getString("ConfigureParametersPage.0")); //$NON-NLS-1$
 
@@ -354,14 +358,19 @@ public class ConfigureParametersPage extends WizardPage {
             if (!tabPrepared) {
                 ISelectArtifactWizard wizard = (ISelectArtifactWizard) getWizard();
                 skeleton = wizard.getSkeletonArtifactPair();
+                List<ViliBehavior> behaviorList = new ArrayList<ViliBehavior>();
                 if (skeleton != null) {
-                    SkeletonBehavior = skeleton.getBehavior();
+                    skeletonBehavior = skeleton.getBehavior();
+                    behaviorList.add(skeletonBehavior);
                 }
                 fragments = wizard.getFragmentArtifactPairs();
                 for (ArtifactPair fragment : fragments) {
                     ViliBehavior fragmentBehavior = fragment.getBehavior();
-                    fragmentBehavior.getConfigurator().start(project, fragmentBehavior, preferences);
+                    behaviorList.add(fragmentBehavior);
                 }
+
+                startConfigurators(behaviorList);
+
                 createTabFolder();
                 tabPrepared = true;
 
@@ -377,6 +386,30 @@ public class ConfigureParametersPage extends WizardPage {
         }
     }
 
+    private void startConfigurators(final List<ViliBehavior> behaviorList) {
+        IRunnableWithProgress op = new IRunnableWithProgress() {
+            public void run(IProgressMonitor monitor) throws InvocationTargetException {
+                monitor.beginTask(Messages.getString("ConfigureParametersPage.14"), behaviorList.size()); //$NON-NLS-1$
+                try {
+                    for (ViliBehavior behavior : behaviorList) {
+                        behavior.getConfigurator().start(project, behavior, preferences);
+                        monitor.worked(1);
+                    }
+                } finally {
+                    monitor.done();
+                }
+            }
+        };
+
+        try {
+            getContainer().run(true, false, op);
+        } catch (InvocationTargetException ex) {
+            Throwable realException = ex.getTargetException();
+            MessageDialog.openError(getShell(), "Error", realException.getMessage()); //$NON-NLS-1$
+        } catch (InterruptedException ex) {
+        }
+    }
+
     @Override
     public boolean isPageComplete() {
         return super.isPageComplete() && (preferencesControl == null || preferencesControl.isPageComplete())
@@ -385,7 +418,7 @@ public class ConfigureParametersPage extends WizardPage {
 
     public void notifySkeletonAndFragmentsCleared() {
         skeleton = null;
-        SkeletonBehavior = null;
+        skeletonBehavior = null;
         fragments = null;
 
         if (tabFolder != null) {

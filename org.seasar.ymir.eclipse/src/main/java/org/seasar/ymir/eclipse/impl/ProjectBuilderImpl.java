@@ -88,7 +88,6 @@ import freemarker.cache.TemplateLoader;
 import freemarker.cache.URLTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
-import freemarker.template.TemplateException;
 
 public class ProjectBuilderImpl implements ProjectBuilder {
     private static final char PACKAGE_DELIMITER = '.';
@@ -172,17 +171,12 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 Map<String, Object> parameters = new CascadeMap<String, Object>(new HashMap<String, Object>(), fragment
                         .getParameterMap(), new BeanMap(preferences));
 
-                try {
-                    expandArtifact(project, preferences, fragment, parameters, new SubProgressMonitor(monitor, 1));
-                } catch (IOException ex) {
-                    Activator.getDefault().throwCoreException("Failed to add fragments", ex); //$NON-NLS-1$
-                    return;
-                }
+                expandArtifact(project, preferences, fragment, parameters, new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
 
-                Project fPom = fragment.getBehavior().getPom();
+                Project fPom = fragment.getBehavior().getEvaluatedPom(parameters);
                 if (fPom.getDependencies() != null) {
                     for (Dependency fDependency : fPom.getDependencies().getDependencies()) {
                         dependencies.addDependency(fDependency);
@@ -265,15 +259,10 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             }
 
             ViliBehavior behavior = skeleton.getBehavior();
-            try {
-                @SuppressWarnings("unchecked")//$NON-NLS-1$
-                Map<String, Object> parameters = new CascadeMap<String, Object>(skeleton.getParameterMap(),
-                        new BeanMap(preferences));
-                expandArtifact(project, preferences, skeleton, parameters, new SubProgressMonitor(monitor, 1));
-            } catch (IOException ex) {
-                Activator.getDefault().throwCoreException(Messages.getString("ProjectBuilderImpl.13"), ex); //$NON-NLS-1$
-                return;
-            }
+            @SuppressWarnings("unchecked")//$NON-NLS-1$
+            Map<String, Object> parameters = new CascadeMap<String, Object>(skeleton.getParameterMap(), new BeanMap(
+                    preferences));
+            expandArtifact(project, preferences, skeleton, parameters, new SubProgressMonitor(monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
@@ -520,14 +509,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put(CREATESUPERCLASS_KEY_PACKAGENAME, packageName);
             map.put(CREATESUPERCLASS_KEY_CLASSSHORTNAME, classShortName);
-            String body;
-            try {
-                body = evaluateTemplate(TEMPLATEPATH_SUPERCLASS, map);
-            } catch (IOException ex) {
-                Activator.getDefault().throwCoreException(
-                        Messages.getString("ProjectBuilderImpl.18") + TEMPLATEPATH_SUPERCLASS, ex); //$NON-NLS-1$
-                return;
-            }
+            String body = evaluateTemplate(TEMPLATEPATH_SUPERCLASS, map);
             monitor.worked(1);
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
@@ -557,20 +539,19 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         description.setBuildSpec(map.values().toArray(new ICommand[0]));
     }
 
-    public String evaluateTemplate(String path, Map<String, Object> parameterMap) throws IOException {
+    public String evaluateTemplate(String path, Map<String, Object> parameterMap) throws CoreException {
         StringWriter sw = new StringWriter();
         try {
             cfg.getTemplate(path).process(parameterMap, sw);
-        } catch (TemplateException ex) {
-            IOException ioex = new IOException();
-            ioex.initCause(ex);
-            throw ioex;
+        } catch (Throwable t) {
+            Activator.getDefault().throwCoreException("Can't evaluate template: " + t.toString() + ": path=" + path, t);
+            return null;
         }
         return sw.toString();
     }
 
     public void expandArtifact(IProject project, ViliProjectPreferences preferences, ArtifactPair pair,
-            Map<String, Object> parameters, IProgressMonitor monitor) throws IOException, CoreException {
+            Map<String, Object> parameters, IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("ProjectBuilderImpl.15"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
         try {
             final JarFile jarFile = ArtifactUtils.getJarFile(pair.getArtifact());
@@ -610,7 +591,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 behavior.getConfigurator().processAfterExpanded(project, behavior, preferences, parameters,
                         new SubProgressMonitor(monitor, 1));
             } finally {
-                jarFile.close();
+                StreamUtils.close(jarFile);
             }
         } finally {
             monitor.done();
@@ -619,7 +600,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
 
     private void expand(String path, JarFile jarFile, IProject project, ViliBehavior behavior,
             ViliProjectPreferences preferences, Map<String, Object> parameters, Configuration cfg,
-            IProgressMonitor monitor) throws IOException, CoreException {
+            IProgressMonitor monitor) throws CoreException {
         String resolvedPath = resolvePath(path, cfg, parameters);
         if (!shouldExpand(path, resolvedPath, project, behavior, preferences, parameters)) {
             return;
@@ -641,23 +622,40 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                         cfg.setEncoding(Locale.getDefault(), templateEncoding);
                         cfg.getTemplate(path).process(parameters, sw);
                         evaluatedString = sw.toString();
-                    } catch (TemplateException ex) {
-                        IOException ioex = new IOException();
-                        ioex.initCause(ex);
-                        throw ioex;
+                    } catch (Throwable t) {
+                        Activator.getDefault()
+                                .throwCoreException("Can't expand: " + t.toString() + ": path=" + path, t);
+                        return;
                     } finally {
                         cfg.setEncoding(Locale.getDefault(), Globals.ENCODING);
                     }
                 } else {
-                    evaluatedString = IOUtils.readString(jarFile.getInputStream(jarFile.getJarEntry(path)),
-                            templateEncoding, false);
+                    try {
+                        evaluatedString = IOUtils.readString(jarFile.getInputStream(jarFile.getJarEntry(path)),
+                                templateEncoding, false);
+                    } catch (IOException ex) {
+                        Activator.getDefault().throwCoreException("Can't expand: " + ex.toString() + ": path=" + path,
+                                ex);
+                        return;
+                    }
                 }
 
-                byte[] evaluated = evaluatedString.getBytes(viewTemplate ? getValidEncoding(preferences
-                        .getViewEncoding(), templateEncoding) : templateEncoding);
+                byte[] evaluated;
+                try {
+                    evaluated = evaluatedString.getBytes(viewTemplate ? getValidEncoding(preferences.getViewEncoding(),
+                            templateEncoding) : templateEncoding);
+                } catch (UnsupportedEncodingException ex) {
+                    Activator.getDefault().throwCoreException("Can't expand: " + ex.toString() + ": path=" + path, ex);
+                    return;
+                }
                 in = new ByteArrayInputStream(evaluated);
             } else {
-                in = jarFile.getInputStream(jarFile.getJarEntry(path));
+                try {
+                    in = jarFile.getInputStream(jarFile.getJarEntry(path));
+                } catch (IOException ex) {
+                    Activator.getDefault().throwCoreException("Can't expand: " + ex.toString() + ": path=" + path, ex);
+                    return;
+                }
             }
             try {
                 IFile outputFile = project.getFile(resolvedPath);
@@ -840,15 +838,34 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         return true;
     }
 
-    private String resolvePath(String path, Configuration cfg, Map<String, Object> parameterMap) throws IOException {
+    private String resolvePath(String path, Configuration cfg, Map<String, Object> parameterMap) throws CoreException {
         try {
             StringWriter sw = new StringWriter();
             new freemarker.template.Template("pathName", new StringReader(path), cfg).process(parameterMap, sw); //$NON-NLS-1$
             return sw.toString();
-        } catch (TemplateException ex) {
-            IOException ioex = new IOException();
-            ioex.initCause(ex);
-            throw ioex;
+        } catch (Throwable t) {
+            Activator.getDefault().throwCoreException("Can't evaluate: " + t.toString() + ": " + path, t);
+            return null;
+        }
+    }
+
+    public String evaluate(String content, Map<String, Object> parameterMap) throws CoreException {
+        if (content == null) {
+            return null;
+        }
+
+        try {
+            Configuration cfg = new Configuration();
+            cfg.setEncoding(Locale.getDefault(), Globals.ENCODING);
+            cfg.setLocalizedLookup(false);
+            cfg.setObjectWrapper(new DefaultObjectWrapper());
+
+            StringWriter sw = new StringWriter();
+            new freemarker.template.Template("pathName", new StringReader(content), cfg).process(parameterMap, sw); //$NON-NLS-1$
+            return sw.toString();
+        } catch (Throwable t) {
+            Activator.getDefault().throwCoreException("Can't evaluate: " + t.toString() + ": " + content, t);
+            return null;
         }
     }
 
