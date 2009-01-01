@@ -229,7 +229,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         try {
             ((IPersistentPreferenceStore) store).save();
         } catch (IOException ex) {
-            Activator.getDefault().throwCoreException("Can't store preferences", ex);
+            Activator.getDefault().throwCoreException("Can't store preferences", ex); //$NON-NLS-1$
             return;
         }
         Activator.getDefault().getProjectBuilder().saveApplicationProperties(project, applicationProperties, true);

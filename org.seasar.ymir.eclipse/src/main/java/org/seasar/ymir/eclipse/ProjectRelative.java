@@ -36,7 +36,7 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
                 PreferenceConstants.P_ACTIONS));
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
     private Actions createActions(String text) {
         Actions actions = null;
         if (text != null && text.length() > 0) {

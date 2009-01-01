@@ -50,7 +50,7 @@ public class ViliPropertyPage extends PropertyPage {
 
     private void createEnableNatureSection(Composite parent) throws CoreException {
         enableViliProjectNatureButton_ = new Button(parent, SWT.CHECK);
-        enableViliProjectNatureButton_.setText("Viliプロジェクト");
+        enableViliProjectNatureButton_.setText(Messages.getString("ViliPropertyPage.0")); //$NON-NLS-1$
         enableViliProjectNatureButton_.setSelection(getProject().hasNature(ViliProjectNature.ID));
     }
 

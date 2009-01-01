@@ -337,7 +337,7 @@ public class SelectArtifactPage extends WizardPage {
                                                 preferences.getViliVersion())) {
                                     items[i].setChecked(false);
                                     setErrorMessage(MessageFormat.format(
-                                            "このフラグメントが対応しているViliのバージョン（{0}）がこのViliのバージョン（{1}）と一致しないため利用できません。",
+                                            Messages.getString("SelectArtifactPage.28"), //$NON-NLS-1$
                                             fragmentTemplateArtifactPairs[i].getBehavior().getViliVersion()
                                                     .getWithoutQualifier(), preferences.getViliVersion()
                                                     .getWithoutQualifier()));
@@ -477,7 +477,7 @@ public class SelectArtifactPage extends WizardPage {
                     if (!Activator.getDefault().viliVersionEquals(pair.getBehavior().getViliVersion(),
                             preferences.getViliVersion())) {
                         setErrorMessage(MessageFormat.format(
-                                "このフラグメントが対応しているViliのバージョン（{0}）がこのViliのバージョン（{1}）と一致しないため利用できません。", pair.getBehavior()
+                                Messages.getString("SelectArtifactPage.28"), pair.getBehavior() //$NON-NLS-1$
                                         .getViliVersion().getWithoutQualifier(), preferences.getViliVersion()
                                         .getWithoutQualifier()));
                     } else if (pair.getBehavior().getArtifactType() != ArtifactType.FRAGMENT) {

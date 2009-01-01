@@ -34,7 +34,7 @@ public class AddFragmentsAction implements IObjectActionDelegate {
             dialog.open();
         } catch (Throwable t) {
             Activator.getDefault().log(t);
-            WorkbenchUtils.showMessage("内部エラーが発生したため処理を継続できませんでした。詳細についてはエラーログを参照して下さい。", MessageDialog.ERROR);
+            WorkbenchUtils.showMessage(Messages.getString("AddFragmentsAction.0"), MessageDialog.ERROR); //$NON-NLS-1$
         }
     }
 

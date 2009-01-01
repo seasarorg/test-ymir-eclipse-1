@@ -1,5 +1,7 @@
 package org.seasar.ymir.eclipse.actions;
 
+import java.text.MessageFormat;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -26,18 +28,19 @@ public class TogglePageAndHtmlAction extends AbstractWorkbenchWindowActionDelega
 
     private static final String PATH_DELIMITER = String.valueOf(PATH_DELIMITER_CHAR);
 
-    private static final String SUFFIX_BASE = "Base";
+    private static final String SUFFIX_BASE = "Base"; //$NON-NLS-1$
 
     @Override
     protected void processJava(IProject project, IJavaElement element) throws Exception {
         if (element instanceof ICompilationUnit) {
             IType type = ((ICompilationUnit) element).findPrimaryType();
             String pkg = type.getPackageFragment().getElementName();
-            IFile file = findHtmlFromPage(project, pkg + "." + type.getElementName());
+            IFile file = findHtmlFromPage(project, pkg + "." + type.getElementName()); //$NON-NLS-1$
             if (file != null) {
                 WorkbenchUtils.openResource(file);
             } else {
-                WorkbenchUtils.showMessage("Pageクラス（" + (pkg + "." + type.getElementName()) + "）に対応するHTMLが見つかりませんでした。");
+                WorkbenchUtils.showMessage(MessageFormat.format(Messages.getString("TogglePageAndHtmlAction.2"), pkg + "." //$NON-NLS-1$ //$NON-NLS-2$
+                        + type.getElementName()));
             }
         }
     }
@@ -65,7 +68,7 @@ public class TogglePageAndHtmlAction extends AbstractWorkbenchWindowActionDelega
                 if (type != null && type.exists()) {
                     JavaUI.openInEditor(type);
                 } else {
-                    WorkbenchUtils.showMessage("HTML（" + path + "）に対応するPageクラスが見つかりませんでした。");
+                    WorkbenchUtils.showMessage(MessageFormat.format(Messages.getString("TogglePageAndHtmlAction.4"), path)); //$NON-NLS-1$
                 }
             }
         } catch (Exception e) {

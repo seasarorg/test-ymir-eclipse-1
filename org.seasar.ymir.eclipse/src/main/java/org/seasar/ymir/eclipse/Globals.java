@@ -19,11 +19,11 @@ public interface Globals extends org.seasar.ymir.vili.Globals {
 
     String KEY_VERSION = "version"; //$NON-NLS-1$
 
-    String PATH_M2ECLIPSE_PREFS = ".settings/org.maven.ide.eclipse.prefs";
+    String PATH_M2ECLIPSE_PREFS = ".settings/org.maven.ide.eclipse.prefs"; //$NON-NLS-1$
 
-    String PATH_M2ECLIPSE_LIGHT_PREFS = ".settings/org.maven.ide.eclipse_light.prefs";
+    String PATH_M2ECLIPSE_LIGHT_PREFS = ".settings/org.maven.ide.eclipse_light.prefs"; //$NON-NLS-1$
 
-    String PATH_MAVEN2ADDITIONAL_PREFS = ".settings/net.skirnir.eclipse.maven.prefs";
+    String PATH_MAVEN2ADDITIONAL_PREFS = ".settings/net.skirnir.eclipse.maven.prefs"; //$NON-NLS-1$
 
-    String QUALIFIER_MAPPING = "org.seasar.ymir.extension.mapping";
+    String QUALIFIER_MAPPING = "org.seasar.ymir.extension.mapping"; //$NON-NLS-1$
 }

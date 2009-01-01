@@ -86,14 +86,14 @@ public class LocalExtendedRepository extends LocalRepository implements Extended
             try {
                 XOMUtils.getXOMapper().toXML(metadata, sw);
             } catch (ValidationException ex) {
-                throw new RuntimeException("Can't happen!", ex);
+                throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
             } catch (IOException ex) {
-                throw new RuntimeException("Can't happen!", ex);
+                throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
             }
             try {
-                return sw.toString().getBytes("UTF-8");
+                return sw.toString().getBytes("UTF-8"); //$NON-NLS-1$
             } catch (UnsupportedEncodingException ex) {
-                throw new RuntimeException("Can't happen!", ex);
+                throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
             }
         } else {
             try {

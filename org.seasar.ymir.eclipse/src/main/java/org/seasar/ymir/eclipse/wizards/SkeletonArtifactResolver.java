@@ -90,7 +90,7 @@ public class SkeletonArtifactResolver implements Runnable {
                         ArtifactPair pair = ArtifactPair.newInstance(fragmentArtifact, page.getProjectClassLoader());
                         if (!activator.viliVersionEquals(pair.getBehavior().getViliVersion(), viliVersion)) {
                             errorMessage = MessageFormat.format(
-                                    "このスケルトンに含まれるフラグメントが対応しているViliのバージョン（{0}）がこのViliのバージョン（{1}）と一致しないため利用できません："
+                                    Messages.getString("SkeletonArtifactResolver.2") //$NON-NLS-1$
                                             + pair.getBehavior().getLabel(), pair.getBehavior().getViliVersion()
                                             .getWithoutQualifier(), viliVersion.getWithoutQualifier());
                             failed = true;
@@ -104,7 +104,7 @@ public class SkeletonArtifactResolver implements Runnable {
                     ArtifactPair pair = ArtifactPair.newInstance(skeletonArtifact, page.getProjectClassLoader());
                     if (!activator.viliVersionEquals(pair.getBehavior().getViliVersion(), viliVersion)) {
                         errorMessage = MessageFormat.format(
-                                "このスケルトンが対応しているViliのバージョン（{0}）がこのViliのバージョン（{1}）と一致しないため利用できません。", pair.getBehavior()
+                                Messages.getString("SkeletonArtifactResolver.3"), pair.getBehavior() //$NON-NLS-1$
                                         .getViliVersion().getWithoutQualifier(), viliVersion.getWithoutQualifier());
                     } else if (pair.getBehavior().getArtifactType() != ArtifactType.SKELETON) {
                         errorMessage = Messages.getString("SkeletonArtifactResolver.0"); //$NON-NLS-1$

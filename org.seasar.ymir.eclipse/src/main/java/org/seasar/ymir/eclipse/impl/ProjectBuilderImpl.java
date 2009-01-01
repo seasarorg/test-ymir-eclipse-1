@@ -57,7 +57,6 @@ import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
-import org.seasar.ymir.eclipse.Messages;
 import org.seasar.ymir.eclipse.natures.ViliProjectNature;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
@@ -110,7 +109,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
 
     private static final String EXTENSION_XPROPERTIES = "xproperties"; //$NON-NLS-1$
 
-    private static final String EXTENSION_PREFS = "prefs";
+    private static final String EXTENSION_PREFS = "prefs"; //$NON-NLS-1$
 
     private TemplateEvaluator evaluator = new TemplateEvaluatorImpl(new PomTagEvaluator(), new PomExpressionEvaluator());
 
@@ -125,7 +124,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         try {
             readSystemBehavior();
         } catch (IOException ex) {
-            Activator.getDefault().throwCoreException("Can't read system behavior", ex);
+            Activator.getDefault().throwCoreException("Can't read system behavior", ex); //$NON-NLS-1$
             return;
         }
         setUpTemplateEngine();
@@ -572,7 +571,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
 
     public void expandArtifact(IProject project, ViliProjectPreferences preferences, ArtifactPair pair,
             Map<String, Object> parameters, IProgressMonitor monitor) throws IOException, CoreException {
-        monitor.beginTask(Messages.getString("Activator.15"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("ProjectBuilderImpl.15"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
         try {
             final JarFile jarFile = ArtifactUtils.getJarFile(pair.getArtifact());
             try {
@@ -912,7 +911,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
     }
 
     public void writeFile(IFile file, InputStream is, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("Activator.21"), 2); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("ProjectBuilderImpl.21"), 2); //$NON-NLS-1$
         if (file.exists()) {
             file.setContents(is, false, false, new SubProgressMonitor(monitor, 2));
         } else {

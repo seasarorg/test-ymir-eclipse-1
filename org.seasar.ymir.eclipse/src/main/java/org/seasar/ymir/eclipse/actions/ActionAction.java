@@ -77,7 +77,7 @@ public class ActionAction implements IObjectActionDelegate, IMenuCreator {
                         item.dispose();
                     }
 
-                    IMenuManager mgr = new MenuManager("#action");
+                    IMenuManager mgr = new MenuManager("#action"); //$NON-NLS-1$
                     createMenu(mgr);
                     for (IContributionItem item : mgr.getItems()) {
                         item.fill(m, -1);
@@ -99,8 +99,8 @@ public class ActionAction implements IObjectActionDelegate, IMenuCreator {
     }
 
     private String getActionId(org.seasar.ymir.vili.model.Action action) {
-        return Activator.PLUGIN_ID + ".action." + action.getGroupId() + ":" + action.getArtifactId() + ":"
-                + action.getVersion() + ":" + action.getActionId();
+        return Activator.PLUGIN_ID + ".action." + action.getGroupId() + ":" + action.getArtifactId() + ":" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                + action.getVersion() + ":" + action.getActionId(); //$NON-NLS-1$
     }
 
     protected IAction getAction(IActionDelegate delegate, String id, String text) {

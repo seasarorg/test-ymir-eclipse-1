@@ -150,7 +150,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public void log(Throwable t) {
-        log("Problem has occured", t);
+        log("Problem has occured", t); //$NON-NLS-1$
     }
 
     public void log(String message) {

@@ -46,7 +46,7 @@ import org.seasar.ymir.vili.util.XOMUtils;
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class ViliBehaviorImpl implements ViliBehavior {
-    private static final String DEFAULT_VILIVERSION = "0.0.1";
+    private static final String DEFAULT_VILIVERSION = "0.0.1"; //$NON-NLS-1$
 
     private Artifact artifact;
 
@@ -104,7 +104,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
             initialize(properties);
         } catch (IOException ex) {
-            Activator.getDefault().throwCoreException("Can't create ViliBehavior instance", ex);
+            Activator.getDefault().throwCoreException("Can't create ViliBehavior instance", ex); //$NON-NLS-1$
         }
     }
 
@@ -133,7 +133,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     private MapProperties readProperties(URL url) throws IOException {
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked") //$NON-NLS-1$
         MapProperties properties = new MapProperties(new LinkedHashMap());
         InputStream is = url.openStream();
         try {
@@ -145,7 +145,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     private MapProperties readProperties(Artifact artifact) throws CoreException {
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked") //$NON-NLS-1$
         MapProperties properties = new MapProperties(new LinkedHashMap());
         JarFile jarFile = ArtifactUtils.getJarFile(artifact);
         try {
@@ -156,8 +156,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
                     is = jarFile.getInputStream(entry);
                     properties.load(is);
                 } catch (IOException ex) {
-                    throw new CoreException(new Status(IStatus.ERROR, Globals.PLUGIN_ID, "Can't load "
-                            + Globals.PATH_BEHAVIOR_PROPERTIES + ": " + artifact, ex));
+                    throw new CoreException(new Status(IStatus.ERROR, Globals.PLUGIN_ID, "Can't load " //$NON-NLS-1$
+                            + Globals.PATH_BEHAVIOR_PROPERTIES + ": " + artifact, ex)); //$NON-NLS-1$
                 } finally {
                     StreamUtils.close(is);
                     is = null;
@@ -170,15 +170,15 @@ public class ViliBehaviorImpl implements ViliBehavior {
                     if (entry == null) {
                         continue;
                     }
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings("unchecked") //$NON-NLS-1$
                     MapProperties newProperties = new MapProperties(new LinkedHashMap(), properties);
                     properties = newProperties;
                     try {
                         is = jarFile.getInputStream(entry);
                         properties.load(is);
                     } catch (IOException ex) {
-                        throw new CoreException(new Status(IStatus.ERROR, Globals.PLUGIN_ID, "Can't load " + name
-                                + ": " + artifact, ex));
+                        throw new CoreException(new Status(IStatus.ERROR, Globals.PLUGIN_ID, "Can't load " + name //$NON-NLS-1$
+                                + ": " + artifact, ex)); //$NON-NLS-1$
                     } finally {
                         StreamUtils.close(is);
                         is = null;
