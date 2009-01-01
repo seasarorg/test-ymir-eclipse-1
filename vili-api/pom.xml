@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.seasar.ymir.vili</groupId>
   <artifactId>vili-api</artifactId>
-  <version>0.1.0-0-SNAPSHOT</version>
+  <version>0.1.0-0</version>
   <name>Vili API</name>
   <description>This is an API to communicate with Vili.</description>
   <build>
@@ -40,9 +40,9 @@
     </plugins>
   </build>
   <scm>
-    <connection>scm:svn:https://www.seasar.org/svn/sandbox/ymir/eclipse/trunk/vili-api</connection>
-    <developerConnection>scm:svn:https://www.seasar.org/svn/sandbox/ymir/eclipse/trunk/vili-api</developerConnection>
-    <url>http://svn.seasar.org/browse/eclipse/trunk/vili-api?root=sandbox.ymir</url>
+    <connection>scm:svn:https://www.seasar.org/svn/sandbox/ymir/eclipse/tags/vili-api/vili-api-0.1.0-0</connection>
+    <developerConnection>scm:svn:https://www.seasar.org/svn/sandbox/ymir/eclipse/tags/vili-api/vili-api-0.1.0-0</developerConnection>
+    <url>http://svn.seasar.org/browse/eclipse/tags/vili-api/vili-api-0.1.0-0?root=sandbox.ymir</url>
   </scm>
   <repositories>
     <repository>
