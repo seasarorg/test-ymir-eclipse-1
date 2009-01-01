@@ -61,8 +61,8 @@ public class Activator {
             Object activator = activatorClass.getMethod(METHOD_GETDEFAULT)
                     .invoke(null);
             return (ViliBehavior) activatorClass.getMethod(
-                    METHOD_NEWVILIBEHAVIOR).invoke(activator, artifact,
-                    projectClassLoader);
+                    METHOD_NEWVILIBEHAVIOR, Artifact.class, ClassLoader.class)
+                    .invoke(activator, artifact, projectClassLoader);
         } catch (Throwable t) {
             throwCoreException("Can't construct ViliBehavior instance", t);
             return null;
