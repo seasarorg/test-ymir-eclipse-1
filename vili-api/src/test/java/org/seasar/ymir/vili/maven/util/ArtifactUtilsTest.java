@@ -1,4 +1,4 @@
-package org.seasar.ymir.vili.util;
+package org.seasar.ymir.vili.maven.util;
 
 import junit.framework.TestCase;
 
@@ -9,10 +9,13 @@ public class ArtifactUtilsTest extends TestCase {
         assertTrue(ArtifactUtils.compareVersions((String) null, (String) null) == 0);
         assertTrue(ArtifactUtils.compareVersions(null, "1.0.0") < 0);
         assertTrue(ArtifactUtils.compareVersions("1.0.0", null) > 0);
+        assertTrue(ArtifactUtils.compareVersions("1.0.0-RC2-SNAPSHOT", "1.0.0") < 0);
+        assertTrue(ArtifactUtils.compareVersions("1.0.0-RC2", "1.0.0") < 0);
         assertTrue(ArtifactUtils.compareVersions("1.0.0", "1.0.0") == 0);
         assertTrue(ArtifactUtils.compareVersions("1.0.2", "1.0.10") < 0);
         assertTrue(ArtifactUtils.compareVersions("1.1.2", "1.0.10") > 0);
-        assertTrue(ArtifactUtils.compareVersions("1.1.2-ga", "1.1.2") > 0);
+        assertTrue(ArtifactUtils.compareVersions("1.1.2-ga", "1.1.2") < 0);
+        assertTrue(ArtifactUtils.compareVersions("1.1.2-ga", "1.1.2-candidate") > 0);
         assertTrue(ArtifactUtils.compareVersions("1.1.2-SNAPSHOT", "1.1.2") < 0);
         assertTrue(ArtifactUtils.compareVersions("1.1.2-SNAPSHOT", "1.1.2-RC1") > 0);
         assertTrue(ArtifactUtils.compareVersions("1.0.0-RC2-000-SNAPSHOT",

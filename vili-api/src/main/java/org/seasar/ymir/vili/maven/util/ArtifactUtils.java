@@ -98,21 +98,28 @@ public class ArtifactUtils {
                 version1 = matcher1.group(2);
                 version2 = matcher2.group(2);
 
+                // 正式リリースは他のどのリリースよりも後。
+                if (version1.length() == 0) {
+                    if (version2.length() == 0) {
+                        return 0;
+                    } else {
+                        return 1;
+                    }
+                } else {
+                    if (version2.length() == 0) {
+                        return -1;
+                    }
+                }
+
                 // SNAPSHOTは正式リリースより前だが他のどのリリースよりも後。
                 if (version1.equals(SUFFIX_SNAPSHOT)) {
                     if (version2.equals(SUFFIX_SNAPSHOT)) {
                         return 0;
-                    } else if (version2.length() == 0) {
-                        return -1;
                     } else {
                         return 1;
                     }
                 } else if (version2.equals(SUFFIX_SNAPSHOT)) {
-                    if (version1.length() == 0) {
-                        return 1;
-                    } else {
-                        return -1;
-                    }
+                    return -1;
                 }
 
                 matcher1 = PATTERN_COMPARE_VERSIONS_DELIMITER.matcher(version1);
