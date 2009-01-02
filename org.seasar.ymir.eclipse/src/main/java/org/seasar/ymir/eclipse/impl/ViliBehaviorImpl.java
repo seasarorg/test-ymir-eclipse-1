@@ -1,10 +1,7 @@
 package org.seasar.ymir.eclipse.impl;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -23,7 +20,6 @@ import org.eclipse.core.runtime.Status;
 import org.seasar.kvasir.util.LocaleUtils;
 import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.kvasir.util.collection.MapProperties;
-import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.vili.ArtifactType;
@@ -371,30 +367,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
             pom = new Project();
         }
         return pom;
-    }
-
-    private File expand(File dir, JarFile jarFile, JarEntry entry) {
-        File file = new File(dir, entry.getName());
-        file.getParentFile().mkdirs();
-
-        InputStream is = null;
-        OutputStream os = null;
-        try {
-            is = jarFile.getInputStream(entry);
-            os = new FileOutputStream(file);
-            IOUtils.pipe(is, os, false, false);
-        } catch (IOException ex) {
-            Activator.getDefault().getLog().log(
-                    new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't expand " + entry.getName() + " to " //$NON-NLS-1$ //$NON-NLS-2$
-                            + dir, ex));
-        } finally {
-            IOUtils.closeQuietly(os);
-            IOUtils.closeQuietly(is);
-        }
-
-        file.deleteOnExit();
-
-        return file;
     }
 
     static class Pair {

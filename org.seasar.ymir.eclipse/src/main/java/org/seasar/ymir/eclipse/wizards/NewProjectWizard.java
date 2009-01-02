@@ -213,11 +213,6 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
         return nonTransitiveContext;
     }
 
-    private void throwCoreException(String message, Throwable cause) throws CoreException {
-        IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.OK, message, cause);
-        throw new CoreException(status);
-    }
-
     /**
      * We will accept the selection in the workbench to see if
      * we can initialize from it.
