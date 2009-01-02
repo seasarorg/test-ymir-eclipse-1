@@ -331,7 +331,7 @@ public class ConfigureParametersPage extends WizardPage {
                     }
                     if (selectedIndex >= 0) {
                         combo.select(selectedIndex);
-                    } else if (defaultValue != null) {
+                    } else {
                         combo.setText(defaultValue);
                     }
                     if (description.length() > 0) {

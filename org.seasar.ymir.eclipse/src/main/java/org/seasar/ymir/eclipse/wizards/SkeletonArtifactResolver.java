@@ -14,8 +14,7 @@ import org.seasar.ymir.vili.maven.ExtendedContext;
 import org.seasar.ymir.vili.model.Fragment;
 import org.seasar.ymir.vili.model.MavenArtifact;
 import org.seasar.ymir.vili.model.Skeleton;
-
-import werkzeugkasten.mvnhack.repository.Artifact;
+import org.seasar.ymir.vili.util.ViliUtils;
 
 public class SkeletonArtifactResolver implements Runnable {
     private SelectArtifactPage page;
@@ -31,6 +30,8 @@ public class SkeletonArtifactResolver implements Runnable {
     private Thread thread;
 
     private volatile boolean cancelled;
+
+    private String errorMessage;
 
     public SkeletonArtifactResolver(SelectArtifactPage page, ViliProjectPreferences preferences,
             ExtendedContext context, Skeleton skeleton, long wait) {
@@ -61,57 +62,40 @@ public class SkeletonArtifactResolver implements Runnable {
 
         page.getShell().getDisplay().asyncExec(new Runnable() {
             public void run() {
-                Activator activator = Activator.getDefault();
                 ArtifactVersion viliVersion = preferences.getViliVersion();
 
-                String errorMessage = Messages.getString("SkeletonArtifactResolver.1"); //$NON-NLS-1$
-                Artifact skeletonArtifact = null;
+                errorMessage = Messages.getString("SkeletonArtifactResolver.1"); //$NON-NLS-1$
+                ArtifactPair skeletonPair = null;
                 List<ArtifactPair> fragmentList = new ArrayList<ArtifactPair>();
                 boolean failed = false;
                 do {
-                    skeletonArtifact = resolveArtifact(skeleton, page.useSkeletonSnapshot());
+                    skeletonPair = resolveArtifactPair(skeleton, ArtifactType.SKELETON, page.useSkeletonSnapshot(),
+                            viliVersion);
                     if (cancelled) {
                         return;
                     }
-                    if (skeletonArtifact == null) {
+                    if (skeletonPair == null) {
                         failed = true;
                         break;
                     }
 
                     for (Fragment fragment : skeleton.getAllFragments()) {
-                        Artifact fragmentArtifact = resolveArtifact(fragment, page.useFragmentSnapshot());
+                        ArtifactPair fragmentPair = resolveArtifactPair(fragment, ArtifactType.FRAGMENT, page
+                                .useFragmentSnapshot(), viliVersion);
                         if (cancelled) {
                             return;
                         }
-                        if (fragmentArtifact == null) {
+                        if (fragmentPair == null) {
                             failed = true;
                             break;
                         }
-                        ArtifactPair pair = ArtifactPair.newInstance(fragmentArtifact, page.getProjectClassLoader());
-                        if (!activator.viliVersionEquals(pair.getBehavior().getViliVersion(), viliVersion)) {
-                            errorMessage = MessageFormat.format(
-                                    Messages.getString("SkeletonArtifactResolver.2") //$NON-NLS-1$
-                                            + pair.getBehavior().getLabel(), pair.getBehavior().getViliVersion()
-                                            .getWithoutQualifier(), viliVersion.getWithoutQualifier());
-                            failed = true;
-                            break;
-                        }
-                        fragmentList.add(pair);
+                        fragmentList.add(fragmentPair);
                     }
                 } while (false);
 
                 if (!failed) {
-                    ArtifactPair pair = ArtifactPair.newInstance(skeletonArtifact, page.getProjectClassLoader());
-                    if (!activator.viliVersionEquals(pair.getBehavior().getViliVersion(), viliVersion)) {
-                        errorMessage = MessageFormat.format(
-                                Messages.getString("SkeletonArtifactResolver.3"), pair.getBehavior() //$NON-NLS-1$
-                                        .getViliVersion().getWithoutQualifier(), viliVersion.getWithoutQualifier());
-                    } else if (pair.getBehavior().getArtifactType() != ArtifactType.SKELETON) {
-                        errorMessage = Messages.getString("SkeletonArtifactResolver.0"); //$NON-NLS-1$
-                    } else {
-                        page.setSkeletonAndFragments(pair, fragmentList.toArray(new ArtifactPair[0]));
-                        errorMessage = null;
-                    }
+                    page.setSkeletonAndFragments(skeletonPair, fragmentList.toArray(new ArtifactPair[0]));
+                    errorMessage = null;
                 }
                 if (page.isVisible()) {
                     page.setMessage(null);
@@ -121,16 +105,71 @@ public class SkeletonArtifactResolver implements Runnable {
         });
     }
 
-    private Artifact resolveArtifact(MavenArtifact artifact, boolean containsSnapshot) {
+    private ArtifactPair resolveArtifactPair(MavenArtifact artifact, ArtifactType artifactType,
+            boolean containsSnapshot, ArtifactVersion viliVersion) {
         ArtifactResolver artifactResolver = Activator.getDefault().getArtifactResolver();
         String version = artifact.getVersion();
-        if (version == null) {
+        if (version != null) {
+            // バージョン指定ありの場合。
+            ArtifactPair pair = ArtifactPair.newInstance(artifactResolver.resolve(context, artifact.getGroupId(),
+                    artifact.getArtifactId(), version), page.getProjectClassLoader());
+            if (pair != null) {
+                if (!ViliUtils.isCompatible(viliVersion, pair.getBehavior().getViliVersion())) {
+                    if (artifactType != ArtifactType.SKELETON) {
+                        errorMessage = MessageFormat.format(Messages.getString("SkeletonArtifactResolver.2") //$NON-NLS-1$
+                                + pair.getBehavior().getLabel(), pair.getBehavior().getViliVersion()
+                                .getWithoutQualifier(), viliVersion.getWithoutQualifier());
+                    } else {
+                        errorMessage = MessageFormat.format(
+                                Messages.getString("SkeletonArtifactResolver.3"), pair.getBehavior() //$NON-NLS-1$
+                                        .getViliVersion().getWithoutQualifier(), viliVersion.getWithoutQualifier());
+                    }
+                    pair = null;
+                } else if (pair.getBehavior().getArtifactType() != artifactType) {
+                    errorMessage = Messages.getString("SkeletonArtifactResolver.0"); //$NON-NLS-1$
+                    pair = null;
+                }
+            }
+            return pair;
+        } else {
+            // バージョン指定なしの場合。
             version = artifactResolver.getLatestVersion(context, artifact.getGroupId(), artifact.getArtifactId(),
                     containsSnapshot);
             if (version == null) {
+                // バージョンが見つからなかったので終了。
                 return null;
             }
+            ArtifactPair pair = ArtifactPair.newInstance(artifactResolver.resolve(context, artifact.getGroupId(),
+                    artifact.getArtifactId(), version), page.getProjectClassLoader());
+            if (pair == null) {
+                // アーティファクト自体見つからなかったら終了。
+                return null;
+            } else if (ViliUtils.isCompatible(viliVersion, pair.getBehavior().getViliVersion())) {
+                // 見つかったもののViliバージョンが適合するなら終了。ただしタイプが違った場合は見つからなかったことにする。
+                if (pair.getBehavior().getArtifactType() != artifactType) {
+                    errorMessage = Messages.getString("SkeletonArtifactResolver.0"); //$NON-NLS-1$
+                    pair = null;
+                }
+                return pair;
+            }
+
+            // Viliバージョンが適合しなかった場合は全てのバージョンから検索する。
+            String[] versions = artifactResolver.getVersions(context, artifact.getGroupId(), artifact.getArtifactId(),
+                    containsSnapshot);
+            // 0番目はチェック済みなのでスキップする。
+            for (int i = 1; i < versions.length; i++) {
+                pair = ArtifactPair.newInstance(artifactResolver.resolve(context, artifact.getGroupId(), artifact
+                        .getArtifactId(), versions[i]), page.getProjectClassLoader());
+                if (pair != null && ViliUtils.isCompatible(viliVersion, pair.getBehavior().getViliVersion())) {
+                    // 見つかったもののViliバージョンが適合するなら終了。ただしタイプが違った場合は見つからなかったことにする。
+                    if (pair.getBehavior().getArtifactType() != artifactType) {
+                        errorMessage = Messages.getString("SkeletonArtifactResolver.0"); //$NON-NLS-1$
+                        pair = null;
+                    }
+                    return pair;
+                }
+            }
+            return null;
         }
-        return artifactResolver.resolve(context, artifact.getGroupId(), artifact.getArtifactId(), version);
     }
 }

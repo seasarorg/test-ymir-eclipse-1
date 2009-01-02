@@ -38,16 +38,17 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                         new Skeleton(
                                 "ymir-skeleton-generic", Messages.getString("PreferenceInitializer.66"), //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("PreferenceInitializer.13"), new Fragment("dbflute-fragment-generic", "", "")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                        new Skeleton("ymir-skeleton-generic", Messages.getString("PreferenceInitializer.79"), //$NON-NLS-1$ //$NON-NLS-2$
+                        new Skeleton(
+                                "ymir-skeleton-generic", Messages.getString("PreferenceInitializer.79"), //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("PreferenceInitializer.80"), new Fragment("dbflute-fragment-generic", //$NON-NLS-1$ //$NON-NLS-2$
                                         "", ""), new Fragment("ymir-fragment-utility", "", ""), new Fragment( //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                                         "org.seasar.ymir.skeleton.ysp", "ysp-base", "", "")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                         new Skeleton(
-                                "ymir-skeleton-skeleton-generic", Messages.getString("PreferenceInitializer.68"), Messages.getString("PreferenceInitializer.69")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        new Skeleton("ymir-skeleton-skeleton-web", Messages.getString("PreferenceInitializer.74"), //$NON-NLS-1$ //$NON-NLS-2$
+                                "skeleton-skeleton-generic", Messages.getString("PreferenceInitializer.68"), Messages.getString("PreferenceInitializer.69")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        new Skeleton("skeleton-skeleton-web", Messages.getString("PreferenceInitializer.74"), //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("PreferenceInitializer.75")), //$NON-NLS-1$
                         new Skeleton(
-                                "ymir-skeleton-fragment-generic", Messages.getString("PreferenceInitializer.71"), Messages.getString("PreferenceInitializer.72")) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                                "fragment-skeleton-generic", Messages.getString("PreferenceInitializer.71"), Messages.getString("PreferenceInitializer.72")) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 ));
         defaultTemplate
                 .setFragments(new Fragments(
@@ -61,9 +62,11 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                                 Messages.getString("PreferenceInitializer.61")), //$NON-NLS-1$
                         new Fragment("yonex-fragment-generic", Messages.getString("PreferenceInitializer.76"), //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("PreferenceInitializer.77")), //$NON-NLS-1$
-                        new Fragment("org.seasar.ymir.skeleton.ysp", "ysp-base", Messages.getString("PreferenceInitializer.93"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        new Fragment(
+                                "org.seasar.ymir.skeleton.ysp", "ysp-base", Messages.getString("PreferenceInitializer.93"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                                 Messages.getString("PreferenceInitializer.94")), new Fragment( //$NON-NLS-1$
-                                "org.seasar.ymir.skeleton.ysp", "ysp-login", Messages.getString("PreferenceInitializer.103"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                                "org.seasar.ymir.skeleton.ysp", //$NON-NLS-1$
+                                "ysp-login", Messages.getString("PreferenceInitializer.103"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                                 Messages.getString("PreferenceInitializer.98")), new Fragment("org.seasar.ymir.skeleton.ysp", //$NON-NLS-1$ //$NON-NLS-2$
                                 "ysp-crud", Messages.getString("PreferenceInitializer.101"), Messages.getString("PreferenceInitializer.102")))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         StringWriter sw = new StringWriter();

@@ -35,7 +35,6 @@ import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
 import org.seasar.ymir.vili.maven.ArtifactResolver;
-import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Template;
 import org.seasar.ymir.vili.util.XOMUtils;
 
@@ -226,18 +225,6 @@ public class Activator extends AbstractUIPlugin {
     public void removeProjectRelative(IProject project) {
         synchronized (projectRelativeMap) {
             projectRelativeMap.remove(project);
-        }
-    }
-
-    public boolean viliVersionEquals(ArtifactVersion version1, ArtifactVersion version2) {
-        if (version1 == null) {
-            return version2 == null;
-        } else {
-            if (version2 == null) {
-                return false;
-            } else {
-                return version1.getWithoutQualifier().equals(version2.getWithoutQualifier());
-            }
         }
     }
 

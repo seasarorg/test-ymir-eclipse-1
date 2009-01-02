@@ -176,7 +176,8 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                     throw new OperationCanceledException();
                 }
 
-                Project fPom = fragment.getBehavior().getEvaluatedPom(parameters);
+                Project fPom = fragment.getBehavior().getPom(shouldEvaluateAsTemplate(Globals.PATH_POM_XML, behavior),
+                        parameters);
                 if (fPom.getDependencies() != null) {
                     for (Dependency fDependency : fPom.getDependencies().getDependencies()) {
                         dependencies.addDependency(fDependency);
@@ -544,7 +545,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         try {
             cfg.getTemplate(path).process(parameterMap, sw);
         } catch (Throwable t) {
-            Activator.getDefault().throwCoreException("Can't evaluate template: " + t.toString() + ": path=" + path, t);
+            Activator.getDefault().throwCoreException("Can't evaluate template: " + t.toString() + ": path=" + path, t); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
         return sw.toString();
@@ -624,7 +625,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                         evaluatedString = sw.toString();
                     } catch (Throwable t) {
                         Activator.getDefault()
-                                .throwCoreException("Can't expand: " + t.toString() + ": path=" + path, t);
+                                .throwCoreException("Can't expand: " + t.toString() + ": path=" + path, t); //$NON-NLS-1$ //$NON-NLS-2$
                         return;
                     } finally {
                         cfg.setEncoding(Locale.getDefault(), Globals.ENCODING);
@@ -634,7 +635,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                         evaluatedString = IOUtils.readString(jarFile.getInputStream(jarFile.getJarEntry(path)),
                                 templateEncoding, false);
                     } catch (IOException ex) {
-                        Activator.getDefault().throwCoreException("Can't expand: " + ex.toString() + ": path=" + path,
+                        Activator.getDefault().throwCoreException("Can't expand: " + ex.toString() + ": path=" + path, //$NON-NLS-1$ //$NON-NLS-2$
                                 ex);
                         return;
                     }
@@ -645,7 +646,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                     evaluated = evaluatedString.getBytes(viewTemplate ? getValidEncoding(preferences.getViewEncoding(),
                             templateEncoding) : templateEncoding);
                 } catch (UnsupportedEncodingException ex) {
-                    Activator.getDefault().throwCoreException("Can't expand: " + ex.toString() + ": path=" + path, ex);
+                    Activator.getDefault().throwCoreException("Can't expand: " + ex.toString() + ": path=" + path, ex); //$NON-NLS-1$ //$NON-NLS-2$
                     return;
                 }
                 in = new ByteArrayInputStream(evaluated);
@@ -653,7 +654,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 try {
                     in = jarFile.getInputStream(jarFile.getJarEntry(path));
                 } catch (IOException ex) {
-                    Activator.getDefault().throwCoreException("Can't expand: " + ex.toString() + ": path=" + path, ex);
+                    Activator.getDefault().throwCoreException("Can't expand: " + ex.toString() + ": path=" + path, ex); //$NON-NLS-1$ //$NON-NLS-2$
                     return;
                 }
             }
@@ -844,7 +845,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             new freemarker.template.Template("pathName", new StringReader(path), cfg).process(parameterMap, sw); //$NON-NLS-1$
             return sw.toString();
         } catch (Throwable t) {
-            Activator.getDefault().throwCoreException("Can't evaluate: " + t.toString() + ": " + path, t);
+            Activator.getDefault().throwCoreException("Can't evaluate: " + t.toString() + ": " + path, t); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
     }
@@ -864,7 +865,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             new freemarker.template.Template("pathName", new StringReader(content), cfg).process(parameterMap, sw); //$NON-NLS-1$
             return sw.toString();
         } catch (Throwable t) {
-            Activator.getDefault().throwCoreException("Can't evaluate: " + t.toString() + ": " + content, t);
+            Activator.getDefault().throwCoreException("Can't evaluate: " + t.toString() + ": " + content, t); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
     }

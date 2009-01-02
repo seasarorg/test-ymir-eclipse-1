@@ -51,7 +51,11 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private Artifact artifact;
 
+    private ClassLoader projectClassLoader;
+
     private MapProperties properties;
+
+    private boolean initialized;
 
     private Actions actions;
 
@@ -85,133 +89,34 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private Set<String> tieUpBundleSet = new HashSet<String>();
 
-    public ViliBehaviorImpl(URL url) throws IOException {
+    public ViliBehaviorImpl(URL url) {
         properties = readProperties(url);
-
-        initialize(properties);
+        initializeViliVersion(properties);
     }
 
-    public ViliBehaviorImpl(Artifact artifact, ClassLoader projectClassLoader) throws CoreException {
-        try {
-            this.artifact = artifact;
-            properties = readProperties(artifact);
-            actions = readActions(artifact);
-            classLoader = createViliClassLoader(projectClassLoader);
-            configurator = newConfigurator();
-            initializeTieUpBundleSet(artifact);
-
-            initialize(properties);
-        } catch (IOException ex) {
-            Activator.getDefault().throwCoreException("Can't create ViliBehavior instance", ex); //$NON-NLS-1$
-        }
+    public ViliBehaviorImpl(Artifact artifact, ClassLoader projectClassLoader) {
+        this.artifact = artifact;
+        this.projectClassLoader = projectClassLoader;
+        properties = readProperties(artifact);
+        initializeViliVersion(properties);
     }
 
-    private ClassLoader createViliClassLoader(ClassLoader parent) throws IOException {
-        JarClassLoader classLoader = new JarClassLoader(Activator.getDefault().getArtifactResolver().getURL(artifact),
-                parent);
-        classLoader.setClassesPath(Globals.PATH_CLASSES);
-        classLoader.setLibPath(Globals.PATH_LIB);
-        return classLoader;
-    }
-
-    private void initializeTieUpBundleSet(Artifact artifact) throws CoreException {
-        if (getArtifactType() != ArtifactType.SKELETON) {
+    private void initialize() {
+        if (initialized) {
             return;
         }
 
-        if (ArtifactUtils.exists(artifact, Globals.PATH_M2ECLIPSE_LIGHT_PREFS)) {
-            tieUpBundleSet.add(Globals.BUNDLENAME_M2ECLIPSE_LIGHT);
-        }
-        if (ArtifactUtils.exists(artifact, Globals.PATH_M2ECLIPSE_PREFS)) {
-            tieUpBundleSet.add(Globals.BUNDLENAME_M2ECLIPSE);
-        }
-        if (ArtifactUtils.exists(artifact, Globals.PATH_MAVEN2ADDITIONAL_PREFS)) {
-            tieUpBundleSet.add(Globals.BUNDLENAME_MAVEN2ADDITIONAL);
-        }
+        actions = readActions(artifact);
+        initializeTieUpBundleSet(artifact);
+        classLoader = createViliClassLoader(projectClassLoader);
+        configurator = newConfigurator();
+
+        initialize0();
+
+        initialized = true;
     }
 
-    private MapProperties readProperties(URL url) throws IOException {
-        @SuppressWarnings("unchecked")//$NON-NLS-1$
-        MapProperties properties = new MapProperties(new LinkedHashMap());
-        InputStream is = url.openStream();
-        try {
-            properties.load(is);
-        } finally {
-            StreamUtils.close(is);
-        }
-        return properties;
-    }
-
-    private MapProperties readProperties(Artifact artifact) throws CoreException {
-        @SuppressWarnings("unchecked")//$NON-NLS-1$
-        MapProperties properties = new MapProperties(new LinkedHashMap());
-        JarFile jarFile = ArtifactUtils.getJarFile(artifact);
-        try {
-            JarEntry entry = jarFile.getJarEntry(Globals.PATH_BEHAVIOR_PROPERTIES);
-            if (entry != null) {
-                InputStream is = null;
-                try {
-                    is = jarFile.getInputStream(entry);
-                    properties.load(is);
-                } catch (IOException ex) {
-                    throw new CoreException(new Status(IStatus.ERROR, Globals.PLUGIN_ID, "Can't load " //$NON-NLS-1$
-                            + Globals.PATH_BEHAVIOR_PROPERTIES + ": " + artifact, ex)); //$NON-NLS-1$
-                } finally {
-                    StreamUtils.close(is);
-                    is = null;
-                }
-
-                String[] suffixes = LocaleUtils.getSuffixes(Locale.getDefault());
-                for (int i = suffixes.length - 1; i >= 0; i--) {
-                    String name = Globals.HEAD_BEHAVIOR_PROPERTIES + suffixes[i] + Globals.TAIL_BEHAVIOR_PROPERTIES;
-                    entry = jarFile.getJarEntry(name);
-                    if (entry == null) {
-                        continue;
-                    }
-                    @SuppressWarnings("unchecked")//$NON-NLS-1$
-                    MapProperties newProperties = new MapProperties(new LinkedHashMap(), properties);
-                    properties = newProperties;
-                    try {
-                        is = jarFile.getInputStream(entry);
-                        properties.load(is);
-                    } catch (IOException ex) {
-                        throw new CoreException(new Status(IStatus.ERROR, Globals.PLUGIN_ID, "Can't load " + name //$NON-NLS-1$
-                                + ": " + artifact, ex)); //$NON-NLS-1$
-                    } finally {
-                        StreamUtils.close(is);
-                        is = null;
-                    }
-                }
-            }
-            return properties;
-        } finally {
-            StreamUtils.close(jarFile);
-        }
-    }
-
-    private Actions readActions(Artifact artifact) throws IOException {
-        Actions actions = null;
-        try {
-            actions = XOMUtils.getAsBean(ArtifactUtils.getResourceAsString(artifact, Globals.PATH_ACTIONS_XML,
-                    Globals.ENCODING, new NullProgressMonitor()), Actions.class);
-        } catch (Throwable t) {
-            IOException ioe = new IOException("Can't read " + Globals.PATH_ACTIONS_XML + " in " + artifact); //$NON-NLS-1$ //$NON-NLS-2$
-            ioe.initCause(t);
-            throw ioe;
-        }
-
-        if (actions != null) {
-            for (Action action : actions.getActions()) {
-                action.setGroupId(artifact.getGroupId());
-                action.setArtifactId(artifact.getArtifactId());
-                action.setVersion(artifact.getVersion());
-            }
-        }
-
-        return actions;
-    }
-
-    private void initialize(MapProperties properties) {
+    private void initialize0() {
         expansionIncludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_INCLUDES));
         expansionExcludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_EXCLUDES));
         expansionMergeIncludes = AntPathPatterns.newInstance(properties.getProperty(EXPANSION_MERGE_INCLUDES));
@@ -231,7 +136,150 @@ public class ViliBehaviorImpl implements ViliBehavior {
         }
 
         projectTypeSet = ProjectType.createEnumSet(properties.getProperty(PROJECTTYPE));
+    }
 
+    private Actions readActions(Artifact artifact) {
+        if (artifact == null) {
+            return null;
+        }
+
+        Actions actions = null;
+        try {
+            actions = XOMUtils.getAsBean(ArtifactUtils.getResourceAsString(artifact, Globals.PATH_ACTIONS_XML,
+                    Globals.ENCODING, new NullProgressMonitor()), Actions.class);
+        } catch (CoreException ex) {
+            Activator.getDefault().log(ex);
+            throw new RuntimeException(ex);
+        }
+
+        if (actions != null) {
+            for (Action action : actions.getActions()) {
+                action.setGroupId(artifact.getGroupId());
+                action.setArtifactId(artifact.getArtifactId());
+                action.setVersion(artifact.getVersion());
+            }
+        }
+
+        return actions;
+    }
+
+    private void initializeTieUpBundleSet(Artifact artifact) {
+        if (artifact == null) {
+            return;
+        }
+        if (getArtifactType() != ArtifactType.SKELETON) {
+            return;
+        }
+
+        try {
+            if (ArtifactUtils.exists(artifact, Globals.PATH_M2ECLIPSE_LIGHT_PREFS)) {
+                tieUpBundleSet.add(Globals.BUNDLENAME_M2ECLIPSE_LIGHT);
+            }
+            if (ArtifactUtils.exists(artifact, Globals.PATH_M2ECLIPSE_PREFS)) {
+                tieUpBundleSet.add(Globals.BUNDLENAME_M2ECLIPSE);
+            }
+            if (ArtifactUtils.exists(artifact, Globals.PATH_MAVEN2ADDITIONAL_PREFS)) {
+                tieUpBundleSet.add(Globals.BUNDLENAME_MAVEN2ADDITIONAL);
+            }
+        } catch (CoreException ex) {
+            Activator.getDefault().log(ex);
+        }
+    }
+
+    private ClassLoader createViliClassLoader(ClassLoader parent) {
+        if (artifact == null) {
+            return null;
+        }
+
+        JarClassLoader classLoader = new JarClassLoader(Activator.getDefault().getArtifactResolver().getURL(artifact),
+                parent);
+        classLoader.setClassesPath(Globals.PATH_CLASSES);
+        classLoader.setLibPath(Globals.PATH_LIB);
+        return classLoader;
+    }
+
+    private IConfigurator newConfigurator() {
+        if (artifact != null) {
+            String configuratorName = properties.getProperty(CONFIGURATOR);
+            if (configuratorName != null) {
+                try {
+                    return (IConfigurator) classLoader.loadClass(configuratorName).newInstance();
+                } catch (Throwable t) {
+                    Activator.getDefault().getLog().log(
+                            new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create configurator", t)); //$NON-NLS-1$
+                    throw new RuntimeException(t);
+                }
+            }
+        }
+
+        return new NullConfigurator();
+    }
+
+    private MapProperties readProperties(URL url) {
+        @SuppressWarnings("unchecked")//$NON-NLS-1$
+        MapProperties properties = new MapProperties(new LinkedHashMap());
+        InputStream is = null;
+        try {
+            is = url.openStream();
+            properties.load(is);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            StreamUtils.close(is);
+        }
+        return properties;
+    }
+
+    private MapProperties readProperties(Artifact artifact) {
+        @SuppressWarnings("unchecked")//$NON-NLS-1$
+        MapProperties properties = new MapProperties(new LinkedHashMap());
+        JarFile jarFile = null;
+        try {
+            jarFile = ArtifactUtils.getJarFile(artifact);
+            JarEntry entry = jarFile.getJarEntry(Globals.PATH_BEHAVIOR_PROPERTIES);
+            if (entry != null) {
+                InputStream is = null;
+                try {
+                    is = jarFile.getInputStream(entry);
+                    properties.load(is);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                } finally {
+                    StreamUtils.close(is);
+                    is = null;
+                }
+
+                String[] suffixes = LocaleUtils.getSuffixes(Locale.getDefault());
+                for (int i = suffixes.length - 1; i >= 0; i--) {
+                    String name = Globals.HEAD_BEHAVIOR_PROPERTIES + suffixes[i] + Globals.TAIL_BEHAVIOR_PROPERTIES;
+                    entry = jarFile.getJarEntry(name);
+                    if (entry == null) {
+                        continue;
+                    }
+                    @SuppressWarnings("unchecked")//$NON-NLS-1$
+                    MapProperties newProperties = new MapProperties(new LinkedHashMap(), properties);
+                    properties = newProperties;
+                    try {
+                        is = jarFile.getInputStream(entry);
+                        properties.load(is);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    } finally {
+                        StreamUtils.close(is);
+                        is = null;
+                    }
+                }
+            }
+            return properties;
+        } catch (CoreException ex) {
+            Activator.getDefault().log(ex);
+            throw new RuntimeException(ex);
+        } finally {
+            StreamUtils.close(jarFile);
+        }
+    }
+
+    private void initializeViliVersion(MapProperties properties) {
         String viliVersionString = properties.getProperty(VILIVERSION);
         viliVersion = new ArtifactVersion(viliVersionString != null ? viliVersionString : DEFAULT_VILIVERSION);
     }
@@ -284,6 +332,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public String getTemplateEncoding(String path) {
+        initialize();
+
         for (int i = 0; i < templateEncodingPairs.length; i++) {
             if (templateEncodingPairs[i].getAntPathPatterns().matches(path)) {
                 return templateEncodingPairs[i].getValue();
@@ -293,44 +343,37 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public boolean isProjectOf(ProjectType type) {
+        initialize();
+
         return projectTypeSet.contains(type);
     }
 
-    public Project getEvaluatedPom(Map<String, Object> parameters) {
+    public Project getPom(boolean evaluate, Map<String, Object> parameters) {
         try {
-            return readPom(artifact, parameters);
+            return readPom(artifact, evaluate, parameters);
         } catch (CoreException ex) {
             Activator.getDefault().log(ex);
             throw new RuntimeException(ex);
         }
     }
 
-    private Project readPom(Artifact artifact, Map<String, Object> parameters) throws CoreException {
+    private Project readPom(Artifact artifact, boolean evaluate, Map<String, Object> parameters) throws CoreException {
+        Project pom = null;
         if (getArtifactType() == ArtifactType.FRAGMENT) {
-            return XOMUtils.getAsBean(Activator.getDefault().getProjectBuilder().evaluate(
-                    ArtifactUtils.getResourceAsString(artifact, Globals.PATH_POM_XML, Globals.ENCODING,
-                            new NullProgressMonitor()), parameters), Project.class);
-        } else {
-            return new Project();
-        }
-    }
-
-    IConfigurator newConfigurator() {
-        String configuratorName = properties.getProperty(CONFIGURATOR);
-        if (configuratorName != null) {
-            try {
-                return (IConfigurator) classLoader.loadClass(configuratorName).newInstance();
-            } catch (Throwable t) {
-                Activator.getDefault().getLog().log(
-                        new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't create configurator", t)); //$NON-NLS-1$
-                throw new RuntimeException(t);
+            String content = ArtifactUtils.getResourceAsString(artifact, Globals.PATH_POM_XML, Globals.ENCODING,
+                    new NullProgressMonitor());
+            if (evaluate) {
+                content = Activator.getDefault().getProjectBuilder().evaluate(content, parameters);
             }
+            pom = XOMUtils.getAsBean(content, Project.class);
         }
-
-        return new NullConfigurator();
+        if (pom == null) {
+            pom = new Project();
+        }
+        return pom;
     }
 
-    File expand(File dir, JarFile jarFile, JarEntry entry) {
+    private File expand(File dir, JarFile jarFile, JarEntry entry) {
         File file = new File(dir, entry.getName());
         file.getParentFile().mkdirs();
 
@@ -374,6 +417,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public InclusionType shouldEvaluateAsTemplate(String path) {
+        initialize();
+
         if (templateExcludes.matches(path)) {
             return InclusionType.EXCLUDED;
         } else if (templateIncludes.matches(path)) {
@@ -384,6 +429,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public InclusionType shouldExpand(String path) {
+        initialize();
+
         if (expansionExcludes.matches(path)) {
             return InclusionType.EXCLUDED;
         } else if (expansionIncludes.matches(path)) {
@@ -394,6 +441,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public InclusionType shouldMergeWhenExpanding(String path) {
+        initialize();
+
         if (expansionMergeExcludes.matches(path)) {
             return InclusionType.EXCLUDED;
         } else if (expansionMergeIncludes.matches(path)) {
@@ -404,6 +453,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public InclusionType shouldTreatAsViewTemplate(String path) {
+        initialize();
+
         if (viewTemplateExcludes.matches(path)) {
             return InclusionType.EXCLUDED;
         } else if (viewTemplateIncludes.matches(path)) {
@@ -414,6 +465,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public boolean isTieUpWithBundle(String bundleName) {
+        initialize();
+
         return tieUpBundleSet.contains(bundleName);
     }
 
@@ -422,18 +475,26 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public void notifyPropertiesChanged() {
-        initialize(properties);
+        if (initialized) {
+            initialize0();
+        }
     }
 
     public IConfigurator getConfigurator() {
+        initialize();
+
         return configurator;
     }
 
     public ClassLoader getClassLoader() {
+        initialize();
+
         return classLoader;
     }
 
     public Actions getActions() {
+        initialize();
+
         return actions;
     }
 }

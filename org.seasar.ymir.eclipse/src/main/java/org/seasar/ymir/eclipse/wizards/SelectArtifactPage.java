@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -39,11 +40,13 @@ import org.seasar.ymir.vili.ArtifactType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.ArtifactResolver;
+import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.maven.ExtendedArtifact;
 import org.seasar.ymir.vili.maven.ExtendedContext;
 import org.seasar.ymir.vili.maven.util.ArtifactUtils;
 import org.seasar.ymir.vili.model.Fragment;
 import org.seasar.ymir.vili.model.Skeleton;
+import org.seasar.ymir.vili.util.ViliUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
@@ -329,22 +332,12 @@ public class SelectArtifactPage extends WizardPage {
                     for (int i = 0; i < items.length; i++) {
                         if (items[i] == e.item) {
                             if (items[i].getChecked()) {
-                                fragmentTemplateArtifactPairs[i] = ArtifactPair.newInstance(
-                                        resolveFragmentArtifact(fragments[i]), projectClassLoader);
-                                if (fragmentTemplateArtifactPairs[i] != null
-                                        && !Activator.getDefault().viliVersionEquals(
-                                                fragmentTemplateArtifactPairs[i].getBehavior().getViliVersion(),
-                                                preferences.getViliVersion())) {
+                                Resolved resolved = resolveFragment(fragments[i]);
+                                if (resolved.getPair() == null) {
                                     items[i].setChecked(false);
-                                    setErrorMessage(MessageFormat.format(
-                                            Messages.getString("SelectArtifactPage.28"), //$NON-NLS-1$
-                                            fragmentTemplateArtifactPairs[i].getBehavior().getViliVersion()
-                                                    .getWithoutQualifier(), preferences.getViliVersion()
-                                                    .getWithoutQualifier()));
-                                    fragmentTemplateArtifactPairs[i] = null;
-                                } else if (fragmentTemplateArtifactPairs[i] == null) {
-                                    items[i].setChecked(false);
-                                    setErrorMessage(Messages.getString("SelectArtifactPage.13")); //$NON-NLS-1$
+                                    setErrorMessage(resolved.getErrorMessage());
+                                } else {
+                                    fragmentTemplateArtifactPairs[i] = resolved.getPair();
                                 }
                                 fragmentTemplateTable.setSelection(i);
                                 updateDescriptionText(i);
@@ -469,32 +462,21 @@ public class SelectArtifactPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 setErrorMessage(null);
 
-                Artifact artifact = resolveFragmentArtifact(customFragmentGroupIdField.getText(),
-                        customFragmentArtifactIdField.getText(), useLatestFragmentVersionField.getSelection() ? null
-                                : customFragmentVersionField.getText());
-                if (artifact != null) {
-                    ArtifactPair pair = ArtifactPair.newInstance(artifact, projectClassLoader);
-                    if (!Activator.getDefault().viliVersionEquals(pair.getBehavior().getViliVersion(),
-                            preferences.getViliVersion())) {
-                        setErrorMessage(MessageFormat.format(
-                                Messages.getString("SelectArtifactPage.28"), pair.getBehavior() //$NON-NLS-1$
-                                        .getViliVersion().getWithoutQualifier(), preferences.getViliVersion()
-                                        .getWithoutQualifier()));
-                    } else if (pair.getBehavior().getArtifactType() != ArtifactType.FRAGMENT) {
-                        setErrorMessage(Messages.getString("SelectArtifactPage.22")); //$NON-NLS-1$
-                    } else {
-                        customFragmentListModel.add(pair);
-                        customFragmentListField.add(pair.getBehavior().getLabel());
-                        customFragmentDescriptionText.setText(pair.getBehavior().getDescription());
-                        customFragmentGroupIdField.setText(""); //$NON-NLS-1$
-                        customFragmentArtifactIdField.setText(""); //$NON-NLS-1$
-                        if (!useLatestFragmentVersionField.getSelection()) {
-                            customFragmentVersionField.setText(""); //$NON-NLS-1$
-                        }
-                        update();
+                Resolved resolved = resolveFragment(customFragmentGroupIdField.getText(), customFragmentArtifactIdField
+                        .getText(), useLatestFragmentVersionField.getSelection() ? null : customFragmentVersionField
+                        .getText());
+                if (resolved.getPair() != null) {
+                    customFragmentListModel.add(resolved.getPair());
+                    customFragmentListField.add(resolved.getPair().getBehavior().getLabel());
+                    customFragmentDescriptionText.setText(resolved.getPair().getBehavior().getDescription());
+                    customFragmentGroupIdField.setText(""); //$NON-NLS-1$
+                    customFragmentArtifactIdField.setText(""); //$NON-NLS-1$
+                    if (!useLatestFragmentVersionField.getSelection()) {
+                        customFragmentVersionField.setText(""); //$NON-NLS-1$
                     }
+                    update();
                 } else {
-                    setErrorMessage(Messages.getString("SelectArtifactPage.19")); //$NON-NLS-1$
+                    setErrorMessage(resolved.getErrorMessage());
                 }
                 addCustomFragmentButton.setEnabled(false);
             }
@@ -748,23 +730,22 @@ public class SelectArtifactPage extends WizardPage {
         customFragmentListModel.clear();
     }
 
-    private Artifact resolveFragmentArtifact(Fragment fragment) {
-        return resolveFragmentArtifact(fragment.getGroupId(), fragment.getArtifactId(), fragment.getVersion());
+    private Resolved resolveFragment(Fragment fragment) {
+        return resolveFragment(fragment.getGroupId(), fragment.getArtifactId(), fragment.getVersion());
     }
 
-    private Artifact resolveFragmentArtifact(final String groupId, final String artifactId, final String version) {
-        final Artifact[] fragmentArtifact = new Artifact[1];
+    private Resolved resolveFragment(final String groupId, final String artifactId, final String version) {
+        final Resolved[] resolved = new Resolved[1];
         final boolean useFragmentSnapshot = useFragmentSnapshot();
         IRunnableWithProgress op = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                fragmentArtifact[0] = doResolveFragmentArtifact(groupId, artifactId, version, useFragmentSnapshot,
-                        monitor);
+                resolved[0] = doResolveFragment(groupId, artifactId, version, useFragmentSnapshot, monitor);
             }
         };
 
         try {
             getContainer().run(true, false, op);
-            return fragmentArtifact[0];
+            return resolved[0];
         } catch (InvocationTargetException ex) {
             Throwable realException = ex.getTargetException();
             MessageDialog.openError(getShell(), "Error", realException.getMessage()); //$NON-NLS-1$
@@ -774,20 +755,77 @@ public class SelectArtifactPage extends WizardPage {
         }
     }
 
-    private Artifact doResolveFragmentArtifact(String groupId, String artifactId, String version,
-            boolean useFragmentSnapshot, IProgressMonitor monitor) {
+    private Resolved doResolveFragment(String groupId, String artifactId, String version, boolean useFragmentSnapshot,
+            IProgressMonitor monitor) {
         monitor.beginTask(Messages.getString("SelectArtifactPage.21"), 2); //$NON-NLS-1$
         try {
             ArtifactResolver artifactResolver = Activator.getDefault().getArtifactResolver();
-            if (version == null) {
+            ArtifactVersion viliVersion = preferences.getViliVersion();
+            Resolved resolved = new Resolved();
+            resolved.setErrorMessage(Messages.getString("SelectArtifactPage.19")); //$NON-NLS-1$
+            if (version != null) {
+                // バージョン指定ありの場合。
+                ArtifactPair pair = ArtifactPair.newInstance(artifactResolver.resolve(context, groupId, artifactId,
+                        version), projectClassLoader);
+                if (pair != null) {
+                    if (!ViliUtils.isCompatible(viliVersion, pair.getBehavior().getViliVersion())) {
+                        resolved.setErrorMessage(MessageFormat.format(Messages.getString("SelectArtifactPage.28"), //$NON-NLS-1$
+                                pair.getBehavior().getViliVersion().getWithoutQualifier(), viliVersion
+                                        .getWithoutQualifier()));
+                        pair = null;
+                    } else if (pair.getBehavior().getArtifactType() != ArtifactType.FRAGMENT) {
+                        resolved.setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
+                        pair = null;
+                    }
+                }
+                resolved.setPair(pair);
+                return resolved;
+            } else {
+                // バージョン指定なしの場合。
                 version = artifactResolver.getLatestVersion(context, groupId, artifactId, useFragmentSnapshot);
                 if (version == null) {
-                    return null;
+                    // バージョンが見つからなかったので終了。
+                    return resolved;
+                }
+                ArtifactPair pair = ArtifactPair.newInstance(artifactResolver.resolve(context, groupId, artifactId,
+                        version), projectClassLoader);
+                if (pair == null) {
+                    // アーティファクト自体見つからなかったら終了。
+                    return resolved;
+                } else if (ViliUtils.isCompatible(viliVersion, pair.getBehavior().getViliVersion())) {
+                    // 見つかったもののViliバージョンが適合するなら終了。ただしタイプが違った場合は見つからなかったことにする。
+                    if (pair.getBehavior().getArtifactType() != ArtifactType.FRAGMENT) {
+                        resolved.setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
+                        pair = null;
+                    }
+                    resolved.setPair(pair);
+                    return resolved;
+                }
+
+                // Viliバージョンが適合しなかった場合は全てのバージョンから検索する。
+                String[] versions = artifactResolver.getVersions(context, groupId, artifactId, useFragmentSnapshot);
+                SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, 1);
+                subMonitor.beginTask(Messages.getString("SelectArtifactPage.31"), versions.length - 1); //$NON-NLS-1$
+                try {
+                    // 0番目はチェック済みなのでスキップする。
+                    for (int i = 1; i < versions.length; i++, subMonitor.worked(1)) {
+                        pair = ArtifactPair.newInstance(artifactResolver.resolve(context, groupId, artifactId,
+                                versions[i]), projectClassLoader);
+                        if (pair != null && ViliUtils.isCompatible(viliVersion, pair.getBehavior().getViliVersion())) {
+                            // 見つかったもののViliバージョンが適合するなら終了。ただしタイプが違った場合は見つからなかったことにする。
+                            if (pair.getBehavior().getArtifactType() != ArtifactType.FRAGMENT) {
+                                resolved.setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
+                                pair = null;
+                            }
+                            resolved.setPair(pair);
+                            return resolved;
+                        }
+                    }
+                    return resolved;
+                } finally {
+                    subMonitor.done();
                 }
             }
-            monitor.worked(1);
-
-            return artifactResolver.resolve(context, groupId, artifactId, version);
         } finally {
             monitor.done();
         }
@@ -917,5 +955,27 @@ public class SelectArtifactPage extends WizardPage {
 
     public ClassLoader getProjectClassLoader() {
         return projectClassLoader;
+    }
+
+    static class Resolved {
+        private ArtifactPair pair;
+
+        private String errorMessage;
+
+        public ArtifactPair getPair() {
+            return pair;
+        }
+
+        public void setPair(ArtifactPair pair) {
+            this.pair = pair;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+
+        public void setErrorMessage(String errorMessage) {
+            this.errorMessage = errorMessage;
+        }
     }
 }

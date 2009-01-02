@@ -251,7 +251,8 @@ public class YmirConfigurationControl {
     public boolean validatePage() {
         if (isAutoGenerationEnabled()) {
             if (isEclipseEnabled() && getResourceSynchronizerURL().length() == 0) {
-                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("YmirConfigurationControl.20"))); //$NON-NLS-1$
+                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages
+                        .getString("YmirConfigurationControl.20"))); //$NON-NLS-1$
                 return false;
             }
         }
@@ -281,7 +282,8 @@ public class YmirConfigurationControl {
         formDtoCreationFeatureEnabledField.setSelection(true);
         converterCreationFeatureEnabledField.setSelection(true);
 
-        boolean eclipseEnabled = (Platform.getBundle(Globals.BUNDLENAME_RESOURCESYNCHRONIZER) != null);
+        boolean eclipseEnabled = (Platform.getBundle(Globals.BUNDLENAME_RESOURCESYNCHRONIZER_SEASAR) != null || Platform
+                .getBundle(Globals.BUNDLENAME_RESOURCESYNCHRONIZER_WERKZAUGKASTEN) != null);
         eclipseEnabledField.setSelection(eclipseEnabled);
         resourceSynchronizerURLLabel.setEnabled(eclipseEnabled);
         resourceSynchronizerURLField.setEnabled(eclipseEnabled);

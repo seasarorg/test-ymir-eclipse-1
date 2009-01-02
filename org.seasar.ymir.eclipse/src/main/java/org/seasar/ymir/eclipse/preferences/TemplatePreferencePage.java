@@ -52,7 +52,11 @@ public class TemplatePreferencePage extends PreferencePage implements IWorkbench
                             Messages.getString("TemplatePreferencePage.1"), Messages.getString("TemplatePreferencePage.2") + ex.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         }
-        store.setValue(PreferenceConstants.P_TEMPLATE, templateXML);
+        if (templateXML.equals(getPreferenceStore().getDefaultString(PreferenceConstants.P_TEMPLATE).trim())) {
+            store.setToDefault(PreferenceConstants.P_TEMPLATE);
+        } else {
+            store.setValue(PreferenceConstants.P_TEMPLATE, templateXML);
+        }
         try {
             ((IPersistentPreferenceStore) store).save();
         } catch (IOException ex) {
