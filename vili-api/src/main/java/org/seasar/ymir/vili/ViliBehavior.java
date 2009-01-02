@@ -88,7 +88,7 @@ public interface ViliBehavior {
 
     boolean isProjectOf(ProjectType type);
 
-    Project get(boolean evaluate, Map<String, Object> parameters);
+    Project getPom(boolean evaluate, Map<String, Object> parameters);
 
     IConfigurator getConfigurator();
 
