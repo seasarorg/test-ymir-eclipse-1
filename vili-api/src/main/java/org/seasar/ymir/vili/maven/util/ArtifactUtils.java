@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.vili.Activator;
 import org.seasar.ymir.vili.Globals;
-import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.maven.ExtendedArtifact;
 import org.seasar.ymir.vili.model.maven.Metadata;
 import org.seasar.ymir.vili.model.maven.Snapshot;
@@ -44,11 +43,14 @@ import net.skirnir.xom.IllegalSyntaxException;
 import net.skirnir.xom.ValidationException;
 
 public class ArtifactUtils {
-//    private static final Pattern PATTERN_COMPARE_VRESIONS_SEGMENT = Pattern
-//            .compile("([^\\.-]+)(.*)"); //$NON-NLS-1$
-//
-//    private static final Pattern PATTERN_COMPARE_VERSIONS_DELIMITER = Pattern
-//            .compile("([\\.-]+)(.*)"); //$NON-NLS-1$
+    private static final Pattern PATTERN_BUILDNUMBER = Pattern
+            .compile(".*-(\\d+)");
+
+    private static final Pattern PATTERN_COMPARE_VRESIONS_SEGMENT = Pattern
+            .compile("([^\\.-]+)(.*)"); //$NON-NLS-1$
+
+    private static final Pattern PATTERN_COMPARE_VERSIONS_DELIMITER = Pattern
+            .compile("([\\.-]+)(.*)"); //$NON-NLS-1$
 
     private static final Pattern PATTERN_GET_ARTIFACT_NAME_DELIMITER = Pattern
             .compile("-\\d"); //$NON-NLS-1$
@@ -73,7 +75,8 @@ public class ArtifactUtils {
         return cmp;
     }
 
-    public static int compareVersions(String version1, String version2) {
+    public static int compareVersions(final String version1,
+            final String version2) {
         if (version1 == null) {
             if (version2 == null) {
                 return 0;
@@ -86,61 +89,97 @@ public class ArtifactUtils {
             }
         }
 
-        return new ArtifactVersion(version1).compareTo(new ArtifactVersion(
-                version2));
-        //        while (true) {
-        //            Matcher matcher1 = PATTERN_COMPARE_VRESIONS_SEGMENT
-        //                    .matcher(version1);
-        //            Matcher matcher2 = PATTERN_COMPARE_VRESIONS_SEGMENT
-        //                    .matcher(version2);
-        //            if (matcher1.matches() && matcher2.matches()) {
-        //                int cmp = compareSegment(matcher1.group(1), matcher2.group(1));
-        //                if (cmp != 0) {
-        //                    return cmp;
-        //                }
-        //                version1 = matcher1.group(2);
-        //                version2 = matcher2.group(2);
-        //
-        //                // 正式リリースは他のどのリリースよりも後。
-        //                if (version1.length() == 0) {
-        //                    if (version2.length() == 0) {
-        //                        return 0;
-        //                    } else {
-        //                        return 1;
-        //                    }
-        //                } else {
-        //                    if (version2.length() == 0) {
-        //                        return -1;
-        //                    }
-        //                }
-        //
-        //                // SNAPSHOTは正式リリースより前だが他のどのリリースよりも後。
-        //                if (version1.equals(SUFFIX_SNAPSHOT)) {
-        //                    if (version2.equals(SUFFIX_SNAPSHOT)) {
-        //                        return 0;
-        //                    } else {
-        //                        return 1;
-        //                    }
-        //                } else if (version2.equals(SUFFIX_SNAPSHOT)) {
-        //                    return -1;
-        //                }
-        //
-        //                matcher1 = PATTERN_COMPARE_VERSIONS_DELIMITER.matcher(version1);
-        //                matcher2 = PATTERN_COMPARE_VERSIONS_DELIMITER.matcher(version2);
-        //                if (matcher1.matches() && matcher2.matches()) {
-        //                    cmp = matcher1.group(1).compareTo(matcher2.group(1));
-        //                    if (cmp != 0) {
-        //                        return cmp;
-        //                    }
-        //                    version1 = matcher1.group(2);
-        //                    version2 = matcher2.group(2);
-        //                } else {
-        //                    return version1.compareTo(version2);
-        //                }
-        //            } else {
-        //                return version1.compareTo(version2);
-        //            }
-        //        }
+        boolean is1Snapshot = version1.endsWith(SUFFIX_SNAPSHOT);
+        boolean is2Snapshot = version2.endsWith(SUFFIX_SNAPSHOT);
+
+        String v1 = (is1Snapshot ? version1.substring(0, version1.length()
+                - SUFFIX_SNAPSHOT.length()) : version1);
+        String v2 = (is2Snapshot ? version2.substring(0, version2.length()
+                - SUFFIX_SNAPSHOT.length()) : version2);
+
+        int buildNumber1 = 0;
+        Matcher matcher = PATTERN_BUILDNUMBER.matcher(v1);
+        if (matcher.matches()) {
+            buildNumber1 = Integer.parseInt(matcher.group(1));
+            v1 = v1
+                    .substring(0, v1.length() - matcher.group(1).length() - 1/*= "-".length() */);
+        }
+        int buildNumber2 = 0;
+        matcher = PATTERN_BUILDNUMBER.matcher(v2);
+        if (matcher.matches()) {
+            buildNumber2 = Integer.parseInt(matcher.group(1));
+            v2 = v2
+                    .substring(0, v2.length() - matcher.group(1).length() - 1/*= "-".length() */);
+        }
+
+        while (true) {
+            Matcher matcher1 = PATTERN_COMPARE_VRESIONS_SEGMENT.matcher(v1);
+            Matcher matcher2 = PATTERN_COMPARE_VRESIONS_SEGMENT.matcher(v2);
+            if (matcher1.matches() && matcher2.matches()) {
+                int cmp = compareSegment(matcher1.group(1), matcher2.group(1));
+                if (cmp != 0) {
+                    return cmp;
+                }
+                v1 = matcher1.group(2);
+                v2 = matcher2.group(2);
+
+                // 正式リリースは他のどのリリースよりも後。
+                if (v1.length() == 0) {
+                    if (v2.length() == 0) {
+                        break;
+                    } else {
+                        return 1;
+                    }
+                } else {
+                    if (v2.length() == 0) {
+                        return -1;
+                    }
+                }
+
+                matcher1 = PATTERN_COMPARE_VERSIONS_DELIMITER.matcher(v1);
+                matcher2 = PATTERN_COMPARE_VERSIONS_DELIMITER.matcher(v2);
+                if (matcher1.matches() && matcher2.matches()) {
+                    cmp = matcher1.group(1).compareTo(matcher2.group(1));
+                    if (cmp != 0) {
+                        return cmp;
+                    }
+                    v1 = matcher1.group(2);
+                    v2 = matcher2.group(2);
+                } else {
+                    cmp = v1.compareTo(v2);
+                    if (cmp != 0) {
+                        return cmp;
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                int cmp = v1.compareTo(v2);
+                if (cmp != 0) {
+                    return cmp;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if (buildNumber1 != buildNumber2) {
+            return buildNumber1 - buildNumber2;
+        }
+
+        if (is1Snapshot) {
+            if (is2Snapshot) {
+                return 0;
+            } else {
+                return -1;
+            }
+        } else {
+            if (is2Snapshot) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
     }
 
     static int compareSegment(String segment1, String segment2) {
