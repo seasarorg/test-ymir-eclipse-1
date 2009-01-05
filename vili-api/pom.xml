@@ -104,6 +104,20 @@
       <groupId>org.eclipse.core</groupId>
       <artifactId>resources</artifactId>
       <version>3.3.0-v20070604</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>expressions</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>filesystem</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>runtime</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.eclipse.osgi</groupId>
@@ -122,8 +136,20 @@
       <version>3.3.0-v_771</version>
       <exclusions>
         <exclusion>
-          <groupId>org.eclipse.equinox</groupId>
-          <artifactId>common</artifactId>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>resources</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>runtime</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>filesystem</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse</groupId>
+          <artifactId>text</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -133,20 +159,60 @@
       <version>3.3.0-v20070607-0010</version>
       <exclusions>
         <exclusion>
-          <groupId>org.eclipse.core</groupId>
-          <artifactId>commands</artifactId>
+          <groupId>org.eclipse</groupId>
+          <artifactId>ui</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.ui</groupId>
+          <artifactId>console</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse</groupId>
+          <artifactId>help</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.eclipse.core</groupId>
           <artifactId>expressions</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>org.eclipse.jface</groupId>
-          <artifactId>databinding</artifactId>
+          <groupId>org.eclipse.core</groupId>
+          <artifactId>filesystem</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.eclipse.core</groupId>
-          <artifactId>databinding</artifactId>
+          <artifactId>resources</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.jdt</groupId>
+          <artifactId>core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse</groupId>
+          <artifactId>search</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.debug</groupId>
+          <artifactId>core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.debug</groupId>
+          <artifactId>ui</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.jdt</groupId>
+          <artifactId>launching</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse</groupId>
+          <artifactId>compare</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.team</groupId>
+          <artifactId>ui</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.team</groupId>
+          <artifactId>core</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.eclipse.jface</groupId>
@@ -157,28 +223,40 @@
           <artifactId>texteditor</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>org.eclipse.ui</groupId>
+          <artifactId>ide</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.ui</groupId>
+          <artifactId>views</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.ui</groupId>
+          <artifactId>editors</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.eclipse.core</groupId>
-          <artifactId>variables</artifactId>
+          <artifactId>runtime</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.ltk.core</groupId>
+          <artifactId>refactoring</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.ltk.ui</groupId>
+          <artifactId>refactoring</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.eclipse.ui</groupId>
           <artifactId>forms</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>org.eclipse.core</groupId>
-          <artifactId>resources</artifactId>
+          <groupId>org.eclipse.ui</groupId>
+          <artifactId>navigator</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>org.eclipse.core</groupId>
-          <artifactId>filesystem</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse</groupId>
-          <artifactId>ui</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse</groupId>
-          <artifactId>jface</artifactId>
+          <groupId>org.eclipse.jdt.core</groupId>
+          <artifactId>manipulation</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -244,6 +322,17 @@
         <exclusion>
           <groupId>org.eclipse.core</groupId>
           <artifactId>commands</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.core</groupId>
+      <artifactId>commands</artifactId>
+      <version>3.3.0-I20070605-0010</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.equinox</groupId>
+          <artifactId>common</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
