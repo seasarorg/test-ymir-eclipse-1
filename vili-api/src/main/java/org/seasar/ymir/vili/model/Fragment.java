@@ -15,6 +15,8 @@ public class Fragment implements MavenArtifact {
 
     private String description;
 
+    private boolean availableOnlyIfProjectExists;
+
     public Fragment() {
         name = ""; //$NON-NLS-1$
         description = ""; //$NON-NLS-1$
@@ -24,18 +26,37 @@ public class Fragment implements MavenArtifact {
         this(Skeleton.DEFULAT_GROUPID, artifactId, null, name, description);
     }
 
+    public Fragment(String artifactId, String name, String description,
+            boolean availableOnlyIfProjectExists) {
+        this(Skeleton.DEFULAT_GROUPID, artifactId, null, name, description,
+                availableOnlyIfProjectExists);
+    }
+
     public Fragment(String groupId, String artifactId, String name,
             String description) {
         this(groupId, artifactId, null, name, description);
     }
 
+    public Fragment(String groupId, String artifactId, String name,
+            String description, boolean availableOnlyIfProjectExists) {
+        this(groupId, artifactId, null, name, description,
+                availableOnlyIfProjectExists);
+    }
+
     public Fragment(String groupId, String artifactId, String version,
             String name, String description) {
+        this(groupId, artifactId, version, name, description, false);
+    }
+
+    public Fragment(String groupId, String artifactId, String version,
+            String name, String description,
+            boolean availableOnlyIfProjectExists) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
         this.name = name;
         this.description = description;
+        this.availableOnlyIfProjectExists = availableOnlyIfProjectExists;
     }
 
     @Override
@@ -90,5 +111,16 @@ public class Fragment implements MavenArtifact {
     @Default("")//$NON-NLS-1$
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isAvailableOnlyIfProjectExists() {
+        return availableOnlyIfProjectExists;
+    }
+
+    @Child(order = 6)
+    @Default("false")//$NON-NLS-1$
+    public void setAvailableOnlyIfProjectExists(
+            boolean availableOnlyIfProjectExists) {
+        this.availableOnlyIfProjectExists = availableOnlyIfProjectExists;
     }
 }

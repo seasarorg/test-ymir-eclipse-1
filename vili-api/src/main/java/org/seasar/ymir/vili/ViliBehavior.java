@@ -54,6 +54,8 @@ public interface ViliBehavior {
 
     String CONFIGURATOR = "configurator"; //$NON-NLS-1$
 
+    String AVAILABLEONLYIFPROJECTEXISTS = "availableOnlyIfProjectExists"; //$NON-NLS-1$
+
     InclusionType shouldExpand(String path);
 
     InclusionType shouldMergeWhenExpanding(String path);
@@ -83,6 +85,8 @@ public interface ViliBehavior {
     ArtifactType getArtifactType();
 
     ArtifactVersion getViliVersion();
+
+    boolean isAvailableOnlyIfProjectExists();
 
     String getTemplateEncoding(String path);
 
