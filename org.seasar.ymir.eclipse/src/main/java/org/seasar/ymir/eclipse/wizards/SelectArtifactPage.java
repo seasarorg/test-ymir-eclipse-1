@@ -369,7 +369,7 @@ public class SelectArtifactPage extends WizardPage {
         });
         new TableColumn(fragmentTemplateTable, SWT.LEFT).setWidth(270);
 
-        fragments = Activator.getDefault().getTemplate().getAllFragments();
+        fragments = getFragmentTemplates();
         fragmentTemplateArtifactPairs = new ArtifactPair[fragments.length];
         for (Fragment fragment : fragments) {
             new TableItem(fragmentTemplateTable, SWT.NONE).setText(new String[] { fragment.getName() });
@@ -534,6 +534,16 @@ public class SelectArtifactPage extends WizardPage {
                 removeCustomFragmentButton.setEnabled(false);
             }
         });
+    }
+
+    private Fragment[] getFragmentTemplates() {
+        java.util.List<Fragment> list = new ArrayList<Fragment>();
+        for (Fragment fragment : Activator.getDefault().getTemplate().getAllFragments()) {
+            if (!fragment.isAvailableOnlyIfProjectExists()) {
+                list.add(fragment);
+            }
+        }
+        return list.toArray(new Fragment[0]);
     }
 
     void createAdvancedControl(Composite parent) {
@@ -774,6 +784,7 @@ public class SelectArtifactPage extends WizardPage {
                                         .getWithoutQualifier()));
                         pair = null;
                     } else if (pair.getBehavior().getArtifactType() != ArtifactType.FRAGMENT) {
+                        // TODO isAvailableOnlyIfProjectExistsの判定を追加する。
                         resolved.setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
                         pair = null;
                     }
@@ -795,6 +806,7 @@ public class SelectArtifactPage extends WizardPage {
                 } else if (ViliUtils.isCompatible(viliVersion, pair.getBehavior().getViliVersion())) {
                     // 見つかったもののViliバージョンが適合するなら終了。ただしタイプが違った場合は見つからなかったことにする。
                     if (pair.getBehavior().getArtifactType() != ArtifactType.FRAGMENT) {
+                        // TODO isAvailableOnlyIfProjectExistsの判定を追加する。
                         resolved.setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
                         pair = null;
                     }

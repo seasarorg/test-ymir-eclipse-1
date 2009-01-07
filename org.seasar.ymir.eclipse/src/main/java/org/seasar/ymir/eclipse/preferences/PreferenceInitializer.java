@@ -68,7 +68,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                                 "org.seasar.ymir.skeleton.ysp", //$NON-NLS-1$
                                 "ysp-login", Messages.getString("PreferenceInitializer.103"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                                 Messages.getString("PreferenceInitializer.98")), new Fragment("org.seasar.ymir.skeleton.ysp", //$NON-NLS-1$ //$NON-NLS-2$
-                                "ysp-crud", Messages.getString("PreferenceInitializer.101"), Messages.getString("PreferenceInitializer.102")))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                                "ysp-crud", Messages.getString("PreferenceInitializer.101"), Messages.getString("PreferenceInitializer.102"), true))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         StringWriter sw = new StringWriter();
         try {
             XOMUtils.getXOMapper().toXML(defaultTemplate, sw);
