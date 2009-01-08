@@ -69,6 +69,7 @@ import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.util.ArtifactUtils;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
+import org.seasar.ymir.vili.model.dicon.Components;
 import org.seasar.ymir.vili.model.maven.Dependencies;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.PluginRepositories;
@@ -110,7 +111,13 @@ public class ProjectBuilderImpl implements ProjectBuilder {
 
     private static final String EXTENSION_PREFS = "prefs"; //$NON-NLS-1$
 
-    private TemplateEvaluator evaluator = new TemplateEvaluatorImpl(new PomTagEvaluator(), new PomExpressionEvaluator());
+    private static final String EXTENSION_DICON = "dicon"; //$NON-NLS-1$
+
+    private TemplateEvaluator pomEvaluator = new TemplateEvaluatorImpl(new PomTagEvaluator(),
+            new NullExpressionEvaluator());
+
+    private TemplateEvaluator diconEvaluator = new TemplateEvaluatorImpl(new DiconTagEvaluator(),
+            new NullExpressionEvaluator());
 
     private Bundle bundle;
 
@@ -661,7 +668,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             try {
                 IFile outputFile = project.getFile(resolvedPath);
                 if (outputFile.exists()) {
-                    if (evaluateAsTemplate && shouldMergeWhenExpanding(path, behavior)) {
+                    if (shouldMergeWhenExpanding(path, behavior)) {
                         in = mergeFile(outputFile, in);
                     }
                     outputFile.setContents(in, false, false, new SubProgressMonitor(monitor, 1));
@@ -681,6 +688,8 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             return mergeFileAsProperties(file, in, false);
         } else if (EXTENSION_XPROPERTIES.equals(extension)) {
             return mergeFileAsProperties(file, in, true);
+        } else if (EXTENSION_DICON.equals(extension)) {
+            return mergeFileAsDicon(file, in);
         } else {
             // TODO 警告などを出すようにする？
             return in;
@@ -725,6 +734,37 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         }
 
         return new ByteArrayInputStream(baos.toByteArray());
+    }
+
+    private InputStream mergeFileAsDicon(IFile file, InputStream is) throws CoreException {
+        InputStream fileIs = null;
+        try {
+            Components dicon = XOMUtils.getAsBean(IOUtils.readString(is, Globals.ENCODING, false), Components.class);
+
+            fileIs = file.getContents();
+            return new ByteArrayInputStream(mergeDicon(new InputStreamReader(is, Globals.ENCODING), dicon).getBytes(
+                    Globals.ENCODING));
+        } catch (IOException ex) {
+            Activator.getDefault().throwCoreException("Can't merge dicon: " + file, ex);
+            return null;
+        } finally {
+            IOUtils.closeQuietly(is);
+            IOUtils.closeQuietly(fileIs);
+        }
+    }
+
+    String mergeDicon(Reader reader, Components dicon) throws CoreException {
+        Element[] elems;
+        try {
+            elems = diconEvaluator.parse(reader);
+        } catch (FreyjaRuntimeException ex) {
+            Activator.getDefault().throwCoreException("Illegal syntax", ex); //$NON-NLS-1$
+            return null;
+        }
+
+        DiconTemplateContext ctx = (DiconTemplateContext) diconEvaluator.newContext();
+        ctx.setMetadataToMerge(dicon);
+        return diconEvaluator.evaluate(ctx, elems);
     }
 
     private boolean shouldMergeWhenExpanding(String path, ViliBehavior behavior) {
@@ -1016,7 +1056,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             InputStream is = null;
             try {
                 is = pomFile.getContents();
-                evaluated = addToPom(new InputStreamReader(is, Globals.ENCODING), pom);
+                evaluated = mergePom(new InputStreamReader(is, Globals.ENCODING), pom);
             } catch (UnsupportedEncodingException ex) {
                 Activator.getDefault().throwCoreException("Can't happen!", ex); //$NON-NLS-1$
                 return;
@@ -1050,25 +1090,18 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         return false;
     }
 
-    String addToPom(Reader reader, Project project) throws CoreException {
+    String mergePom(Reader reader, Project project) throws CoreException {
         Element[] elems;
         try {
-            elems = evaluator.parse(reader);
+            elems = pomEvaluator.parse(reader);
         } catch (FreyjaRuntimeException ex) {
             Activator.getDefault().throwCoreException("Illegal syntax", ex); //$NON-NLS-1$
             return null;
         }
 
-        PomTemplateContext ctx = (PomTemplateContext) evaluator.newContext();
-        ctx.setMetadataToAdd(project);
-        return evaluator.evaluate(ctx, elems);
-    }
-
-    /*
-     * for test
-     */
-    void setTemplateEvaluator(TemplateEvaluator evaluator) {
-        this.evaluator = evaluator;
+        PomTemplateContext ctx = (PomTemplateContext) pomEvaluator.newContext();
+        ctx.setMetadataToMerge(project);
+        return pomEvaluator.evaluate(ctx, elems);
     }
 
     public Dependency getDependency(IProject project, String groupId, String artifactId) throws CoreException {

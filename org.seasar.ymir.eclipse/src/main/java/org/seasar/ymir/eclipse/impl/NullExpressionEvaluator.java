@@ -4,7 +4,7 @@ import net.skirnir.freyja.ExpressionEvaluator;
 import net.skirnir.freyja.TemplateContext;
 import net.skirnir.freyja.VariableResolver;
 
-class PomExpressionEvaluator implements ExpressionEvaluator {
+class NullExpressionEvaluator implements ExpressionEvaluator {
     public Object evaluate(TemplateContext context, VariableResolver varResolver, String expression) {
         return expression;
     }
