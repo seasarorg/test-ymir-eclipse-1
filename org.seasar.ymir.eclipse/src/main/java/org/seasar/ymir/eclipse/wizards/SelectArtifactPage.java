@@ -778,14 +778,16 @@ public class SelectArtifactPage extends WizardPage {
                 ArtifactPair pair = ArtifactPair.newInstance(artifactResolver.resolve(context, groupId, artifactId,
                         version), projectClassLoader);
                 if (pair != null) {
-                    if (!ViliUtils.isCompatible(viliVersion, pair.getBehavior().getViliVersion())) {
+                    ViliBehavior behavior = pair.getBehavior();
+                    if (!ViliUtils.isCompatible(viliVersion, behavior.getViliVersion())) {
                         resolved.setErrorMessage(MessageFormat.format(Messages.getString("SelectArtifactPage.28"), //$NON-NLS-1$
-                                pair.getBehavior().getViliVersion().getWithoutQualifier(), viliVersion
-                                        .getWithoutQualifier()));
+                                behavior.getViliVersion().getWithoutQualifier(), viliVersion.getWithoutQualifier()));
                         pair = null;
-                    } else if (pair.getBehavior().getArtifactType() != ArtifactType.FRAGMENT) {
-                        // TODO isAvailableOnlyIfProjectExistsの判定を追加する。
+                    } else if (behavior.getArtifactType() != ArtifactType.FRAGMENT) {
                         resolved.setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
+                        pair = null;
+                    } else if (behavior.isAvailableOnlyIfProjectExists()) {
+                        resolved.setErrorMessage(Messages.getString("SelectArtifactPage.32")); //$NON-NLS-1$
                         pair = null;
                     }
                 }
@@ -800,14 +802,17 @@ public class SelectArtifactPage extends WizardPage {
                 }
                 ArtifactPair pair = ArtifactPair.newInstance(artifactResolver.resolve(context, groupId, artifactId,
                         version), projectClassLoader);
+                ViliBehavior behavior = pair.getBehavior();
                 if (pair == null) {
                     // アーティファクト自体見つからなかったら終了。
                     return resolved;
-                } else if (ViliUtils.isCompatible(viliVersion, pair.getBehavior().getViliVersion())) {
+                } else if (ViliUtils.isCompatible(viliVersion, behavior.getViliVersion())) {
                     // 見つかったもののViliバージョンが適合するなら終了。ただしタイプが違った場合は見つからなかったことにする。
-                    if (pair.getBehavior().getArtifactType() != ArtifactType.FRAGMENT) {
-                        // TODO isAvailableOnlyIfProjectExistsの判定を追加する。
+                    if (behavior.getArtifactType() != ArtifactType.FRAGMENT) {
                         resolved.setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
+                        pair = null;
+                    } else if (behavior.isAvailableOnlyIfProjectExists()) {
+                        resolved.setErrorMessage(Messages.getString("SelectArtifactPage.32")); //$NON-NLS-1$
                         pair = null;
                     }
                     resolved.setPair(pair);
@@ -823,10 +828,14 @@ public class SelectArtifactPage extends WizardPage {
                     for (int i = 1; i < versions.length; i++, subMonitor.worked(1)) {
                         pair = ArtifactPair.newInstance(artifactResolver.resolve(context, groupId, artifactId,
                                 versions[i]), projectClassLoader);
-                        if (pair != null && ViliUtils.isCompatible(viliVersion, pair.getBehavior().getViliVersion())) {
+                        behavior = pair.getBehavior();
+                        if (pair != null && ViliUtils.isCompatible(viliVersion, behavior.getViliVersion())) {
                             // 見つかったもののViliバージョンが適合するなら終了。ただしタイプが違った場合は見つからなかったことにする。
-                            if (pair.getBehavior().getArtifactType() != ArtifactType.FRAGMENT) {
+                            if (behavior.getArtifactType() != ArtifactType.FRAGMENT) {
                                 resolved.setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
+                                pair = null;
+                            } else if (behavior.isAvailableOnlyIfProjectExists()) {
+                                resolved.setErrorMessage(Messages.getString("SelectArtifactPage.32")); //$NON-NLS-1$
                                 pair = null;
                             }
                             resolved.setPair(pair);

@@ -469,4 +469,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
         return actions;
     }
+
+    public boolean isAvailableOnlyIfProjectExists() {
+        return PropertyUtils.valueOf(properties.getProperty(AVAILABLEONLYIFPROJECTEXISTS), false);
+    }
 }
