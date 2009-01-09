@@ -8,6 +8,7 @@
   <component class="com.example.Class1" name="class1" />
   <meta>meta</meta>
   <meta name="meta1">meta1</meta>
+  <component class="com.example.Hoe" />
   <component class="com.example.Hoe2" />
   <component class="com.example.Class2" name="class2" />
   <meta />
