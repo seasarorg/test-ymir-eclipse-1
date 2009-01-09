@@ -102,4 +102,14 @@ class DiconTemplateContext extends TemplateContextImpl {
     public boolean isIncludeOutputted() {
         return includeOutputted;
     }
+
+    public Meta popExpandMeta() {
+        for (Meta meta : metaSet) {
+            if (DiconTagEvaluator.METANAME_EXPAND.equals(meta.getName())) {
+                metaSet.remove(meta);
+                return meta;
+            }
+        }
+        return null;
+    }
 }
