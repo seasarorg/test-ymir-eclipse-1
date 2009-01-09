@@ -87,4 +87,26 @@ public class ProjectBuilderImplTest extends TestCase {
                         .mergeDicon(new InputStreamReader(getClass().getResourceAsStream("dicon4.dicon"), "UTF-8"),
                                 dicon));
     }
+
+    public void testMergeDicon5_expand用metaタグが正しくマージされること() throws Exception {
+        Components dicon = new Components();
+        Meta meta = new Meta("expand");
+        meta.setContent("\"a,b\"");
+        dicon.setMetas(meta);
+        assertEquals(IOUtils.readString(getClass().getResourceAsStream("dicon5_expected.dicon"), "UTF-8", false),
+                target
+                        .mergeDicon(new InputStreamReader(getClass().getResourceAsStream("dicon5.dicon"), "UTF-8"),
+                                dicon));
+    }
+
+    public void testMergeDicon6_expand用metaタグが文字列でない場合は置き換わること() throws Exception {
+        Components dicon = new Components();
+        Meta meta = new Meta("expand");
+        meta.addElement(new Element("description", new Attribute[0], new Node[] { new Text("Description.") }));
+        dicon.setMetas(meta);
+        assertEquals(IOUtils.readString(getClass().getResourceAsStream("dicon6_expected.dicon"), "UTF-8", false),
+                target
+                        .mergeDicon(new InputStreamReader(getClass().getResourceAsStream("dicon6.dicon"), "UTF-8"),
+                                dicon));
+    }
 }
