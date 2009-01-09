@@ -28,10 +28,10 @@ public class Meta {
         }
 
         Meta o = (Meta) obj;
-        if (o.getName() == null) {
+        if (o.name == null) {
             return false;
         } else {
-            return o.getName().equals(name);
+            return o.name.equals(name);
         }
     }
 

@@ -45,25 +45,17 @@ public class Component {
         }
 
         Component o = (Component) obj;
-        if (o.getName() == null && name == null) {
-            if (o.getClassName() == null) {
-                return false;
-            } else {
-                return o.getClassName().equals(className);
-            }
+        if (o.name == null) {
+            return false;
         } else {
-            return o.getName().equals(name);
+            return o.name.equals(name);
         }
     }
 
     @Override
     public int hashCode() {
         if (name == null) {
-            if (className == null) {
-                return super.hashCode();
-            } else {
-                return className.hashCode();
-            }
+            return super.hashCode();
         } else {
             return name.hashCode();
         }

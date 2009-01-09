@@ -31,10 +31,10 @@ public class Include {
         }
 
         Include o = (Include) obj;
-        if (o.getPath() == null) {
+        if (o.path == null) {
             return false;
         } else {
-            return o.getPath().equals(path);
+            return o.path.equals(path);
         }
     }
 
