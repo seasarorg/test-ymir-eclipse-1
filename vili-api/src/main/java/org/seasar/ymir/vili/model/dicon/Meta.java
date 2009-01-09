@@ -6,11 +6,14 @@ import java.util.List;
 import net.skirnir.xom.Element;
 import net.skirnir.xom.annotation.Attribute;
 import net.skirnir.xom.annotation.Child;
+import net.skirnir.xom.annotation.Content;
 
 public class Meta {
     private String name;
 
     private List<Element> elementList = new ArrayList<Element>();
+
+    private String content;
 
     public Meta() {
     }
@@ -60,5 +63,14 @@ public class Meta {
     @Child("*")
     public void addElement(Element element) {
         elementList.add(element);
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    @Content
+    public void setContent(String content) {
+        this.content = content;
     }
 }

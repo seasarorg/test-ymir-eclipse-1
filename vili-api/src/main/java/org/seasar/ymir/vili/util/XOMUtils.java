@@ -6,6 +6,12 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.seasar.ymir.vili.Globals;
+
 import net.skirnir.xom.BeanAccessor;
 import net.skirnir.xom.BeanAccessorFactory;
 import net.skirnir.xom.XMLParser;
@@ -15,14 +21,7 @@ import net.skirnir.xom.XOMapperFactory;
 import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
 import net.skirnir.xom.impl.DefaultXMLRenderer;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.seasar.ymir.vili.Globals;
-
 public class XOMUtils {
-    // TODO レンダラを差し替える？
     private static final XOMapper mapper = XOMapperFactory.newInstance()
             .setBeanAccessorFactory(new BeanAccessorFactory() {
                 public BeanAccessor newInstance() {
@@ -34,6 +33,43 @@ public class XOMUtils {
                     };
                 }
             }).setXmlRenderer(new DefaultXMLRenderer() {
+                @Override
+                protected String filterContent(String content) {
+                    if (content == null) {
+                        return null;
+                    }
+
+                    StringBuffer result = new StringBuffer(content.length() * 2);
+                    for (int i = 0; i < content.length(); i++) {
+                        char ch = content.charAt(i);
+                        switch (ch) {
+                        case '<':
+                            result.append("&lt;");
+                            break;
+
+                        case '>':
+                            result.append("&gt;");
+                            break;
+
+                        case '&':
+                            result.append("&amp;");
+                            break;
+
+                        case ' ':
+                            result.append(ch);
+                            break;
+
+                        case '\t':
+                            result.append(ch);
+                            break;
+
+                        default:
+                            result.append(ch);
+                        }
+                    }
+
+                    return result.toString();
+                }
             }).setStrict(false).setTrimContent(true);
 
     private static final XMLParser parser = XMLParserFactory.newInstance();
