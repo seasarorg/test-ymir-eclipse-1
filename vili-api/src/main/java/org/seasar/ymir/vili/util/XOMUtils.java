@@ -13,6 +13,7 @@ import net.skirnir.xom.XMLParserFactory;
 import net.skirnir.xom.XOMapper;
 import net.skirnir.xom.XOMapperFactory;
 import net.skirnir.xom.annotation.impl.AnnotationBeanAccessor;
+import net.skirnir.xom.impl.DefaultXMLRenderer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -21,8 +22,9 @@ import org.eclipse.core.runtime.Status;
 import org.seasar.ymir.vili.Globals;
 
 public class XOMUtils {
-    private static final XOMapper mapper = XOMapperFactory.newInstance().setBeanAccessorFactory(
-            new BeanAccessorFactory() {
+    // TODO レンダラを差し替える？
+    private static final XOMapper mapper = XOMapperFactory.newInstance()
+            .setBeanAccessorFactory(new BeanAccessorFactory() {
                 public BeanAccessor newInstance() {
                     return new AnnotationBeanAccessor() {
                         @Override
@@ -31,6 +33,7 @@ public class XOMUtils {
                         }
                     };
                 }
+            }).setXmlRenderer(new DefaultXMLRenderer() {
             }).setStrict(false).setTrimContent(true);
 
     private static final XMLParser parser = XMLParserFactory.newInstance();
@@ -46,29 +49,34 @@ public class XOMUtils {
         return parser;
     }
 
-    public static <T> T getAsBean(String content, Class<T> clazz) throws CoreException {
+    public static <T> T getAsBean(String content, Class<T> clazz)
+            throws CoreException {
         if (content == null || content.trim().length() == 0) {
             return null;
         }
         return getAsBean(new StringReader(content), clazz);
     }
 
-    public static <T> T getAsBean(Reader reader, Class<T> clazz) throws CoreException {
+    public static <T> T getAsBean(Reader reader, Class<T> clazz)
+            throws CoreException {
         try {
             return mapper.toBean(parser.parse(reader).getRootElement(), //$NON-NLS-1$
                     clazz);
         } catch (Throwable t) {
-            throw new CoreException(new Status(IStatus.ERROR, Globals.PLUGIN_ID, t.toString(), t));
+            throw new CoreException(new Status(IStatus.ERROR,
+                    Globals.PLUGIN_ID, t.toString(), t));
         }
     }
 
-    public static <T> T getAsBean(IFile file, Class<T> clazz) throws CoreException {
+    public static <T> T getAsBean(IFile file, Class<T> clazz)
+            throws CoreException {
         if (!file.exists()) {
             return null;
         }
 
         try {
-            return getAsBean(new InputStreamReader(file.getContents(), "UTF-8"), clazz);
+            return getAsBean(
+                    new InputStreamReader(file.getContents(), "UTF-8"), clazz);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException("Can't happen!", ex);
         }
