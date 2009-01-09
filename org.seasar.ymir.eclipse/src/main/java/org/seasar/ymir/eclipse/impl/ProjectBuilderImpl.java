@@ -742,8 +742,8 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             Components dicon = XOMUtils.getAsBean(IOUtils.readString(is, Globals.ENCODING, false), Components.class);
 
             fileIs = file.getContents();
-            return new ByteArrayInputStream(mergeDicon(new InputStreamReader(is, Globals.ENCODING), dicon).getBytes(
-                    Globals.ENCODING));
+            return new ByteArrayInputStream(mergeDicon(new InputStreamReader(fileIs, Globals.ENCODING), dicon)
+                    .getBytes(Globals.ENCODING));
         } catch (IOException ex) {
             Activator.getDefault().throwCoreException("Can't merge dicon: " + file, ex);
             return null;

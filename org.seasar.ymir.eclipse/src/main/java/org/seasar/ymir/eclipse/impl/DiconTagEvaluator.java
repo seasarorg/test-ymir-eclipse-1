@@ -13,8 +13,6 @@ import net.skirnir.freyja.TemplateEvaluator;
 import net.skirnir.freyja.VariableResolver;
 
 class DiconTagEvaluator implements TagEvaluator {
-    private static final String SP = System.getProperty("line.separator"); //$NON-NLS-1$
-
     public String[] getSpecialTagPatternStrings() {
         return new String[] { "components", "include", "component", "meta", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
