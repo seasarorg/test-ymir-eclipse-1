@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Widget;
 import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.ui.ViliProjectPreferencesControl;
@@ -50,6 +51,29 @@ public class ConfigureParametersPage extends WizardPage {
     private Listener validationListener = new Listener() {
         public void handleEvent(Event event) {
             setPageComplete(validatePage());
+        }
+    };
+
+    private Listener dependencyListener = new Listener() {
+        public void handleEvent(Event event) {
+            Widget item = event.item;
+            if (item == null) {
+                return;
+            }
+            boolean enabled;
+            if (item instanceof Text) {
+                enabled = ((Text) item).getText().trim().length() > 0;
+            } else if (item instanceof Button) {
+                enabled = ((Button) item).getSelection();
+            } else if (item instanceof Combo) {
+                enabled = ((Combo) item).getText().trim().length() > 0;
+            } else {
+                enabled = false;
+            }
+            ParameterModel model = (ParameterModel) item.getData();
+            if (model != null) {
+                model.setEnabled(enabled);
+            }
         }
     };
 
@@ -249,9 +273,10 @@ public class ConfigureParametersPage extends WizardPage {
                 String description = behavior.getTemplateParameterDescription(name);
                 switch (behavior.getTemplateParameterType(name)) {
                 case TEXT: {
-                    new Label(group, SWT.NONE).setText(behavior.getTemplateParameterLabel(name));
+                    Label label = new Label(group, SWT.NONE);
+                    label.setText(behavior.getTemplateParameterLabel(name));
                     Text text = new Text(group, SWT.BORDER);
-                    ParameterModel model = new TextParameterModel(pair, name, text);
+                    ParameterModel model = new TextParameterModel(pair, name, text, label);
                     modelMap.put(name, model);
                     GridData data = new GridData(GridData.FILL_HORIZONTAL);
                     data.widthHint = 250;
@@ -263,6 +288,10 @@ public class ConfigureParametersPage extends WizardPage {
                     if (behavior.isTemplateParameterRequired(name)) {
                         requiredList.add(model);
                         text.addListener(SWT.Modify, validationListener);
+                    }
+                    String[] dependents = behavior.getTemplateParameterDependents(name);
+                    if (dependents.length > 0) {
+                        text.addListener(SWT.Modify, dependencyListener);
                     }
                 }
                     break;
@@ -279,13 +308,18 @@ public class ConfigureParametersPage extends WizardPage {
                     if (description.length() > 0) {
                         button.setToolTipText(description);
                     }
+                    String[] dependents = behavior.getTemplateParameterDependents(name);
+                    if (dependents.length > 0) {
+                        button.addListener(SWT.Selection, dependencyListener);
+                    }
                 }
                     break;
 
                 case SELECT: {
-                    new Label(group, SWT.NONE).setText(behavior.getTemplateParameterLabel(name));
+                    Label label = new Label(group, SWT.NONE);
+                    label.setText(behavior.getTemplateParameterLabel(name));
                     Combo combo = new Combo(group, SWT.READ_ONLY);
-                    ParameterModel model = new ComboParameterModel(pair, name, combo);
+                    ParameterModel model = new ComboParameterModel(pair, name, combo, label);
                     modelMap.put(name, model);
                     GridData data = new GridData(GridData.FILL_HORIZONTAL);
                     data.widthHint = 250;
@@ -309,13 +343,18 @@ public class ConfigureParametersPage extends WizardPage {
                         requiredList.add(model);
                         combo.addListener(SWT.Modify, validationListener);
                     }
+                    String[] dependents = behavior.getTemplateParameterDependents(name);
+                    if (dependents.length > 0) {
+                        combo.addListener(SWT.Modify, dependencyListener);
+                    }
                 }
                     break;
 
                 case COMBOBOX: {
-                    new Label(group, SWT.NONE).setText(behavior.getTemplateParameterLabel(name));
+                    Label label = new Label(group, SWT.NONE);
+                    label.setText(behavior.getTemplateParameterLabel(name));
                     Combo combo = new Combo(group, SWT.DROP_DOWN);
-                    ParameterModel model = new ComboParameterModel(pair, name, combo);
+                    ParameterModel model = new ComboParameterModel(pair, name, combo, label);
                     modelMap.put(name, model);
                     GridData data = new GridData(GridData.FILL_HORIZONTAL);
                     data.widthHint = 250;
@@ -340,6 +379,10 @@ public class ConfigureParametersPage extends WizardPage {
                     if (behavior.isTemplateParameterRequired(name)) {
                         requiredList.add(model);
                         combo.addListener(SWT.Modify, validationListener);
+                    }
+                    String[] dependents = behavior.getTemplateParameterDependents(name);
+                    if (dependents.length > 0) {
+                        combo.addListener(SWT.Modify, dependencyListener);
                     }
                 }
                     break;
@@ -475,7 +518,7 @@ public class ConfigureParametersPage extends WizardPage {
 
         for (ParameterModel model : requiredParameterModels) {
             if (!model.valueExists()) {
-                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, model.getLabel()));
+                setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, model.getLabelText()));
                 return false;
             }
         }
@@ -526,9 +569,11 @@ public class ConfigureParametersPage extends WizardPage {
     static interface ParameterModel {
         boolean valueExists();
 
-        String getLabel();
+        String getLabelText();
 
         Object getObject();
+
+        void setEnabled(boolean enabled);
     }
 
     static class TextParameterModel implements ParameterModel {
@@ -536,24 +581,32 @@ public class ConfigureParametersPage extends WizardPage {
 
         private String name;
 
+        private Label label;
+
         private Text text;
 
-        TextParameterModel(ArtifactPair pair, String name, Text text) {
+        TextParameterModel(ArtifactPair pair, String name, Text text, Label label) {
             this.pair = pair;
             this.name = name;
             this.text = text;
+            this.label = label;
         }
 
         public boolean valueExists() {
             return text.getText().trim().length() > 0;
         }
 
-        public String getLabel() {
+        public String getLabelText() {
             return pair.getBehavior().getTemplateParameterLabel(name);
         }
 
         public Object getObject() {
             return text.getText().trim();
+        }
+
+        public void setEnabled(boolean enabled) {
+            text.setEnabled(enabled);
+            label.setEnabled(enabled);
         }
     }
 
@@ -574,12 +627,16 @@ public class ConfigureParametersPage extends WizardPage {
             return true;
         }
 
-        public String getLabel() {
+        public String getLabelText() {
             return pair.getBehavior().getTemplateParameterLabel(name);
         }
 
         public Object getObject() {
             return Boolean.valueOf(button.getSelection());
+        }
+
+        public void setEnabled(boolean enabled) {
+            button.setEnabled(enabled);
         }
     }
 
@@ -590,22 +647,30 @@ public class ConfigureParametersPage extends WizardPage {
 
         private Combo combo;
 
-        ComboParameterModel(ArtifactPair pair, String name, Combo combo) {
+        private Label label;
+
+        ComboParameterModel(ArtifactPair pair, String name, Combo combo, Label label) {
             this.pair = pair;
             this.name = name;
             this.combo = combo;
+            this.label = label;
         }
 
         public boolean valueExists() {
             return combo.getText().trim().length() > 0;
         }
 
-        public String getLabel() {
+        public String getLabelText() {
             return pair.getBehavior().getTemplateParameterLabel(name);
         }
 
         public Object getObject() {
             return combo.getText().trim();
+        }
+
+        public void setEnabled(boolean enabled) {
+            combo.setEnabled(enabled);
+            label.setEnabled(enabled);
         }
     }
 }

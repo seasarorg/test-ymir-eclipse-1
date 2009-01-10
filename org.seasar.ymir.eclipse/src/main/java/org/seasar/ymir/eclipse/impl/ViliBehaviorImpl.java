@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -85,6 +86,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private Set<String> tieUpBundleSet = new HashSet<String>();
 
+    private Map<String, Set<String>> templateParameterDependentSetMap = new HashMap<String, Set<String>>();
+
     public ViliBehaviorImpl(URL url) {
         properties = readProperties(url);
         initializeViliVersion(properties);
@@ -104,6 +107,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
         actions = readActions(artifact);
         initializeTieUpBundleSet(artifact);
+        initializeForTemplateParameters();
         classLoader = createViliClassLoader(projectClassLoader);
         configurator = newConfigurator();
 
@@ -160,6 +164,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     private void initializeTieUpBundleSet(Artifact artifact) {
+        tieUpBundleSet.clear();
+
         if (artifact == null) {
             return;
         }
@@ -179,6 +185,21 @@ public class ViliBehaviorImpl implements ViliBehavior {
             }
         } catch (CoreException ex) {
             Activator.getDefault().log(ex);
+        }
+    }
+
+    private void initializeForTemplateParameters() {
+        templateParameterDependentSetMap.clear();
+
+        for (String dependent : getTemplateParameters()) {
+            for (String name : getTemplateParameterDepends(dependent)) {
+                Set<String> set = templateParameterDependentSetMap.get(name);
+                if (set == null) {
+                    set = new HashSet<String>();
+                    templateParameterDependentSetMap.put(name, set);
+                }
+                set.add(dependent);
+            }
         }
     }
 
@@ -294,6 +315,11 @@ public class ViliBehaviorImpl implements ViliBehavior {
                 + SUFFIX_TEMPLATE_PARAMETER_CANDIDATES));
     }
 
+    private String[] getTemplateParameterDepends(String name) {
+        return PropertyUtils.toLines(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name
+                + SUFFIX_TEMPLATE_PARAMETER_DEPENDS));
+    }
+
     public String getTemplateParameterDefault(String name) {
         return properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_DEFAULT, ""); //$NON-NLS-1$
     }
@@ -301,6 +327,17 @@ public class ViliBehaviorImpl implements ViliBehavior {
     public boolean isTemplateParameterRequired(String name) {
         return PropertyUtils.valueOf(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name
                 + SUFFIX_TEMPLATE_PARAMETER_REQUIRED), false);
+    }
+
+    public String[] getTemplateParameterDependents(String name) {
+        initialize();
+
+        Set<String> set = templateParameterDependentSetMap.get(name);
+        if (set == null) {
+            return new String[0];
+        } else {
+            return set.toArray(new String[0]);
+        }
     }
 
     public String getTemplateParameterLabel(String name) {
