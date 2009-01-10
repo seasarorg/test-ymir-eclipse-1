@@ -590,6 +590,8 @@ public class ConfigureParametersPage extends WizardPage {
             this.name = name;
             this.text = text;
             this.label = label;
+
+            text.setData(this);
         }
 
         public boolean valueExists() {
@@ -621,6 +623,8 @@ public class ConfigureParametersPage extends WizardPage {
             this.pair = pair;
             this.name = name;
             this.button = button;
+
+            button.setData(this);
         }
 
         public boolean valueExists() {
@@ -654,6 +658,8 @@ public class ConfigureParametersPage extends WizardPage {
             this.name = name;
             this.combo = combo;
             this.label = label;
+
+            combo.setData(this);
         }
 
         public boolean valueExists() {
