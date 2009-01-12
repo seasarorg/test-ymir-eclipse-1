@@ -107,7 +107,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
         actions = readActions(artifact);
         initializeTieUpBundleSet(artifact);
-        initializeForTemplateParameters();
         classLoader = createViliClassLoader(projectClassLoader);
         configurator = newConfigurator();
 
@@ -136,6 +135,19 @@ public class ViliBehaviorImpl implements ViliBehavior {
         }
 
         projectTypeSet = ProjectType.createEnumSet(properties.getProperty(PROJECTTYPE));
+
+        templateParameterDependentSetMap.clear();
+
+        for (String dependent : templateParameters) {
+            for (String name : getTemplateParameterDepends(dependent)) {
+                Set<String> set = templateParameterDependentSetMap.get(name);
+                if (set == null) {
+                    set = new HashSet<String>();
+                    templateParameterDependentSetMap.put(name, set);
+                }
+                set.add(dependent);
+            }
+        }
     }
 
     private Actions readActions(Artifact artifact) {
@@ -185,21 +197,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
             }
         } catch (CoreException ex) {
             Activator.getDefault().log(ex);
-        }
-    }
-
-    private void initializeForTemplateParameters() {
-        templateParameterDependentSetMap.clear();
-
-        for (String dependent : getTemplateParameters()) {
-            for (String name : getTemplateParameterDepends(dependent)) {
-                Set<String> set = templateParameterDependentSetMap.get(name);
-                if (set == null) {
-                    set = new HashSet<String>();
-                    templateParameterDependentSetMap.put(name, set);
-                }
-                set.add(dependent);
-            }
         }
     }
 
@@ -302,6 +299,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public String[] getTemplateParameters() {
+        initialize();
+
         return templateParameters;
     }
 

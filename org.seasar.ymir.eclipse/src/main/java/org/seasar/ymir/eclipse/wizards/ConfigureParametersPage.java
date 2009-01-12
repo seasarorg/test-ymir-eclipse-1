@@ -54,29 +54,6 @@ public class ConfigureParametersPage extends WizardPage {
         }
     };
 
-    private Listener dependencyListener = new Listener() {
-        public void handleEvent(Event event) {
-            Widget item = event.item;
-            if (item == null) {
-                return;
-            }
-            boolean enabled;
-            if (item instanceof Text) {
-                enabled = ((Text) item).getText().trim().length() > 0;
-            } else if (item instanceof Button) {
-                enabled = ((Button) item).getSelection();
-            } else if (item instanceof Combo) {
-                enabled = ((Combo) item).getText().trim().length() > 0;
-            } else {
-                enabled = false;
-            }
-            ParameterModel model = (ParameterModel) item.getData();
-            if (model != null) {
-                model.setEnabled(enabled);
-            }
-        }
-    };
-
     private IProject project;
 
     private ViliProjectPreferences preferences;
@@ -291,7 +268,7 @@ public class ConfigureParametersPage extends WizardPage {
                     }
                     String[] dependents = behavior.getTemplateParameterDependents(name);
                     if (dependents.length > 0) {
-                        text.addListener(SWT.Modify, dependencyListener);
+                        text.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
                     }
                 }
                     break;
@@ -310,7 +287,7 @@ public class ConfigureParametersPage extends WizardPage {
                     }
                     String[] dependents = behavior.getTemplateParameterDependents(name);
                     if (dependents.length > 0) {
-                        button.addListener(SWT.Selection, dependencyListener);
+                        button.addListener(SWT.Selection, new DependencyListener(modelMap, dependents));
                     }
                 }
                     break;
@@ -345,7 +322,7 @@ public class ConfigureParametersPage extends WizardPage {
                     }
                     String[] dependents = behavior.getTemplateParameterDependents(name);
                     if (dependents.length > 0) {
-                        combo.addListener(SWT.Modify, dependencyListener);
+                        combo.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
                     }
                 }
                     break;
@@ -382,7 +359,7 @@ public class ConfigureParametersPage extends WizardPage {
                     }
                     String[] dependents = behavior.getTemplateParameterDependents(name);
                     if (dependents.length > 0) {
-                        combo.addListener(SWT.Modify, dependencyListener);
+                        combo.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
                     }
                 }
                     break;
@@ -566,6 +543,38 @@ public class ConfigureParametersPage extends WizardPage {
         return ymirConfigurationControl;
     }
 
+    static class DependencyListener implements Listener {
+        private Map<String, ParameterModel> modelMap;
+
+        private String[] dependents;
+
+        DependencyListener(Map<String, ParameterModel> modelMap, String[] dependents) {
+            this.modelMap = modelMap;
+            this.dependents = dependents;
+        }
+
+        public void handleEvent(Event event) {
+            Widget widget = event.widget;
+            boolean enabled;
+            if (widget instanceof Text) {
+                enabled = ((Text) widget).getText().trim().length() > 0;
+            } else if (widget instanceof Button) {
+                enabled = ((Button) widget).getSelection();
+            } else if (widget instanceof Combo) {
+                enabled = ((Combo) widget).getText().trim().length() > 0;
+            } else {
+                enabled = false;
+            }
+
+            for (String dependent : dependents) {
+                ParameterModel model = modelMap.get(dependent);
+                if (model != null) {
+                    model.setEnabled(enabled);
+                }
+            }
+        }
+    }
+
     static interface ParameterModel {
         boolean valueExists();
 
@@ -590,8 +599,6 @@ public class ConfigureParametersPage extends WizardPage {
             this.name = name;
             this.text = text;
             this.label = label;
-
-            text.setData(this);
         }
 
         public boolean valueExists() {
@@ -623,8 +630,6 @@ public class ConfigureParametersPage extends WizardPage {
             this.pair = pair;
             this.name = name;
             this.button = button;
-
-            button.setData(this);
         }
 
         public boolean valueExists() {
@@ -658,8 +663,6 @@ public class ConfigureParametersPage extends WizardPage {
             this.name = name;
             this.combo = combo;
             this.label = label;
-
-            combo.setData(this);
         }
 
         public boolean valueExists() {
