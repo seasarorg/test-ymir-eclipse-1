@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -227,7 +228,7 @@ public class ConfigureParametersPage extends WizardPage {
 
         int count = 0;
         for (int i = 0; i < pairs.length; i++) {
-            Map<String, ParameterModel> modelMap = new HashMap<String, ParameterModel>();
+            Map<String, ParameterModel> modelMap = new LinkedHashMap<String, ParameterModel>();
             parameterModelMaps[i] = modelMap;
 
             ArtifactPair pair = pairs[i];
@@ -258,7 +259,6 @@ public class ConfigureParametersPage extends WizardPage {
                     GridData data = new GridData(GridData.FILL_HORIZONTAL);
                     data.widthHint = 250;
                     text.setLayoutData(data);
-                    text.setText(behavior.getTemplateParameterDefault(name));
                     if (description.length() > 0) {
                         text.setToolTipText(description);
                     }
@@ -280,7 +280,6 @@ public class ConfigureParametersPage extends WizardPage {
                     GridData data = new GridData();
                     data.horizontalSpan = 2;
                     button.setLayoutData(data);
-                    button.setSelection(PropertyUtils.valueOf(behavior.getTemplateParameterDefault(name), false));
                     button.setText(behavior.getTemplateParameterLabel(name));
                     if (description.length() > 0) {
                         button.setToolTipText(description);
@@ -301,17 +300,9 @@ public class ConfigureParametersPage extends WizardPage {
                     GridData data = new GridData(GridData.FILL_HORIZONTAL);
                     data.widthHint = 250;
                     combo.setLayoutData(data);
-                    String defaultValue = behavior.getTemplateParameterDefault(name);
                     String[] candidates = behavior.getTemplateParameterCandidates(name);
-                    int selectedIndex = -1;
                     for (int k = 0; k < candidates.length; k++) {
                         combo.add(candidates[k]);
-                        if (candidates[k].equals(defaultValue)) {
-                            selectedIndex = k;
-                        }
-                    }
-                    if (selectedIndex >= 0) {
-                        combo.select(selectedIndex);
                     }
                     if (description.length() > 0) {
                         combo.setToolTipText(description);
@@ -336,19 +327,9 @@ public class ConfigureParametersPage extends WizardPage {
                     GridData data = new GridData(GridData.FILL_HORIZONTAL);
                     data.widthHint = 250;
                     combo.setLayoutData(data);
-                    String defaultValue = behavior.getTemplateParameterDefault(name);
                     String[] candidates = behavior.getTemplateParameterCandidates(name);
-                    int selectedIndex = -1;
                     for (int k = 0; k < candidates.length; k++) {
                         combo.add(candidates[k]);
-                        if (candidates[k].equals(defaultValue)) {
-                            selectedIndex = k;
-                        }
-                    }
-                    if (selectedIndex >= 0) {
-                        combo.select(selectedIndex);
-                    } else {
-                        combo.setText(defaultValue);
                     }
                     if (description.length() > 0) {
                         combo.setToolTipText(description);
@@ -512,6 +493,21 @@ public class ConfigureParametersPage extends WizardPage {
         if (preferencesControl != null) {
             preferencesControl.setDefaultValues();
         }
+        if (parameterModelMaps != null) {
+            ArtifactPair[] pairs = getArtifactPairs();
+            for (int i = 0; i < parameterModelMaps.length; i++) {
+                Map<String, ParameterModel> modelMap = parameterModelMaps[i];
+                ViliBehavior behavior = pairs[i].getBehavior();
+                for (String name : modelMap.keySet()) {
+                    String defaultValue = behavior.getTemplateParameterDefault(name);
+                    if (defaultValue != null) {
+                        ParameterModel model = modelMap.get(name);
+                        model.setValue(defaultValue);
+                        model.notifyChanged();
+                    }
+                }
+            }
+        }
         if (ymirConfigurationControl != null) {
             ymirConfigurationControl.setDefaultValues();
         }
@@ -528,7 +524,7 @@ public class ConfigureParametersPage extends WizardPage {
                 Map<String, ParameterModel> modelMap = parameterModelMaps[i];
                 for (Iterator<Map.Entry<String, ParameterModel>> itr = modelMap.entrySet().iterator(); itr.hasNext();) {
                     Map.Entry<String, ParameterModel> entry = itr.next();
-                    parameterMap.put(entry.getKey(), entry.getValue().getObject());
+                    parameterMap.put(entry.getKey(), entry.getValue().getValue());
                 }
             }
 
@@ -578,9 +574,13 @@ public class ConfigureParametersPage extends WizardPage {
     static interface ParameterModel {
         boolean valueExists();
 
+        void notifyChanged();
+
         String getLabelText();
 
-        Object getObject();
+        Object getValue();
+
+        void setValue(Object value);
 
         void setEnabled(boolean enabled);
     }
@@ -609,8 +609,18 @@ public class ConfigureParametersPage extends WizardPage {
             return pair.getBehavior().getTemplateParameterLabel(name);
         }
 
-        public Object getObject() {
+        public Object getValue() {
             return text.getText().trim();
+        }
+
+        public void setValue(Object value) {
+            text.setText(String.valueOf(value));
+        }
+
+        public void notifyChanged() {
+            Event event = new Event();
+            event.widget = text;
+            text.notifyListeners(SWT.Modify, event);
         }
 
         public void setEnabled(boolean enabled) {
@@ -640,8 +650,18 @@ public class ConfigureParametersPage extends WizardPage {
             return pair.getBehavior().getTemplateParameterLabel(name);
         }
 
-        public Object getObject() {
+        public Object getValue() {
             return Boolean.valueOf(button.getSelection());
+        }
+
+        public void setValue(Object value) {
+            button.setSelection(PropertyUtils.valueOf(value, false));
+        }
+
+        public void notifyChanged() {
+            Event event = new Event();
+            event.widget = button;
+            button.notifyListeners(SWT.Selection, event);
         }
 
         public void setEnabled(boolean enabled) {
@@ -673,8 +693,32 @@ public class ConfigureParametersPage extends WizardPage {
             return pair.getBehavior().getTemplateParameterLabel(name);
         }
 
-        public Object getObject() {
+        public Object getValue() {
             return combo.getText().trim();
+        }
+
+        public void setValue(Object value) {
+            String text = String.valueOf(value);
+
+            int selectedIndex = -1;
+            int n = combo.getItemCount();
+            for (int i = 0; i < n; i++) {
+                if (combo.getItem(i).equals(text)) {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+            if (selectedIndex >= 0) {
+                combo.select(selectedIndex);
+            } else {
+                combo.setText(text);
+            }
+        }
+
+        public void notifyChanged() {
+            Event event = new Event();
+            event.widget = combo;
+            combo.notifyListeners(SWT.Modify, event);
         }
 
         public void setEnabled(boolean enabled) {
