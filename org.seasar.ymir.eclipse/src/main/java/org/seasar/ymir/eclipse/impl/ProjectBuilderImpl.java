@@ -748,7 +748,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             return new ByteArrayInputStream(mergeDicon(new InputStreamReader(fileIs, Globals.ENCODING), dicon)
                     .getBytes(Globals.ENCODING));
         } catch (IOException ex) {
-            Activator.getDefault().throwCoreException("Can't merge dicon: " + file, ex);
+            Activator.getDefault().throwCoreException("Can't merge dicon: " + file, ex); //$NON-NLS-1$
             return null;
         } finally {
             IOUtils.closeQuietly(is);

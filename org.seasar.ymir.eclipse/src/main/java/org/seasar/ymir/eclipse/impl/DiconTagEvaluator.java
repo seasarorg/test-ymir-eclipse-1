@@ -25,9 +25,9 @@ import org.seasar.ymir.vili.model.dicon.Meta;
 import org.seasar.ymir.vili.util.XOMUtils;
 
 class DiconTagEvaluator implements TagEvaluator {
-    static final String METANAME_EXPAND = "expand";
+    static final String METANAME_EXPAND = "expand"; //$NON-NLS-1$
 
-    private static final String SP = System.getProperty("line.separator");
+    private static final String SP = System.getProperty("line.separator"); //$NON-NLS-1$
 
     public String[] getSpecialTagPatternStrings() {
         return new String[] { "components", "include", "component", "meta", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -35,7 +35,7 @@ class DiconTagEvaluator implements TagEvaluator {
 
     public String evaluate(TemplateContext context, String name, Attribute[] attributes, Element[] body) {
         DiconTemplateContext ctx = (DiconTemplateContext) context;
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked") //$NON-NLS-1$
         Map<String, Attribute> attrMap = TagEvaluatorUtils.toMap(attributes);
 
         StringBuilder sb = new StringBuilder();
@@ -49,15 +49,15 @@ class DiconTagEvaluator implements TagEvaluator {
             sb.append(ctx.outputMetaString());
             sb.append(TagEvaluatorUtils.getEndTagString(name));
         } else {
-            if ("include".equals(name)) {
-                ctx.removeInclude(getValue(attrMap.get("path")));
-            } else if ("component".equals(name)) {
-                ctx.removeComponent(getValue(attrMap.get("class")), getValue(attrMap.get("name")));
+            if ("include".equals(name)) { //$NON-NLS-1$
+                ctx.removeInclude(getValue(attrMap.get("path"))); //$NON-NLS-1$
+            } else if ("component".equals(name)) { //$NON-NLS-1$
+                ctx.removeComponent(getValue(attrMap.get("class")), getValue(attrMap.get("name"))); //$NON-NLS-1$ //$NON-NLS-2$
                 if (!ctx.isIncludeOutputted()) {
                     sb.append(ctx.outputIncludeString(false));
                 }
-            } else if ("meta".equals(name)) {
-                String metaName = getValue(attrMap.get("name"));
+            } else if ("meta".equals(name)) { //$NON-NLS-1$
+                String metaName = getValue(attrMap.get("name")); //$NON-NLS-1$
                 if (!METANAME_EXPAND.equals(metaName)) {
                     ctx.removeMeta(metaName);
                 } else {
@@ -107,7 +107,7 @@ class DiconTagEvaluator implements TagEvaluator {
             return null;
         }
         String unquoted = unquote(body.substring(startQuote + 1, endQuote));
-        return PropertyUtils.toArray(unquoted, ",", true);
+        return PropertyUtils.toArray(unquoted, ",", true); //$NON-NLS-1$
     }
 
     private String unquote(String quoted) {
@@ -133,7 +133,7 @@ class DiconTagEvaluator implements TagEvaluator {
                 try {
                     mapper.toXML(element, sw);
                 } catch (IOException ex) {
-                    throw new RuntimeException("Can't happen!", ex);
+                    throw new RuntimeException("Can't happen!", ex); //$NON-NLS-1$
                 }
             }
             content = SP + sw.toString();

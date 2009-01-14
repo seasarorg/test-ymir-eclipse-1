@@ -52,7 +52,7 @@ class DiconTemplateContext extends TemplateContextImpl {
         StringWriter sw = new StringWriter();
         for (Include include : includeSet) {
             if (addToEnd) {
-                sw.write("  ");
+                sw.write("  "); //$NON-NLS-1$
             }
             try {
                 XOMUtils.getXOMapper().toXML(include, sw);
@@ -62,7 +62,7 @@ class DiconTemplateContext extends TemplateContextImpl {
                 throw new RuntimeException(ex);
             }
             if (!addToEnd) {
-                sw.write("  ");
+                sw.write("  "); //$NON-NLS-1$
             }
         }
         includeOutputted = true;
@@ -72,7 +72,7 @@ class DiconTemplateContext extends TemplateContextImpl {
     public String outputComponentString() {
         StringWriter sw = new StringWriter();
         for (Component component : componentSet) {
-            sw.write("  ");
+            sw.write("  "); //$NON-NLS-1$
             try {
                 XOMUtils.getXOMapper().toXML(component, sw);
             } catch (ValidationException ex) {
@@ -87,7 +87,7 @@ class DiconTemplateContext extends TemplateContextImpl {
     public String outputMetaString() {
         StringWriter sw = new StringWriter();
         for (Meta meta : metaSet) {
-            sw.write("  ");
+            sw.write("  "); //$NON-NLS-1$
             try {
                 XOMUtils.getXOMapper().toXML(meta, sw);
             } catch (ValidationException ex) {
