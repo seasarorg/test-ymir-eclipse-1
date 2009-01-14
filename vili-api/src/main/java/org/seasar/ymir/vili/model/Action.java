@@ -2,7 +2,9 @@ package org.seasar.ymir.vili.model;
 
 import org.seasar.ymir.vili.IAction;
 
+import net.skirnir.xom.annotation.Attribute;
 import net.skirnir.xom.annotation.Child;
+import net.skirnir.xom.annotation.Default;
 import net.skirnir.xom.annotation.Required;
 
 public class Action {
@@ -19,6 +21,8 @@ public class Action {
     private String actionClass;
 
     private Class<? extends IAction> clazz;
+
+    private String categoryId = "";
 
     public Action() {
     }
@@ -140,5 +144,15 @@ public class Action {
             }
         }
         return null;
+    }
+
+    public String getCategoryId() {
+        return categoryId;
+    }
+
+    @Attribute
+    @Default("")
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
     }
 }

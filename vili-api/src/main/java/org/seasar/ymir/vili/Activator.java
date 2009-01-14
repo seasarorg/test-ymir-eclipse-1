@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.seasar.ymir.vili.maven.ArtifactResolver;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
@@ -17,9 +18,13 @@ public class Activator {
 
     private static final String METHOD_GETARTIFACTRESOLVER = "getArtifactResolver";
 
+    private static final String METHOD_GETMOLDRESOLVER = "getMoldResolver";
+
     private static final String METHOD_GETPROJECTBUILDER = "getProjectBuilder";
 
     private static final String METHOD_NEWVILIBEHAVIOR = "newViliBehavior";
+
+    private static final String METHOD_GETPREFERENCESTORE = "getPreferenceStore";
 
     private Activator() {
     }
@@ -81,6 +86,18 @@ public class Activator {
         }
     }
 
+    public static MoldResolver getMoldResolver() {
+        try {
+            Class<?> activatorClass = Class.forName(CLASS_ACTIVATOR);
+            Object activator = activatorClass.getMethod(METHOD_GETDEFAULT)
+                    .invoke(null);
+            return (MoldResolver) activatorClass.getMethod(
+                    METHOD_GETMOLDRESOLVER).invoke(activator);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
     public static ProjectBuilder getProjectBuilder() {
         try {
             Class<?> activatorClass = Class.forName(CLASS_ACTIVATOR);
@@ -88,6 +105,18 @@ public class Activator {
                     .invoke(null);
             return (ProjectBuilder) activatorClass.getMethod(
                     METHOD_GETPROJECTBUILDER).invoke(activator);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    public static IPreferenceStore getPreferenceStore() {
+        try {
+            Class<?> activatorClass = Class.forName(CLASS_ACTIVATOR);
+            Object activator = activatorClass.getMethod(METHOD_GETDEFAULT)
+                    .invoke(null);
+            return (IPreferenceStore) activatorClass.getMethod(
+                    METHOD_GETPREFERENCESTORE).invoke(activator);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }

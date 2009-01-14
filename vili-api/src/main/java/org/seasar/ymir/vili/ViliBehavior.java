@@ -86,7 +86,7 @@ public interface ViliBehavior {
 
     String getDescription();
 
-    ArtifactType getArtifactType();
+    MoldType getMoldType();
 
     ArtifactVersion getViliVersion();
 

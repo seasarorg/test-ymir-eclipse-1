@@ -6,7 +6,7 @@ import org.eclipse.core.runtime.CoreException;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
-public class ArtifactPair {
+public class Mold {
     private Artifact artifact;
 
     private ClassLoader projectClassLoader;
@@ -15,16 +15,16 @@ public class ArtifactPair {
 
     private Map<String, Object> parameterMap;
 
-    public static ArtifactPair newInstance(Artifact artifact,
+    public static Mold newInstance(Artifact artifact,
             ClassLoader projectClassLoader) {
         if (artifact == null) {
             return null;
         } else {
-            return new ArtifactPair(artifact, projectClassLoader);
+            return new Mold(artifact, projectClassLoader);
         }
     }
 
-    private ArtifactPair(Artifact artifact, ClassLoader projectClassLoader) {
+    private Mold(Artifact artifact, ClassLoader projectClassLoader) {
         this.artifact = artifact;
         this.projectClassLoader = projectClassLoader;
     }

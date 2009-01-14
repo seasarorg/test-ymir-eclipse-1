@@ -10,23 +10,24 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.Project;
 
 public interface ProjectBuilder {
     void createProject(IProject project, IPath locationPath,
-            IPath jreContainerPath, ArtifactPair skeleton,
+            IPath jreContainerPath, Mold skeleton,
             ViliProjectPreferences preferences, IProgressMonitor monitor)
             throws CoreException;
 
     void addFragments(IProject project, ViliProjectPreferences preferences,
-            ArtifactPair[] fragments, IProgressMonitor monitor)
-            throws CoreException;
+            Mold[] fragments, IProgressMonitor monitor) throws CoreException;
 
-    void expandArtifact(IProject project, ViliProjectPreferences preferences,
-            ArtifactPair pair, Map<String, Object> parameters,
-            IProgressMonitor monitor) throws CoreException;
+    void expandMold(IProject project, ViliProjectPreferences preferences,
+            Mold mold, Map<String, Object> parameters, IProgressMonitor monitor)
+            throws CoreException;
 
     String evaluateTemplate(String path, Map<String, Object> parameterMap)
             throws CoreException;
@@ -60,4 +61,7 @@ public interface ProjectBuilder {
 
     Dependency getDependency(IProject project, String groupId, String artifactId)
             throws CoreException;
+
+    WizardDialog createAddFragmentsWizardDialog(Shell parentShell,
+            IProject project, Mold... fragmentMolds);
 }
