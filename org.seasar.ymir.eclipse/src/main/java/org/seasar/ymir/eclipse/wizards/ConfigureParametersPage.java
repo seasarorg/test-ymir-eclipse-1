@@ -40,7 +40,7 @@ import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.ui.ViliProjectPreferencesControl;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
-import org.seasar.ymir.vili.ArtifactPair;
+import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
@@ -73,11 +73,11 @@ public class ConfigureParametersPage extends WizardPage {
 
     private boolean tabPrepared;
 
-    private ArtifactPair skeleton;
+    private Mold skeleton;
 
     private ViliBehavior skeletonBehavior;
 
-    private ArtifactPair[] fragments;
+    private Mold[] fragments;
 
     private Map<String, ParameterModel>[] parameterModelMaps;
 
@@ -203,36 +203,36 @@ public class ConfigureParametersPage extends WizardPage {
 
     private boolean skeletonParameterExists() {
         int count = 0;
-        for (ArtifactPair pair : getArtifactPairs()) {
-            count += pair.getBehavior().getTemplateParameters().length;
+        for (Mold mold : getMolds()) {
+            count += mold.getBehavior().getTemplateParameters().length;
         }
         return count > 0;
     }
 
-    private ArtifactPair[] getArtifactPairs() {
-        List<ArtifactPair> pairList = new ArrayList<ArtifactPair>();
+    private Mold[] getMolds() {
+        List<Mold> moldList = new ArrayList<Mold>();
         if (skeleton != null) {
-            pairList.add(skeleton);
+            moldList.add(skeleton);
         }
         if (fragments != null) {
-            pairList.addAll(Arrays.asList(fragments));
+            moldList.addAll(Arrays.asList(fragments));
         }
-        return pairList.toArray(new ArtifactPair[0]);
+        return moldList.toArray(new Mold[0]);
     }
 
     @SuppressWarnings("unchecked")//$NON-NLS-1$
     void createSkeletonParametersControl(Composite parent) {
-        ArtifactPair[] pairs = getArtifactPairs();
-        parameterModelMaps = new Map[pairs.length];
+        Mold[] molds = getMolds();
+        parameterModelMaps = new Map[molds.length];
         java.util.List<ParameterModel> requiredList = new ArrayList<ParameterModel>();
 
         int count = 0;
-        for (int i = 0; i < pairs.length; i++) {
+        for (int i = 0; i < molds.length; i++) {
             Map<String, ParameterModel> modelMap = new LinkedHashMap<String, ParameterModel>();
             parameterModelMaps[i] = modelMap;
 
-            ArtifactPair pair = pairs[i];
-            ViliBehavior behavior = pair.getBehavior();
+            Mold mold = molds[i];
+            ViliBehavior behavior = mold.getBehavior();
             String[] names = behavior.getTemplateParameters();
             count += names.length;
             if (names.length == 0) {
@@ -254,7 +254,7 @@ public class ConfigureParametersPage extends WizardPage {
                     Label label = new Label(group, SWT.NONE);
                     label.setText(behavior.getTemplateParameterLabel(name));
                     Text text = new Text(group, SWT.BORDER);
-                    ParameterModel model = new TextParameterModel(pair, name, text, label);
+                    ParameterModel model = new TextParameterModel(mold, name, text, label);
                     modelMap.put(name, model);
                     GridData data = new GridData(GridData.FILL_HORIZONTAL);
                     data.widthHint = 250;
@@ -275,7 +275,7 @@ public class ConfigureParametersPage extends WizardPage {
 
                 case CHECKBOX: {
                     Button button = new Button(group, SWT.CHECK | SWT.LEFT);
-                    ParameterModel model = new ButtonParameterModel(pair, name, button);
+                    ParameterModel model = new ButtonParameterModel(mold, name, button);
                     modelMap.put(name, model);
                     GridData data = new GridData();
                     data.horizontalSpan = 2;
@@ -295,7 +295,7 @@ public class ConfigureParametersPage extends WizardPage {
                     Label label = new Label(group, SWT.NONE);
                     label.setText(behavior.getTemplateParameterLabel(name));
                     Combo combo = new Combo(group, SWT.READ_ONLY);
-                    ParameterModel model = new ComboParameterModel(pair, name, combo, label);
+                    ParameterModel model = new ComboParameterModel(mold, name, combo, label);
                     modelMap.put(name, model);
                     GridData data = new GridData(GridData.FILL_HORIZONTAL);
                     data.widthHint = 250;
@@ -322,7 +322,7 @@ public class ConfigureParametersPage extends WizardPage {
                     Label label = new Label(group, SWT.NONE);
                     label.setText(behavior.getTemplateParameterLabel(name));
                     Combo combo = new Combo(group, SWT.DROP_DOWN);
-                    ParameterModel model = new ComboParameterModel(pair, name, combo, label);
+                    ParameterModel model = new ComboParameterModel(mold, name, combo, label);
                     modelMap.put(name, model);
                     GridData data = new GridData(GridData.FILL_HORIZONTAL);
                     data.widthHint = 250;
@@ -358,14 +358,14 @@ public class ConfigureParametersPage extends WizardPage {
         if (visible) {
             if (!tabPrepared) {
                 ISelectArtifactWizard wizard = (ISelectArtifactWizard) getWizard();
-                skeleton = wizard.getSkeletonArtifactPair();
+                skeleton = wizard.getSkeletonMold();
                 List<ViliBehavior> behaviorList = new ArrayList<ViliBehavior>();
                 if (skeleton != null) {
                     skeletonBehavior = skeleton.getBehavior();
                     behaviorList.add(skeletonBehavior);
                 }
-                fragments = wizard.getFragmentArtifactPairs();
-                for (ArtifactPair fragment : fragments) {
+                fragments = wizard.getFragmentMolds();
+                for (Mold fragment : fragments) {
                     ViliBehavior fragmentBehavior = fragment.getBehavior();
                     behaviorList.add(fragmentBehavior);
                 }
@@ -494,10 +494,10 @@ public class ConfigureParametersPage extends WizardPage {
             preferencesControl.setDefaultValues();
         }
         if (parameterModelMaps != null) {
-            ArtifactPair[] pairs = getArtifactPairs();
+            Mold[] molds = getMolds();
             for (int i = 0; i < parameterModelMaps.length; i++) {
                 Map<String, ParameterModel> modelMap = parameterModelMaps[i];
-                ViliBehavior behavior = pairs[i].getBehavior();
+                ViliBehavior behavior = molds[i].getBehavior();
                 for (String name : modelMap.keySet()) {
                     String defaultValue = behavior.getTemplateParameterDefault(name);
                     if (defaultValue != null) {
@@ -517,8 +517,8 @@ public class ConfigureParametersPage extends WizardPage {
     }
 
     public void populateSkeletonParameters() {
-        ArtifactPair[] pairs = getArtifactPairs();
-        for (int i = 0; i < pairs.length; i++) {
+        Mold[] molds = getMolds();
+        for (int i = 0; i < molds.length; i++) {
             Map<String, Object> parameterMap = new HashMap<String, Object>();
             if (parameterModelMaps != null) {
                 Map<String, ParameterModel> modelMap = parameterModelMaps[i];
@@ -529,9 +529,9 @@ public class ConfigureParametersPage extends WizardPage {
             }
 
             // アーティファクト情報を追加する。
-            parameterMap.put(ParameterKeys.ARTIFACT_VERSION, new ArtifactVersion(pairs[i].getArtifact().getVersion()));
+            parameterMap.put(ParameterKeys.ARTIFACT_VERSION, new ArtifactVersion(molds[i].getArtifact().getVersion()));
 
-            pairs[i].setParameterMap(parameterMap);
+            molds[i].setParameterMap(parameterMap);
         }
     }
 
@@ -586,7 +586,7 @@ public class ConfigureParametersPage extends WizardPage {
     }
 
     static class TextParameterModel implements ParameterModel {
-        private ArtifactPair pair;
+        private Mold mold;
 
         private String name;
 
@@ -594,8 +594,8 @@ public class ConfigureParametersPage extends WizardPage {
 
         private Text text;
 
-        TextParameterModel(ArtifactPair pair, String name, Text text, Label label) {
-            this.pair = pair;
+        TextParameterModel(Mold mold, String name, Text text, Label label) {
+            this.mold = mold;
             this.name = name;
             this.text = text;
             this.label = label;
@@ -606,7 +606,7 @@ public class ConfigureParametersPage extends WizardPage {
         }
 
         public String getLabelText() {
-            return pair.getBehavior().getTemplateParameterLabel(name);
+            return mold.getBehavior().getTemplateParameterLabel(name);
         }
 
         public Object getValue() {
@@ -630,14 +630,14 @@ public class ConfigureParametersPage extends WizardPage {
     }
 
     static class ButtonParameterModel implements ParameterModel {
-        private ArtifactPair pair;
+        private Mold mold;
 
         private String name;
 
         private Button button;
 
-        ButtonParameterModel(ArtifactPair pair, String name, Button button) {
-            this.pair = pair;
+        ButtonParameterModel(Mold mold, String name, Button button) {
+            this.mold = mold;
             this.name = name;
             this.button = button;
         }
@@ -647,7 +647,7 @@ public class ConfigureParametersPage extends WizardPage {
         }
 
         public String getLabelText() {
-            return pair.getBehavior().getTemplateParameterLabel(name);
+            return mold.getBehavior().getTemplateParameterLabel(name);
         }
 
         public Object getValue() {
@@ -670,7 +670,7 @@ public class ConfigureParametersPage extends WizardPage {
     }
 
     static class ComboParameterModel implements ParameterModel {
-        private ArtifactPair pair;
+        private Mold mold;
 
         private String name;
 
@@ -678,8 +678,8 @@ public class ConfigureParametersPage extends WizardPage {
 
         private Label label;
 
-        ComboParameterModel(ArtifactPair pair, String name, Combo combo, Label label) {
-            this.pair = pair;
+        ComboParameterModel(Mold mold, String name, Combo combo, Label label) {
+            this.mold = mold;
             this.name = name;
             this.combo = combo;
             this.label = label;
@@ -690,7 +690,7 @@ public class ConfigureParametersPage extends WizardPage {
         }
 
         public String getLabelText() {
-            return pair.getBehavior().getTemplateParameterLabel(name);
+            return mold.getBehavior().getTemplateParameterLabel(name);
         }
 
         public Object getValue() {

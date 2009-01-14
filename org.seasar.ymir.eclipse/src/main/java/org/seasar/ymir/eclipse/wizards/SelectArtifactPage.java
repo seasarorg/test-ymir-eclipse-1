@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -35,25 +35,25 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.vili.ArtifactPair;
-import org.seasar.ymir.vili.ArtifactType;
+import org.seasar.ymir.vili.Mold;
+import org.seasar.ymir.vili.MoldType;
+import org.seasar.ymir.vili.MoldTypeMismatchException;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
+import org.seasar.ymir.vili.ViliVersionMismatchException;
 import org.seasar.ymir.vili.maven.ArtifactResolver;
-import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.maven.ExtendedArtifact;
 import org.seasar.ymir.vili.maven.ExtendedContext;
 import org.seasar.ymir.vili.maven.util.ArtifactUtils;
 import org.seasar.ymir.vili.model.Fragment;
 import org.seasar.ymir.vili.model.Skeleton;
-import org.seasar.ymir.vili.util.ViliUtils;
 
 import werkzeugkasten.mvnhack.repository.Artifact;
 
 public class SelectArtifactPage extends WizardPage {
     protected static final long WAIT_RESOLVE_SKELETON_ARTIFACT = 1000L;
 
-    private ClassLoader projectClassLoader;
+    private IProject project;
 
     private ViliProjectPreferences preferences;
 
@@ -93,7 +93,7 @@ public class SelectArtifactPage extends WizardPage {
 
     private Text customSkeletonDescriptionText;
 
-    private volatile ArtifactPair skeletonArtifactPair;
+    private volatile Mold skeletonMold;
 
     private SkeletonArtifactResolver skeletonArtifactResolver;
 
@@ -123,15 +123,15 @@ public class SelectArtifactPage extends WizardPage {
 
     private Table archiveListTable;
 
-    private java.util.List<ArtifactPair> customFragmentListModel;
+    private java.util.List<Mold> customFragmentListModel;
 
-    private volatile ArtifactPair[] fragmentTemplateArtifactPairs;
+    private volatile Mold[] fragmentTemplateMolds;
 
-    public SelectArtifactPage(ClassLoader projectClassLoader, ViliProjectPreferences preferences,
-            ExtendedContext context, boolean showSkeletonTab) {
+    public SelectArtifactPage(IProject project, ViliProjectPreferences preferences, ExtendedContext context,
+            boolean showSkeletonTab) {
         super("SelectArtifactPage"); //$NON-NLS-1$
 
-        this.projectClassLoader = projectClassLoader;
+        this.project = project;
         this.preferences = preferences;
         this.context = context;
         this.showSkeletonTab = showSkeletonTab;
@@ -333,16 +333,16 @@ public class SelectArtifactPage extends WizardPage {
                         if (items[i] == e.item) {
                             if (items[i].getChecked()) {
                                 Resolved resolved = resolveFragment(fragments[i]);
-                                if (resolved.getPair() == null) {
+                                if (resolved.getMold() == null) {
                                     items[i].setChecked(false);
                                     setErrorMessage(resolved.getErrorMessage());
                                 } else {
-                                    fragmentTemplateArtifactPairs[i] = resolved.getPair();
+                                    fragmentTemplateMolds[i] = resolved.getMold();
                                 }
                                 fragmentTemplateTable.setSelection(i);
                                 updateDescriptionText(i);
                             } else {
-                                fragmentTemplateArtifactPairs[i] = null;
+                                fragmentTemplateMolds[i] = null;
                             }
                             update();
                             break;
@@ -356,10 +356,10 @@ public class SelectArtifactPage extends WizardPage {
             private void updateDescriptionText(int index) {
                 String description;
                 if (index != -1) {
-                    if (fragmentTemplateArtifactPairs[index] == null) {
+                    if (fragmentTemplateMolds[index] == null) {
                         description = fragments[index].getDescription();
                     } else {
-                        description = fragmentTemplateArtifactPairs[index].getBehavior().getDescription();
+                        description = fragmentTemplateMolds[index].getBehavior().getDescription();
                     }
                 } else {
                     description = ""; //$NON-NLS-1$
@@ -370,7 +370,7 @@ public class SelectArtifactPage extends WizardPage {
         new TableColumn(fragmentTemplateTable, SWT.LEFT).setWidth(270);
 
         fragments = getFragmentTemplates();
-        fragmentTemplateArtifactPairs = new ArtifactPair[fragments.length];
+        fragmentTemplateMolds = new Mold[fragments.length];
         for (Fragment fragment : fragments) {
             new TableItem(fragmentTemplateTable, SWT.NONE).setText(new String[] { fragment.getName() });
         }
@@ -465,10 +465,10 @@ public class SelectArtifactPage extends WizardPage {
                 Resolved resolved = resolveFragment(customFragmentGroupIdField.getText(), customFragmentArtifactIdField
                         .getText(), useLatestFragmentVersionField.getSelection() ? null : customFragmentVersionField
                         .getText());
-                if (resolved.getPair() != null) {
-                    customFragmentListModel.add(resolved.getPair());
-                    customFragmentListField.add(resolved.getPair().getBehavior().getLabel());
-                    customFragmentDescriptionText.setText(resolved.getPair().getBehavior().getDescription());
+                if (resolved.getMold() != null) {
+                    customFragmentListModel.add(resolved.getMold());
+                    customFragmentListField.add(resolved.getMold().getBehavior().getLabel());
+                    customFragmentDescriptionText.setText(resolved.getMold().getBehavior().getDescription());
                     customFragmentGroupIdField.setText(""); //$NON-NLS-1$
                     customFragmentArtifactIdField.setText(""); //$NON-NLS-1$
                     if (!useLatestFragmentVersionField.getSelection()) {
@@ -482,7 +482,7 @@ public class SelectArtifactPage extends WizardPage {
             }
         });
 
-        customFragmentListModel = new ArrayList<ArtifactPair>();
+        customFragmentListModel = new ArrayList<Mold>();
         customFragmentListField = new List(rightComposite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         data = new GridData(SWT.FILL, SWT.FILL, true, true);
         data.heightHint = 80;
@@ -520,7 +520,7 @@ public class SelectArtifactPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 setErrorMessage(null);
 
-                java.util.List<ArtifactPair> list = new ArrayList<ArtifactPair>();
+                java.util.List<Mold> list = new ArrayList<Mold>();
                 int pre = 0;
                 int[] indices = customFragmentListField.getSelectionIndices();
                 for (int idx : indices) {
@@ -539,9 +539,10 @@ public class SelectArtifactPage extends WizardPage {
     private Fragment[] getFragmentTemplates() {
         java.util.List<Fragment> list = new ArrayList<Fragment>();
         for (Fragment fragment : Activator.getDefault().getTemplate().getAllFragments()) {
-            if (!fragment.isAvailableOnlyIfProjectExists()) {
-                list.add(fragment);
+            if (fragment.isAvailableOnlyIfProjectExists() && project == null) {
+                continue;
             }
+            list.add(fragment);
         }
         return list.toArray(new Fragment[0]);
     }
@@ -573,18 +574,18 @@ public class SelectArtifactPage extends WizardPage {
 
     private void updateArchiveListTable() {
         archiveListTable.removeAll();
-        ArtifactPair[] pairs;
-        ArtifactPair[] fragments = getFragmentTemplateArtifactPairs();
-        if (skeletonArtifactPair != null) {
-            pairs = new ArtifactPair[1 + fragments.length];
-            pairs[0] = skeletonArtifactPair;
-            System.arraycopy(fragments, 0, pairs, 1, fragments.length);
+        Mold[] molds;
+        Mold[] fragments = getFragmentTemplateMolds();
+        if (skeletonMold != null) {
+            molds = new Mold[1 + fragments.length];
+            molds[0] = skeletonMold;
+            System.arraycopy(fragments, 0, molds, 1, fragments.length);
         } else {
-            pairs = fragments;
+            molds = fragments;
         }
-        for (ArtifactPair pair : pairs) {
+        for (Mold mold : molds) {
             TableItem item = new TableItem(archiveListTable, SWT.NULL);
-            Artifact artifact = pair.getArtifact();
+            Artifact artifact = mold.getArtifact();
             String version = artifact.getVersion();
             if (ArtifactUtils.isSnapshot(version)) {
                 String actualVersion = null;
@@ -615,8 +616,8 @@ public class SelectArtifactPage extends WizardPage {
         if (version != null && version.length() == 0) {
             return false;
         }
-        for (ArtifactPair pair : customFragmentListModel) {
-            Artifact artifact = pair.getArtifact();
+        for (Mold mold : customFragmentListModel) {
+            Artifact artifact = mold.getArtifact();
             if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
                 return false;
             }
@@ -626,11 +627,11 @@ public class SelectArtifactPage extends WizardPage {
 
     boolean validatePage() {
         if (showSkeletonTab) {
-            if (skeletonArtifactPair == null) {
+            if (skeletonMold == null) {
                 return false;
             }
         } else {
-            if (getFragmentTemplateArtifactPairs().length == 0) {
+            if (getFragmentTemplateMolds().length == 0) {
                 return false;
             }
         }
@@ -717,13 +718,13 @@ public class SelectArtifactPage extends WizardPage {
 
         Skeleton skeleton = getSkeleton();
         if (skeleton != null) {
-            skeletonArtifactResolver = new SkeletonArtifactResolver(this, preferences, context, skeleton, wait);
+            skeletonArtifactResolver = new SkeletonArtifactResolver(this, project, preferences, context, skeleton, wait);
             skeletonArtifactResolver.start();
         }
     }
 
     private void clearSkeleton() {
-        skeletonArtifactPair = null;
+        skeletonMold = null;
         customSkeletonDescriptionText.setText(""); //$NON-NLS-1$
 
         ((ISelectArtifactWizard) getWizard()).notifySkeletonCleared();
@@ -733,7 +734,7 @@ public class SelectArtifactPage extends WizardPage {
         for (int i = 0; i < fragments.length; i++) {
             TableItem item = fragmentTemplateTable.getItem(i);
             item.setChecked(false);
-            fragmentTemplateArtifactPairs[i] = null;
+            fragmentTemplateMolds[i] = null;
         }
         customFragmentListField.removeAll();
         customFragmentDescriptionText.setText(""); //$NON-NLS-1$
@@ -749,7 +750,25 @@ public class SelectArtifactPage extends WizardPage {
         final boolean useFragmentSnapshot = useFragmentSnapshot();
         IRunnableWithProgress op = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                resolved[0] = doResolveFragment(groupId, artifactId, version, useFragmentSnapshot, monitor);
+                resolved[0] = new Resolved();
+                try {
+                    Mold mold = Activator.getDefault().getMoldResolver().resolveMold(context, groupId, artifactId,
+                            version, MoldType.FRAGMENT, preferences.getViliVersion(), useFragmentSnapshot, project,
+                            monitor);
+                    if (mold == null) {
+                        resolved[0].setErrorMessage(Messages.getString("SelectArtifactPage.19")); //$NON-NLS-1$
+                    } else if (mold.getBehavior().isAvailableOnlyIfProjectExists() && project == null) {
+                        resolved[0].setErrorMessage(Messages.getString("SelectArtifactPage.32")); //$NON-NLS-1$
+                        mold = null;
+                    }
+                    resolved[0].setMold(mold);
+                } catch (MoldTypeMismatchException ex) {
+                    resolved[0].setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
+                } catch (ViliVersionMismatchException ex) {
+                    resolved[0].setErrorMessage(MessageFormat.format(Messages.getString("SelectArtifactPage.28"), //$NON-NLS-1$
+                            ex.getMold().getBehavior().getViliVersion().getWithoutQualifier(), preferences
+                                    .getViliVersion().getWithoutQualifier()));
+                }
             }
         };
 
@@ -762,93 +781,6 @@ public class SelectArtifactPage extends WizardPage {
             return null;
         } catch (InterruptedException ex) {
             return null;
-        }
-    }
-
-    private Resolved doResolveFragment(String groupId, String artifactId, String version, boolean useFragmentSnapshot,
-            IProgressMonitor monitor) {
-        monitor.beginTask(Messages.getString("SelectArtifactPage.21"), 2); //$NON-NLS-1$
-        try {
-            ArtifactResolver artifactResolver = Activator.getDefault().getArtifactResolver();
-            ArtifactVersion viliVersion = preferences.getViliVersion();
-            Resolved resolved = new Resolved();
-            resolved.setErrorMessage(Messages.getString("SelectArtifactPage.19")); //$NON-NLS-1$
-            if (version != null) {
-                // バージョン指定ありの場合。
-                ArtifactPair pair = ArtifactPair.newInstance(artifactResolver.resolve(context, groupId, artifactId,
-                        version), projectClassLoader);
-                if (pair != null) {
-                    ViliBehavior behavior = pair.getBehavior();
-                    if (!ViliUtils.isCompatible(viliVersion, behavior.getViliVersion())) {
-                        resolved.setErrorMessage(MessageFormat.format(Messages.getString("SelectArtifactPage.28"), //$NON-NLS-1$
-                                behavior.getViliVersion().getWithoutQualifier(), viliVersion.getWithoutQualifier()));
-                        pair = null;
-                    } else if (behavior.getArtifactType() != ArtifactType.FRAGMENT) {
-                        resolved.setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
-                        pair = null;
-                    } else if (behavior.isAvailableOnlyIfProjectExists()) {
-                        resolved.setErrorMessage(Messages.getString("SelectArtifactPage.32")); //$NON-NLS-1$
-                        pair = null;
-                    }
-                }
-                resolved.setPair(pair);
-                return resolved;
-            } else {
-                // バージョン指定なしの場合。
-                version = artifactResolver.getLatestVersion(context, groupId, artifactId, useFragmentSnapshot);
-                if (version == null) {
-                    // バージョンが見つからなかったので終了。
-                    return resolved;
-                }
-                ArtifactPair pair = ArtifactPair.newInstance(artifactResolver.resolve(context, groupId, artifactId,
-                        version), projectClassLoader);
-                ViliBehavior behavior = pair.getBehavior();
-                if (pair == null) {
-                    // アーティファクト自体見つからなかったら終了。
-                    return resolved;
-                } else if (ViliUtils.isCompatible(viliVersion, behavior.getViliVersion())) {
-                    // 見つかったもののViliバージョンが適合するなら終了。ただしタイプが違った場合は見つからなかったことにする。
-                    if (behavior.getArtifactType() != ArtifactType.FRAGMENT) {
-                        resolved.setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
-                        pair = null;
-                    } else if (behavior.isAvailableOnlyIfProjectExists()) {
-                        resolved.setErrorMessage(Messages.getString("SelectArtifactPage.32")); //$NON-NLS-1$
-                        pair = null;
-                    }
-                    resolved.setPair(pair);
-                    return resolved;
-                }
-
-                // Viliバージョンが適合しなかった場合は全てのバージョンから検索する。
-                String[] versions = artifactResolver.getVersions(context, groupId, artifactId, useFragmentSnapshot);
-                SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, 1);
-                subMonitor.beginTask(Messages.getString("SelectArtifactPage.31"), versions.length - 1); //$NON-NLS-1$
-                try {
-                    // 0番目はチェック済みなのでスキップする。
-                    for (int i = 1; i < versions.length; i++, subMonitor.worked(1)) {
-                        pair = ArtifactPair.newInstance(artifactResolver.resolve(context, groupId, artifactId,
-                                versions[i]), projectClassLoader);
-                        behavior = pair.getBehavior();
-                        if (pair != null && ViliUtils.isCompatible(viliVersion, behavior.getViliVersion())) {
-                            // 見つかったもののViliバージョンが適合するなら終了。ただしタイプが違った場合は見つからなかったことにする。
-                            if (behavior.getArtifactType() != ArtifactType.FRAGMENT) {
-                                resolved.setErrorMessage(Messages.getString("SelectArtifactPage.29")); //$NON-NLS-1$
-                                pair = null;
-                            } else if (behavior.isAvailableOnlyIfProjectExists()) {
-                                resolved.setErrorMessage(Messages.getString("SelectArtifactPage.32")); //$NON-NLS-1$
-                                pair = null;
-                            }
-                            resolved.setPair(pair);
-                            return resolved;
-                        }
-                    }
-                    return resolved;
-                } finally {
-                    subMonitor.done();
-                }
-            }
-        } finally {
-            monitor.done();
         }
     }
 
@@ -911,51 +843,51 @@ public class SelectArtifactPage extends WizardPage {
         }
     }
 
-    public ArtifactPair[] getFragmentTemplateArtifactPairs() {
-        Map<String, ArtifactPair> map = new LinkedHashMap<String, ArtifactPair>();
+    public Mold[] getFragmentTemplateMolds() {
+        Map<String, Mold> map = new LinkedHashMap<String, Mold>();
 
-        for (ArtifactPair fragment : fragmentTemplateArtifactPairs) {
+        for (Mold fragment : fragmentTemplateMolds) {
             if (fragment != null) {
                 map.put(ArtifactUtils.getUniqueId(fragment.getArtifact()), fragment);
             }
         }
-        for (ArtifactPair fragment : customFragmentListModel) {
+        for (Mold fragment : customFragmentListModel) {
             map.put(ArtifactUtils.getUniqueId(fragment.getArtifact()), fragment);
         }
-        return map.values().toArray(new ArtifactPair[0]);
+        return map.values().toArray(new Mold[0]);
     }
 
-    public ArtifactPair getSkeletonArtifactPair() {
-        return skeletonArtifactPair;
+    public Mold getSkeletonMold() {
+        return skeletonMold;
     }
 
-    void setSkeletonAndFragments(ArtifactPair skeletonArtifactPair, ArtifactPair[] fragmentArtifactPairs) {
-        this.skeletonArtifactPair = skeletonArtifactPair;
+    void setSkeletonAndFragments(Mold skeletonMold, Mold[] fragmentMolds) {
+        this.skeletonMold = skeletonMold;
         if (!isChosenSkeletonFromTemplate()) {
-            customSkeletonDescriptionText.setText(skeletonArtifactPair.getBehavior().getDescription());
+            customSkeletonDescriptionText.setText(skeletonMold.getBehavior().getDescription());
         }
 
         // クリアしているのは、フラグメントつきスケルトンテンプレートを選択されている状態から別のスケルトンに変更された場合に
         // 前のスケルトンに付属しているフラグメントが残るのを避けるため。
         clearFragments();
 
-        for (ArtifactPair fragmentArtifactPair : fragmentArtifactPairs) {
-            Artifact artifact = fragmentArtifactPair.getArtifact();
-            ViliBehavior behavior = fragmentArtifactPair.getBehavior();
+        for (Mold fragmentMold : fragmentMolds) {
+            Artifact artifact = fragmentMold.getArtifact();
+            ViliBehavior behavior = fragmentMold.getBehavior();
 
             boolean matched = false;
             for (int i = 0; i < fragments.length; i++) {
                 if (artifact.getGroupId().equals(fragments[i].getGroupId())
                         && artifact.getArtifactId().equals(fragments[i].getArtifactId())) {
                     fragmentTemplateTable.getItem(i).setChecked(true);
-                    fragmentTemplateArtifactPairs[i] = fragmentArtifactPair;
+                    fragmentTemplateMolds[i] = fragmentMold;
                     matched = true;
                     break;
                 }
             }
             if (!matched) {
                 customFragmentListField.add(behavior.getLabel());
-                customFragmentListModel.add(fragmentArtifactPair);
+                customFragmentListModel.add(fragmentMold);
             }
         }
 
@@ -974,21 +906,17 @@ public class SelectArtifactPage extends WizardPage {
         // IDialogSettings section = getDialogSettings().getSection(NewProjectWizard.DS_SECTION);
     }
 
-    public ClassLoader getProjectClassLoader() {
-        return projectClassLoader;
-    }
-
     static class Resolved {
-        private ArtifactPair pair;
+        private Mold mold;
 
         private String errorMessage;
 
-        public ArtifactPair getPair() {
-            return pair;
+        public Mold getMold() {
+            return mold;
         }
 
-        public void setPair(ArtifactPair pair) {
-            this.pair = pair;
+        public void setMold(Mold mold) {
+            this.mold = mold;
         }
 
         public String getErrorMessage() {

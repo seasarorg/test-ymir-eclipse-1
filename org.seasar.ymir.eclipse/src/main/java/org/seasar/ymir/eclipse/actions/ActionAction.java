@@ -1,5 +1,10 @@
 package org.seasar.ymir.eclipse.actions;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.Action;
@@ -8,6 +13,7 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -93,8 +99,29 @@ public class ActionAction implements IObjectActionDelegate, IMenuCreator {
 
     void createMenu(IMenuManager mgr) {
         ProjectRelative relative = Activator.getDefault().getProjectRelative(project);
+        Map<String, List<org.seasar.ymir.vili.model.Action>> actionByCategoryIdMap = new LinkedHashMap<String, List<org.seasar.ymir.vili.model.Action>>();
         for (org.seasar.ymir.vili.model.Action action : relative.getActions().getActions()) {
-            mgr.add(getAction(new ActionActionDelegate(action, project), getActionId(action), action.getName()));
+            List<org.seasar.ymir.vili.model.Action> list = actionByCategoryIdMap.get(action.getCategoryId());
+            if (list == null) {
+                list = new ArrayList<org.seasar.ymir.vili.model.Action>();
+                actionByCategoryIdMap.put(action.getCategoryId(), list);
+            }
+            list.add(action);
+        }
+        boolean insertSeparator = false;
+        for (String categoryId : actionByCategoryIdMap.keySet()) {
+            boolean first = true;
+            for (org.seasar.ymir.vili.model.Action action : actionByCategoryIdMap.get(categoryId)) {
+                if (first) {
+                    if (insertSeparator) {
+                        mgr.add(new Separator());
+                    } else {
+                        insertSeparator = true;
+                    }
+                    first = false;
+                }
+                mgr.add(getAction(new ActionActionDelegate(action, project), getActionId(action), action.getName()));
+            }
         }
     }
 

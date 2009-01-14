@@ -13,7 +13,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.vili.ArtifactPair;
+import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.IAction;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
@@ -55,7 +55,7 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
                     action.getArtifactId(), action.getVersion(), false);
             if (artifact != null) {
                 try {
-                    action.setClass((Class<? extends IAction>) ArtifactPair.newInstance(artifact,
+                    action.setClass((Class<? extends IAction>) Mold.newInstance(artifact,
                             getProjectClassLoader()).getBehavior().getClassLoader().loadClass(action.getActionClass()));
                 } catch (ClassNotFoundException ex) {
                     Activator.getDefault().log(ex);

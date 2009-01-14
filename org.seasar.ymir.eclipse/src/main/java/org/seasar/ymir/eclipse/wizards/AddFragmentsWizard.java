@@ -15,7 +15,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.Globals;
-import org.seasar.ymir.vili.ArtifactPair;
+import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.ExtendedContext;
 
@@ -23,6 +23,8 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
     static final String DS_SECTION = "AddFragmentsWizard"; //$NON-NLS-1$
 
     private IProject project;
+
+    private Mold[] fragmentMolds;
 
     private ViliProjectPreferences preferences;
 
@@ -32,10 +34,9 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
 
     private ConfigureParametersPage secondPage;
 
-    public AddFragmentsWizard(IProject project) {
-        super();
-
+    public AddFragmentsWizard(IProject project, Mold... fragmentMolds) {
         this.project = project;
+        this.fragmentMolds = fragmentMolds;
 
         setNeedsProgressMonitor(true);
         setWindowTitle(Messages.getString("AddFragmentsWizard.1")); //$NON-NLS-1$
@@ -57,11 +58,12 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
      */
 
     public void addPages() {
-        firstPage = new SelectArtifactPage(Activator.getDefault().getProjectRelative(project).getProjectClassLoader(),
-                preferences, nonTransitiveContext, false);
-        firstPage.setTitle(Messages.getString("AddFragmentsWizard.1")); //$NON-NLS-1$
-        firstPage.setDescription(Messages.getString("AddFragmentsWizard.2")); //$NON-NLS-1$
-        addPage(firstPage);
+        if (fragmentMolds.length == 0) {
+            firstPage = new SelectArtifactPage(project, preferences, nonTransitiveContext, false);
+            firstPage.setTitle(Messages.getString("AddFragmentsWizard.1")); //$NON-NLS-1$
+            firstPage.setDescription(Messages.getString("AddFragmentsWizard.2")); //$NON-NLS-1$
+            addPage(firstPage);
+        }
         secondPage = new ConfigureParametersPage(project, preferences);
         addPage(secondPage);
     }
@@ -74,7 +76,7 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
     public boolean performFinish() {
         secondPage.populateSkeletonParameters();
         try {
-            final ArtifactPair[] fragments = firstPage.getFragmentTemplateArtifactPairs();
+            final Mold[] fragments = getFragmentMolds();
             IRunnableWithProgress op = new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask(Messages.getString("AddFragmentsWizard.3"), 1); //$NON-NLS-1$
@@ -119,12 +121,16 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
         secondPage.notifySkeletonAndFragmentsCleared();
     }
 
-    public ArtifactPair[] getFragmentArtifactPairs() {
-        return firstPage.getFragmentTemplateArtifactPairs();
+    public Mold[] getFragmentMolds() {
+        if (fragmentMolds.length > 0) {
+            return fragmentMolds;
+        } else {
+            return firstPage.getFragmentTemplateMolds();
+        }
     }
 
-    public ArtifactPair getSkeletonArtifactPair() {
-        return firstPage.getSkeletonArtifactPair();
+    public Mold getSkeletonMold() {
+        return null;
     }
 
     public void notifyFragmentsChanged() {

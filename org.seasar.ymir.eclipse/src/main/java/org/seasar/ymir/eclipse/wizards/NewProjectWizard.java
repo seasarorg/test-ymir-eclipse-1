@@ -27,7 +27,7 @@ import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
-import org.seasar.ymir.vili.ArtifactPair;
+import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.ProjectBuilder;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.ExtendedContext;
@@ -72,7 +72,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
      */
 
     public void addPages() {
-        firstPage = new SelectArtifactPage(getClass().getClassLoader(), preferences, nonTransitiveContext, true);
+        firstPage = new SelectArtifactPage(null, preferences, nonTransitiveContext, true);
         firstPage.setTitle(Messages.getString("NewProjectWizard.26")); //$NON-NLS-1$
         firstPage.setDescription(Messages.getString("NewProjectWizard.27")); //$NON-NLS-1$
         addPage(firstPage);
@@ -99,8 +99,8 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
     public boolean performFinish() {
         thirdPage.populateSkeletonParameters();
         try {
-            final ArtifactPair skeleton = firstPage.getSkeletonArtifactPair();
-            final ArtifactPair[] fragments = firstPage.getFragmentTemplateArtifactPairs();
+            final Mold skeleton = firstPage.getSkeletonMold();
+            final Mold[] fragments = firstPage.getFragmentTemplateMolds();
             final IProject project = secondPage.getProjectHandle();
             final IPath locationPath = secondPage.getLocationPath();
             final IPath jreContainerPath = preferences.getJREContainerPath();
@@ -226,12 +226,12 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
         thirdPage.notifySkeletonAndFragmentsCleared();
     }
 
-    public ArtifactPair getSkeletonArtifactPair() {
-        return firstPage.getSkeletonArtifactPair();
+    public Mold getSkeletonMold() {
+        return firstPage.getSkeletonMold();
     }
 
-    public ArtifactPair[] getFragmentArtifactPairs() {
-        return firstPage.getFragmentTemplateArtifactPairs();
+    public Mold[] getFragmentMolds() {
+        return firstPage.getFragmentTemplateMolds();
     }
 
     public void notifyFragmentsChanged() {

@@ -11,7 +11,6 @@ import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.popup.dialogs.AddFragmentsWizardDialog;
 import org.seasar.ymir.vili.util.AdaptableUtils;
 import org.seasar.ymir.vili.util.WorkbenchUtils;
 
@@ -28,10 +27,8 @@ public class AddFragmentsAction implements IObjectActionDelegate {
      * @see IActionDelegate#run(IAction)
      */
     public void run(IAction action) {
-        Shell shell = new Shell();
         try {
-            AddFragmentsWizardDialog dialog = new AddFragmentsWizardDialog(shell, project);
-            dialog.open();
+            Activator.getDefault().getProjectBuilder().createAddFragmentsWizardDialog(new Shell(), project).open();
         } catch (Throwable t) {
             Activator.getDefault().log(t);
             WorkbenchUtils.showMessage(Messages.getString("AddFragmentsAction.0"), MessageDialog.ERROR); //$NON-NLS-1$

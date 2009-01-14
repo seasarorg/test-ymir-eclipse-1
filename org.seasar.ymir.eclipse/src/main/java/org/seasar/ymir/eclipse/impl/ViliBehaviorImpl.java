@@ -23,7 +23,7 @@ import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.Globals;
-import org.seasar.ymir.vili.ArtifactType;
+import org.seasar.ymir.vili.MoldType;
 import org.seasar.ymir.vili.IConfigurator;
 import org.seasar.ymir.vili.InclusionType;
 import org.seasar.ymir.vili.NullConfigurator;
@@ -181,7 +181,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
         if (artifact == null) {
             return;
         }
-        if (getArtifactType() != ArtifactType.SKELETON) {
+        if (getMoldType() != MoldType.SKELETON) {
             return;
         }
 
@@ -355,8 +355,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return properties.getProperty(DESCRIPTION, ""); //$NON-NLS-1$
     }
 
-    public ArtifactType getArtifactType() {
-        return ArtifactType.enumOf(properties.getProperty(TYPE));
+    public MoldType getMoldType() {
+        return MoldType.enumOf(properties.getProperty(TYPE));
     }
 
     public ArtifactVersion getViliVersion() {
@@ -391,7 +391,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     private Project readPom(Artifact artifact, boolean evaluate, Map<String, Object> parameters) throws CoreException {
         Project pom = null;
-        if (getArtifactType() == ArtifactType.FRAGMENT) {
+        if (getMoldType() == MoldType.FRAGMENT) {
             String content = ArtifactUtils.getResourceAsString(artifact, Globals.PATH_POM_XML, Globals.ENCODING,
                     new NullProgressMonitor());
             if (evaluate) {

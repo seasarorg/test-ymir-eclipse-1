@@ -51,6 +51,8 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.osgi.framework.Bundle;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.kvasir.util.io.IOUtils;
@@ -59,9 +61,10 @@ import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.natures.ViliProjectNature;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
+import org.seasar.ymir.eclipse.popup.dialogs.AddFragmentsWizardDialog;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.vili.ArtifactPair;
-import org.seasar.ymir.vili.ArtifactType;
+import org.seasar.ymir.vili.Mold;
+import org.seasar.ymir.vili.MoldType;
 import org.seasar.ymir.vili.ProjectBuilder;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
@@ -151,7 +154,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         });
     }
 
-    public void addFragments(IProject project, ViliProjectPreferences preferences, ArtifactPair[] fragments,
+    public void addFragments(IProject project, ViliProjectPreferences preferences, Mold[] fragments,
             IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("ProjectBuilderImpl.8"), fragments.length + 1); //$NON-NLS-1$
         try {
@@ -171,14 +174,14 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 actions = new Actions();
             }
 
-            for (ArtifactPair fragment : fragments) {
+            for (Mold fragment : fragments) {
                 Artifact artifact = fragment.getArtifact();
                 ViliBehavior behavior = fragment.getBehavior();
                 @SuppressWarnings("unchecked")//$NON-NLS-1$
                 Map<String, Object> parameters = new CascadeMap<String, Object>(new HashMap<String, Object>(), fragment
                         .getParameterMap(), new BeanMap(preferences));
 
-                expandArtifact(project, preferences, fragment, parameters, new SubProgressMonitor(monitor, 1));
+                expandMold(project, preferences, fragment, parameters, new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -241,7 +244,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         }
     }
 
-    public void createProject(IProject project, IPath locationPath, IPath jreContainerPath, ArtifactPair skeleton,
+    public void createProject(IProject project, IPath locationPath, IPath jreContainerPath, Mold skeleton,
             ViliProjectPreferences preferences, IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("ProjectBuilderImpl.12"), 12); //$NON-NLS-1$
         try {
@@ -270,7 +273,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             @SuppressWarnings("unchecked")//$NON-NLS-1$
             Map<String, Object> parameters = new CascadeMap<String, Object>(skeleton.getParameterMap(), new BeanMap(
                     preferences));
-            expandArtifact(project, preferences, skeleton, parameters, new SubProgressMonitor(monitor, 1));
+            expandMold(project, preferences, skeleton, parameters, new SubProgressMonitor(monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
@@ -558,11 +561,11 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         return sw.toString();
     }
 
-    public void expandArtifact(IProject project, ViliProjectPreferences preferences, ArtifactPair pair,
+    public void expandMold(IProject project, ViliProjectPreferences preferences, Mold mold,
             Map<String, Object> parameters, IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("ProjectBuilderImpl.15"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
         try {
-            final JarFile jarFile = ArtifactUtils.getJarFile(pair.getArtifact());
+            final JarFile jarFile = ArtifactUtils.getJarFile(mold.getArtifact());
             try {
                 Configuration cfg = new Configuration();
                 cfg.setEncoding(Locale.getDefault(), Globals.ENCODING);
@@ -585,7 +588,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 });
                 cfg.setObjectWrapper(new DefaultObjectWrapper());
 
-                ViliBehavior behavior = pair.getBehavior();
+                ViliBehavior behavior = mold.getBehavior();
                 behavior.getConfigurator().processBeforeExpanding(project, behavior, preferences, parameters,
                         new SubProgressMonitor(monitor, 1));
 
@@ -840,7 +843,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
 
     private boolean shouldExpand(String path, String resolvedPath, IProject project, ViliBehavior behavior,
             ViliProjectPreferences preferences, Map<String, Object> parameters) {
-        if (behavior.getArtifactType() == ArtifactType.SKELETON) {
+        if (behavior.getMoldType() == MoldType.SKELETON) {
             if (path.equals(Globals.PATH_M2ECLIPSE_LIGHT_PREFS)
                     && Platform.getBundle(Globals.BUNDLENAME_M2ECLIPSE_LIGHT) == null) {
                 return false;
@@ -851,7 +854,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             }
         }
 
-        if (behavior.getArtifactType() == ArtifactType.FRAGMENT) {
+        if (behavior.getMoldType() == MoldType.FRAGMENT) {
             if (path.equals(PATH_POM_XML)) {
                 return false;
             }
@@ -1123,5 +1126,9 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             }
         }
         return null;
+    }
+
+    public WizardDialog createAddFragmentsWizardDialog(Shell parentShell, IProject project, Mold... fragmentMolds) {
+        return new AddFragmentsWizardDialog(parentShell, project, fragmentMolds);
     }
 }

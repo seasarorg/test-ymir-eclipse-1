@@ -23,6 +23,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
+import org.seasar.ymir.eclipse.impl.MoldResolverImpl;
 import org.seasar.ymir.eclipse.impl.ProjectBuilderImpl;
 import org.seasar.ymir.eclipse.impl.ViliBehaviorImpl;
 import org.seasar.ymir.eclipse.maven.impl.ArtifactResolverImpl;
@@ -30,6 +31,7 @@ import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.preferences.impl.ViliNewProjectPreferencesProvider;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesImpl;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesProviderImpl;
+import org.seasar.ymir.vili.MoldResolver;
 import org.seasar.ymir.vili.ProjectBuilder;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
@@ -52,6 +54,8 @@ public class Activator extends AbstractUIPlugin {
 
     private ArtifactResolver artifactResolver;
 
+    private MoldResolver moldResolver;
+
     private ProjectBuilder projectBuilder;
 
     private Map<IProject, ProjectRelative> projectRelativeMap = new HashMap<IProject, ProjectRelative>();
@@ -72,6 +76,8 @@ public class Activator extends AbstractUIPlugin {
         plugin = this;
 
         projectBuilder = new ProjectBuilderImpl(getBundle());
+
+        moldResolver = new MoldResolverImpl();
 
         artifactResolver = new ArtifactResolverImpl();
         IPreferenceStore preferenceStore = getPreferenceStore();
@@ -107,6 +113,7 @@ public class Activator extends AbstractUIPlugin {
      */
     public void stop(BundleContext context) throws Exception {
         artifactResolver = null;
+        moldResolver = null;
         projectBuilder = null;
         plugin = null;
 
@@ -168,6 +175,10 @@ public class Activator extends AbstractUIPlugin {
 
     public ArtifactResolver getArtifactResolver() {
         return artifactResolver;
+    }
+
+    public MoldResolver getMoldResolver() {
+        return moldResolver;
     }
 
     public ProjectBuilder getProjectBuilder() {
