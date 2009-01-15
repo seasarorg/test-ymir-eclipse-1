@@ -342,6 +342,7 @@ public class ArtifactUtils {
         return version != null && version.endsWith(SUFFIX_SNAPSHOT);
     }
 
+    // このメソッドはMaven2の仕組みに準拠して最終バージョンの
     public static String getLatestVersion(Metadata metadata,
             boolean containsSnapshot) {
         if (metadata == null) {
@@ -350,25 +351,30 @@ public class ArtifactUtils {
 
         String version = null;
         Versioning versioning = metadata.getVersioning();
+        // Maven2のアルゴリズムとArtifactUtils.compareVersions()のアルゴリズムが若干異なるので、以下の処理をしてはいけない。
+        //        if (versioning != null) {
+        //            version = versioning.getRelease();
+        //            if (!containsSnapshot && version != null
+        //                    && ArtifactUtils.isSnapshot(version)) {
+        //                version = null;
+        //            }
+        //        }
+        //        if (version == null) {
         if (versioning != null) {
-            version = versioning.getRelease();
-            if (!containsSnapshot && version != null
-                    && ArtifactUtils.isSnapshot(version)) {
-                version = null;
-            }
-        }
-        if (version == null) {
             Versions versions = versioning.getVersions();
             if (versions != null) {
-                String[] vs = versions.getVersions();
-                for (int i = vs.length - 1; i >= 0 && version == null; i--) {
-                    version = vs[i];
-                    if (!containsSnapshot && ArtifactUtils.isSnapshot(version)) {
-                        version = null;
+                for (String v : versions.getVersions()) {
+                    if (!containsSnapshot && ArtifactUtils.isSnapshot(v)) {
+                        continue;
+                    }
+                    if (version == null
+                            || ArtifactUtils.compareVersions(v, version) > 0) {
+                        version = v;
                     }
                 }
             }
         }
+        //        }
         if (version == null) {
             version = metadata.getVersion();
             if (!containsSnapshot && version != null
