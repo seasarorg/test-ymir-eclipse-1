@@ -2,7 +2,7 @@
 <feature
       id="org.maven.ide.eclipse_light.feature"
       label="m2eclipse-light (Optional)"
-      version="0.9.7.200811301758"
+      version="0.9.7.200811301758_2009011600"
       provider-name="The Seasar Project"
       plugin="org.maven.ide.eclipse_light">
    <install-handler/>
