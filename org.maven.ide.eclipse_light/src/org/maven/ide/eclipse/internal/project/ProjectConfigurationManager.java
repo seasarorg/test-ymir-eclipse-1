@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -32,7 +31,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
@@ -40,9 +38,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.ui.IWorkingSet;
 
-import org.apache.maven.archetype.ArchetypeGenerationRequest;
-import org.apache.maven.archetype.ArchetypeGenerationResult;
-import org.apache.maven.archetype.catalog.Archetype;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.model.Model;
@@ -50,18 +45,15 @@ import org.apache.maven.project.MavenProject;
 
 import org.maven.ide.eclipse.core.IMavenConstants;
 import org.maven.ide.eclipse.core.MavenConsole;
-import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.embedder.EmbedderFactory;
 import org.maven.ide.eclipse.embedder.MavenEmbedderManager;
 import org.maven.ide.eclipse.embedder.MavenModelManager;
 import org.maven.ide.eclipse.embedder.MavenRuntimeManager;
 import org.maven.ide.eclipse.index.IndexManager;
 import org.maven.ide.eclipse.internal.ExtensionReader;
-import org.maven.ide.eclipse.internal.embedder.TransferListenerAdapter;
 import org.maven.ide.eclipse.project.IMavenProjectChangedListener;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.project.IProjectConfigurationManager;
-import org.maven.ide.eclipse.project.LocalProjectScanner;
 import org.maven.ide.eclipse.project.MavenProjectChangedEvent;
 import org.maven.ide.eclipse.project.MavenProjectInfo;
 import org.maven.ide.eclipse.project.MavenProjectManager;
@@ -364,67 +356,6 @@ public class ProjectConfigurationManager implements IProjectConfigurationManager
     monitor.subTask("Configuring project...");
     enableMavenNature(project, configuration.getResolverConfiguration(), monitor);
     monitor.worked(1);
-  }
-
-  /**
-   * Creates project structure using Archetype and then imports created project
-   */
-  public void createArchetypeProject(IProject project, IPath location, Archetype archetype, String groupId,
-      String artifactId, String version, String javaPackage, Properties properties,
-      ProjectImportConfiguration configuration, IProgressMonitor monitor) throws CoreException {
-    monitor.beginTask("Creating project " + project.getName(), 2);
-
-    IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-
-    monitor.subTask("Executing Archetype " + archetype.getGroupId() + ":" + archetype.getArtifactId());
-    if(location == null) {
-      // if the project should be created in the workspace, figure out the path
-      location = workspaceRoot.getLocation();
-    }
-
-    try {
-      ArchetypeGenerationRequest request = new ArchetypeGenerationRequest() //
-          .setTransferListener(new TransferListenerAdapter(new NullProgressMonitor(), console, indexManager)) //
-          .setArchetypeGroupId(archetype.getGroupId()) //
-          .setArchetypeArtifactId(archetype.getArtifactId()) //
-          .setArchetypeVersion(archetype.getVersion()) //
-          .setArchetypeRepository(archetype.getRepository()) //
-          .setGroupId(groupId) //
-          .setArtifactId(artifactId) //
-          .setVersion(version) //
-          .setPackage(javaPackage) // the model does not have a package field
-          .setLocalRepository(embedderManager.getWorkspaceEmbedder().getLocalRepository()) //
-          .setProperties(properties).setOutputDirectory(location.toPortableString());
-
-      ArchetypeGenerationResult result = getArchetyper().generateProjectFromArchetype(request);
-      Exception cause = result.getCause();
-      if(cause != null) {
-        String msg = "Unable to create project from archetype " + archetype.toString();
-        MavenLogger.log(msg, cause);
-        throw new CoreException(new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID, -1, msg, cause));
-      }
-      monitor.worked(1);
-
-      // XXX Archetyper don't allow to specify project folder
-      String projectFolder = location.append(artifactId).toFile().getAbsolutePath();
-
-      LocalProjectScanner scanner = new LocalProjectScanner(workspaceRoot.getLocation().toFile(), //
-          projectFolder, true, mavenModelManager, console);
-      scanner.run(monitor);
-
-      Set<MavenProjectInfo> projectSet = collectProjects(scanner.getProjects(), //
-          configuration.getResolverConfiguration().shouldIncludeModules());
-
-      importProjects(projectSet, configuration, monitor);
-
-      monitor.worked(1);
-    } catch(InterruptedException e) {
-      throw new CoreException(Status.CANCEL_STATUS);
-    }
-  }
-
-  private org.apache.maven.archetype.Archetype getArchetyper() throws CoreException {
-    return embedderManager.getComponent(org.apache.maven.archetype.Archetype.class, null);
   }
 
   /**
