@@ -2,7 +2,7 @@
 <feature
       id="org.maven.ide.eclipse_light.feature"
       label="m2eclipse-light (Optional)"
-      version="0.9.7.200811301758_2009011600"
+      version="0.9.7.200811301758-2009011600"
       provider-name="The Seasar Project"
       plugin="org.maven.ide.eclipse_light">
    <install-handler/>
@@ -26,11 +26,14 @@ http://www.eclipse.org/legal/epl-v10.html
       <update label="Seasar Plugin Update Site" url="http://eclipse.seasar.org/updates/3.3/"/>
    </url>
 
+   <includes
+         id="org.maven.ide.components.maven_embedder.feature"
+         version="0.0.0"
+         search-location="self"/>
+
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.jdt.core"/>
-      <import plugin="org.maven.ide.components.maven_embedder"/>
-      <import plugin="org.maven.ide.components.nexus_indexer"/>
       <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.jface"/>
       <import plugin="org.eclipse.ui.workbench"/>
@@ -44,7 +47,15 @@ http://www.eclipse.org/legal/epl-v10.html
       <import plugin="org.eclipse.ui.ide"/>
       <import plugin="org.eclipse.ui.console"/>
       <import plugin="org.eclipse.ltk.core.refactoring"/>
-      <import plugin="org.maven.ide.components.maven_model_edit"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.emf.ecore"/>
+      <import plugin="org.eclipse.emf.ecore.xmi"/>
+      <import plugin="org.eclipse.emf.edit"/>
+      <import plugin="org.eclipse.emf.ecore.edit"/>
+      <import plugin="org.eclipse.wst.common.emf"/>
+      <import plugin="org.eclipse.wst.sse.core"/>
+      <import plugin="org.eclipse.wst.xml.core"/>
+      <import plugin="org.eclipse.jem.util"/>
    </requires>
 
    <plugin
@@ -60,5 +71,18 @@ http://www.eclipse.org/legal/epl-v10.html
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
+   <plugin
+         id="org.maven.ide.components.maven_model_edit"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.200811301758"
+         unpack="false"/>
+
+   <plugin
+         id="org.maven.ide.components.nexus_indexer"
+         download-size="0"
+         install-size="0"
+         version="1.1.0.20081130-1300"/>
 
 </feature>
