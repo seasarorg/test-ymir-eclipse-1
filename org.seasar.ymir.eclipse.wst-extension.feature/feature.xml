@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.seasar.ymir.eclipse.feature"
-      label="Vili Feature"
-      version="0.2.0.qualifier"
+      id="org.seasar.ymir.eclipse.wst_extension.feature"
+      label="WST Extension (Optional)"
+      version="0.0.1.qualifier"
       provider-name="The Seasar Project"
-      plugin="org.seasar.ymir.eclipse">
+      plugin="org.seasar.ymir.eclipse.wst_extension">
 
    <description>
-      Add some features which are available for Ymir application development.
-
-This includes features to:
-
-  * Create new Ymir project
+      Add features which cooperate with WST feature.
    </description>
 
-   <copyright>
-      Copyright 2008 the Seasar Foundation and the Others.
+   <copyright url="http://www.example.com/copyright">
+      Copyright 2009 the Seasar Foundation and the Others.
    </copyright>
 
    <license url="http://www.apache.org/licenses/LICENSE-2.0">
@@ -38,7 +34,7 @@ limitations under the License.
    </url>
 
    <plugin
-         id="org.seasar.ymir.eclipse"
+         id="org.seasar.ymir.eclipse.wst_extension"
          download-size="0"
          install-size="0"
          version="0.0.0"

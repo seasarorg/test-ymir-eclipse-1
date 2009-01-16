@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: WST Extension (Optional)
+Bundle-SymbolicName: org.seasar.ymir.eclipse.wst_extension;singleton:=true
+Bundle-Version: 0.0.1.qualifier
+Bundle-Vendor: The Seasar Project
+Require-Bundle: org.eclipse.wst.xml.core
+Bundle-ClassPath: .
