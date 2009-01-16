@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Maven Integration for Eclipse JDT (Light)
 Bundle-SymbolicName: org.maven.ide.eclipse_light.jdt;singleton:=true
-Bundle-Version: 0.9.7.200811301758_2009011600
+Bundle-Version: 0.9.7.200811301758-2009011600
 Export-Package: org.maven.ide.eclipse.jdt,
  org.maven.ide.eclipse.jdt.internal;x-friends:="org.maven.ide.eclipse.tests"
 Require-Bundle: org.eclipse.core.runtime,
