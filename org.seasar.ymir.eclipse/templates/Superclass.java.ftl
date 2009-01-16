@@ -1,5 +1,4 @@
 <#if packageName != "">package ${packageName};
 
-</#if>public class ${classShortName}
-{
+</#if>public class ${classShortName} {
 }
