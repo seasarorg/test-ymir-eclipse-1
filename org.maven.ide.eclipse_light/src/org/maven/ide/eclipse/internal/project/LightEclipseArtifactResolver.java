@@ -15,8 +15,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -24,8 +22,6 @@ import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.DefaultArtifactResolver;
 
-import org.maven.ide.eclipse.MavenPlugin;
-import org.maven.ide.eclipse.core.IMavenConstants;
 import org.maven.ide.eclipse.embedder.ArtifactKey;
 
 
@@ -48,8 +44,6 @@ public class LightEclipseArtifactResolver extends DefaultArtifactResolver {
   protected static boolean resolveAsEclipseProject(Artifact artifact) {
     MavenProjectManagerImpl.Context context = MavenProjectManagerImpl.getContext();
     if(context == null) { // XXX this is actually a bug
-      MavenPlugin.getDefault().getLog().log(
-          new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID, "Context of MavenProjectManager is null somehow"));
       return false;
     }
 
