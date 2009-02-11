@@ -62,6 +62,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                                 Messages.getString("PreferenceInitializer.61")), //$NON-NLS-1$
                         new Fragment("yonex-fragment-generic", Messages.getString("PreferenceInitializer.76"), //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("PreferenceInitializer.77")), //$NON-NLS-1$
+                        new Fragment("mailsender-fragment-generic", Messages.getString("PreferenceInitializer.105"), Messages.getString("PreferenceInitializer.106")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         new Fragment(
                                 "org.seasar.ymir.skeleton.ysp", "ysp-base", Messages.getString("PreferenceInitializer.93"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                                 Messages.getString("PreferenceInitializer.94")), new Fragment( //$NON-NLS-1$
