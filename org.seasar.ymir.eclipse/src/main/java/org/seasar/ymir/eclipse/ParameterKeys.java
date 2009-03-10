@@ -48,4 +48,6 @@ public interface ParameterKeys {
     String YMIR = "ymir"; //$NON-NLS-1$
 
     String ARTIFACT_VERSION = "artifactVersion"; //$NON-NLS-1$
+
+    String BEHAVIOR = "behavior"; //$NON-NLS-1$
 }

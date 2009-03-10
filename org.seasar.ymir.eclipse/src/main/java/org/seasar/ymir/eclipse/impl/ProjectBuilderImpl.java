@@ -59,6 +59,7 @@ import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
+import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.natures.ViliProjectNature;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.popup.dialogs.AddFragmentsWizardDialog;
@@ -180,6 +181,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 @SuppressWarnings("unchecked")//$NON-NLS-1$
                 Map<String, Object> parameters = new CascadeMap<String, Object>(new HashMap<String, Object>(), fragment
                         .getParameterMap(), new BeanMap(preferences));
+                parameters.put(ParameterKeys.BEHAVIOR, behavior);
 
                 expandMold(project, preferences, fragment, parameters, new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {

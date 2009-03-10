@@ -1,5 +1,7 @@
 package org.seasar.ymir.eclipse.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import net.skirnir.freyja.Attribute;
@@ -18,7 +20,7 @@ class PomTagEvaluator implements TagEvaluator {
     public String[] getSpecialTagPatternStrings() {
         return new String[] {
                 "project", "build", "profiles", "repositories", "repository", "pluginRepositories", "pluginRepository", "url", "dependencies", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
-                "dependency", "groupId", "artifactId" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                "dependency", "groupId", "artifactId", "version" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 
     public String evaluate(TemplateContext context, String name, Attribute[] attributes, Element[] body) {
@@ -54,14 +56,16 @@ class PomTagEvaluator implements TagEvaluator {
                     ctx.leave();
                 }
             } else if ("dependencies".equals(name)) { //$NON-NLS-1$
+                List<Element> bodyList = new ArrayList<Element>();
                 for (Element elem : body) {
                     if (elem instanceof TagElement && "dependency".equals(((TagElement) elem).getName())) { //$NON-NLS-1$
-                        ctx.removeDependency((TagElement) elem);
+                        elem = ctx.mergeDependency((TagElement) elem);
                     }
+                    bodyList.add(elem);
                 }
                 return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                        + TagEvaluatorUtils.evaluateElements(context, body) + ctx.outputDependenciesString()
-                        + TagEvaluatorUtils.getEndTagString(name);
+                        + TagEvaluatorUtils.evaluateElements(context, bodyList.toArray(new Element[0]))
+                        + ctx.outputDependenciesString() + TagEvaluatorUtils.getEndTagString(name);
             } else if ("repositories".equals(name)) { //$NON-NLS-1$
                 for (Element elem : body) {
                     if (elem instanceof TagElement && "repository".equals(((TagElement) elem).getName())) { //$NON-NLS-1$

@@ -4,16 +4,20 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import net.skirnir.freyja.ConstantElement;
 import net.skirnir.freyja.Element;
 import net.skirnir.freyja.TagElement;
 import net.skirnir.freyja.TagEvaluatorUtils;
 import net.skirnir.freyja.impl.TemplateContextImpl;
 import net.skirnir.xom.ValidationException;
 
+import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.PluginRepository;
 import org.seasar.ymir.vili.model.maven.Profile;
@@ -22,7 +26,7 @@ import org.seasar.ymir.vili.model.maven.Repository;
 import org.seasar.ymir.vili.util.XOMUtils;
 
 class PomTemplateContext extends TemplateContextImpl {
-    private Set<Dependency> dependencySet = new HashSet<Dependency>();
+    private Map<Dependency, Dependency> dependencyMap = new HashMap<Dependency, Dependency>();
 
     private Set<Repository> repositorySet = new HashSet<Repository>();
 
@@ -42,7 +46,9 @@ class PomTemplateContext extends TemplateContextImpl {
 
     public void setMetadataToMerge(Project project) {
         if (project.getDependencies() != null) {
-            dependencySet.addAll(Arrays.asList(project.getDependencies().getDependencies()));
+            for (Dependency dependency : project.getDependencies().getDependencies()) {
+                dependencyMap.put(dependency, dependency);
+            }
         }
         if (project.getRepositories() != null) {
             repositorySet.addAll(Arrays.asList(project.getRepositories().getRepositories()));
@@ -67,7 +73,7 @@ class PomTemplateContext extends TemplateContextImpl {
         return depth == 0;
     }
 
-    public void removeDependency(TagElement element) {
+    public TagElement mergeDependency(TagElement element) {
         Dependency dependency = new Dependency();
         for (Element elem : element.getBodyElements()) {
             if (!(elem instanceof TagElement)) {
@@ -78,9 +84,35 @@ class PomTemplateContext extends TemplateContextImpl {
                 dependency.setGroupId(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
             } else if ("artifactId".equals(tag.getName())) { //$NON-NLS-1$
                 dependency.setArtifactId(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
+            } else if ("version".equals(tag.getName())) { //$NON-NLS-1$
+                dependency.setVersion(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
             }
         }
-        dependencySet.remove(dependency);
+
+        Dependency dep = dependencyMap.remove(dependency);
+        if (dep == null
+                || new ArtifactVersion(dep.getVersion()).compareTo(new ArtifactVersion(dependency.getVersion())) <= 0) {
+            return element;
+        } else {
+            // フラグメントのpom.xmlで指定されているdependencyと同一groupId、artifactIdのdependencyが既に存在している場合は、
+            // フラグメント側のバージョンの方が新しい時にだけ、バージョン情報だけをフラグメントのものに変更する。
+            // バージョン以外の情報については、プロジェクト生成後にカスタマイズが入っている可能性があるのでそのまま保存しておく。
+            // XXX そうするとバージョン以外の情報を更新できないことになる。それでもいいのか？
+            // Configuratorで、特定のgroupId、artifactIdのdependencyを好きなようにマージできるようにできるようにしてもいいかも。
+            List<Element> bodyList = new ArrayList<Element>();
+            for (Element elem : element.getBodyElements()) {
+                if (elem instanceof TagElement) {
+                    TagElement tag = (TagElement) elem;
+                    if ("version".equals(tag.getName())) { //$NON-NLS-1$
+                        elem = new TagElement(tag.getName(), tag.getAttributes(), new Element[] { new ConstantElement(
+                                dep.getVersion()) });
+                    }
+                }
+                bodyList.add(elem);
+            }
+
+            return new TagElement(element.getName(), element.getAttributes(), bodyList.toArray(new Element[0]));
+        }
     }
 
     public void removeRepository(TagElement element) {
@@ -113,7 +145,7 @@ class PomTemplateContext extends TemplateContextImpl {
 
     public String outputDependenciesString() {
         StringWriter sw = new StringWriter();
-        for (Dependency dependency : dependencySet) {
+        for (Dependency dependency : dependencyMap.values()) {
             try {
                 XOMUtils.getXOMapper().toXML(dependency, sw);
             } catch (ValidationException ex) {
