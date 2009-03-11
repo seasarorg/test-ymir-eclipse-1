@@ -79,35 +79,6 @@
          point="org.eclipse.ui.popupMenus">
       <objectContribution
             adaptable="true"
-            id="org.seasar.ymir.eclipse.objectContribution"
-            objectClass="org.eclipse.core.resources.IResource">
-         <menu
-               id="org.seasar.ymir.eclipse.menu"
-               label="%plugin.name"
-               path="additions">
-         </menu>
-         <action
-               class="org.seasar.ymir.eclipse.actions.AddFragmentsAction"
-               id="org.seasar.ymir.eclipse.addFragmentsAction"
-               label="%action.addFragments"
-               menubarPath="org.seasar.ymir.eclipse.menu/additions">
-         </action>
-         <visibility>
-            <objectState
-                  name="projectNature"
-                  value="org.seasar.ymir.eclipse.viliProjectNature">
-            </objectState>
-         </visibility>
-         <action
-               class="org.seasar.ymir.eclipse.actions.ActionAction"
-               id="org.seasar.ymir.eclipse.actionAction"
-               label="%action.action"
-               menubarPath="org.seasar.ymir.eclipse.menu/additions"
-               style="pulldown">
-         </action>
-      </objectContribution>
-      <objectContribution
-            adaptable="true"
             id="org.seasar.ymir.eclipse.javaObjectContribution"
             nameFilter="*.java"
             objectClass="org.eclipse.core.resources.IFile">
@@ -115,6 +86,8 @@
                id="org.seasar.ymir.eclipse.menu"
                label="%plugin.name"
                path="additions">
+            <groupMarker name="additions"/>
+            <groupMarker name="additions2"/>
          </menu>
          <visibility>
             <and>
@@ -147,6 +120,8 @@
                id="org.seasar.ymir.eclipse.menu"
                label="%plugin.name"
                path="additions">
+            <groupMarker name="additions"/>
+            <groupMarker name="additions2"/>
          </menu>
          <visibility>
             <objectState
@@ -154,11 +129,63 @@
                   value="org.seasar.ymir.eclipse.ymirProjectNature" />
          </visibility>
          <action
+               class="org.seasar.ymir.eclipse.actions.CreateSourceAction"
+               icon="icons/createSource.png"
+               id="org.seasar.ymir.eclipse.createSourceAction"
+               label="%action.createSource"
+               menubarPath="org.seasar.ymir.eclipse.menu/additions">
+         </action>
+         <action
+               class="org.seasar.ymir.eclipse.actions.ViewOnServerAction"
+               icon="icons/viewOnServer.gif"
+               id="org.seasar.ymir.eclipse.viewOnServerAction"
+               label="%action.viewOnServer"
+               menubarPath="org.seasar.ymir.eclipse.menu/additions">
+         </action>
+         <action
                class="org.seasar.ymir.eclipse.actions.TogglePageAndHtmlAction"
                icon="icons/togglePageAndHtml.gif"
                id="org.seasar.ymir.eclipse.togglePageAndHtmlAction"
                label="%action.togglePageAndHtml"
                menubarPath="org.seasar.ymir.eclipse.menu/additions"/>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="org.seasar.ymir.eclipse.objectContribution"
+            objectClass="org.eclipse.core.resources.IResource">
+         <menu
+               id="org.seasar.ymir.eclipse.menu"
+               label="%plugin.name"
+               path="additions">
+            <groupMarker name="additions"/>
+            <groupMarker name="additions2"/>
+         </menu>
+         <visibility>
+            <objectState
+                  name="projectNature"
+                  value="org.seasar.ymir.eclipse.viliProjectNature">
+            </objectState>
+         </visibility>
+         <action
+               class="org.seasar.ymir.eclipse.actions.AddFragmentsAction"
+               id="org.seasar.ymir.eclipse.addFragmentsAction"
+               label="%action.addFragments"
+               menubarPath="org.seasar.ymir.eclipse.menu/additions2">
+         </action>
+         <action
+               class="org.seasar.ymir.eclipse.actions.ActionAction"
+               id="org.seasar.ymir.eclipse.actionAction"
+               label="%action.action"
+               menubarPath="org.seasar.ymir.eclipse.menu/additions2"
+               style="pulldown">
+         </action>
+         <action
+               class="org.seasar.ymir.eclipse.actions.ViewRootOnServerAction"
+               icon="icons/viewRootOnServer.gif"
+               id="org.seasar.ymir.eclipse.viewRootOnServerAction"
+               label="%action.viewRootOnServer"
+               menubarPath="org.seasar.ymir.eclipse.menu/additions2">
+         </action>
       </objectContribution>
    </extension>
    <extension

@@ -188,6 +188,8 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
                     .isDaoCreationFeatureEnabled()));
             prop.setProperty(ApplicationPropertiesKeys.DXO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
                     .isDxoCreationFeatureEnabled()));
+            prop.setProperty(ApplicationPropertiesKeys.TRYTOUPDATECLASSESWHENTEMPLATEMODIFIED, String
+                    .valueOf(ymirConfig.isTryToUpdateClassesWhenTemplateModified()));
 
             boolean eclipseEnabled = ymirConfig.isEclipseEnabled();
             prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_ENABLED, String.valueOf(eclipseEnabled));

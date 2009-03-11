@@ -73,6 +73,8 @@ public class YmirConfigurationControl {
 
     private Button beantableEnabledField;
 
+    private Button tryToUpdateClassesWhenTemplateModifiedField;
+
     public YmirConfigurationControl(Composite parent, ViliProjectPreferences preferences) {
         this.parent = parent;
         this.preferences = preferences;
@@ -185,6 +187,12 @@ public class YmirConfigurationControl {
         data.horizontalSpan = 2;
         converterCreationFeatureEnabledField.setLayoutData(data);
         converterCreationFeatureEnabledField.setText(Messages.getString("YmirConfigurationControl.17")); //$NON-NLS-1$
+
+        tryToUpdateClassesWhenTemplateModifiedField = new Button(group, SWT.CHECK | SWT.LEFT);
+        data = new GridData(GridData.FILL_HORIZONTAL);
+        data.horizontalSpan = 2;
+        tryToUpdateClassesWhenTemplateModifiedField.setLayoutData(data);
+        tryToUpdateClassesWhenTemplateModifiedField.setText(Messages.getString("YmirConfigurationControl.22")); //$NON-NLS-1$
     }
 
     void createEclipseCooperationParameterControl(Composite parent) {
@@ -281,6 +289,7 @@ public class YmirConfigurationControl {
         controlPanelEnabled.setSelection(true);
         formDtoCreationFeatureEnabledField.setSelection(true);
         converterCreationFeatureEnabledField.setSelection(true);
+        tryToUpdateClassesWhenTemplateModifiedField.setSelection(false);
 
         boolean eclipseEnabled = (Platform.getBundle(Globals.BUNDLENAME_RESOURCESYNCHRONIZER_SEASAR) != null || Platform
                 .getBundle(Globals.BUNDLENAME_RESOURCESYNCHRONIZER_WERKZAUGKASTEN) != null);
@@ -362,5 +371,9 @@ public class YmirConfigurationControl {
         } else {
             return HotdeployType.S2;
         }
+    }
+
+    public boolean isTryToUpdateClassesWhenTemplateModified() {
+        return tryToUpdateClassesWhenTemplateModifiedField.getSelection();
     }
 }

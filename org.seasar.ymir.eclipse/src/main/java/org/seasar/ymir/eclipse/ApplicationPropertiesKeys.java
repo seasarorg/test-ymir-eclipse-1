@@ -35,6 +35,8 @@ public interface ApplicationPropertiesKeys {
 
     String ECLIPSE_PROJECTNAME = "extension.sourceCreator.eclipse.projectName"; //$NON-NLS-1$
 
+    String TRYTOUPDATECLASSESWHENTEMPLATEMODIFIED = "extension.sourceCreator.tryToUpdateClassesWhenTemplateModified"; //$NON-NLS-1$
+
     String S2CONTAINER_CLASSLOADING_DISABLEHOTDEPLOY = "s2container.classLoading.disableHotdeploy"; //$NON-NLS-1$
 
     String S2CONTAINER_COMPONENTREGISTRATION_DISABLEDYNAMIC = "s2container.componentRegistration.disableDynamic"; //$NON-NLS-1$
