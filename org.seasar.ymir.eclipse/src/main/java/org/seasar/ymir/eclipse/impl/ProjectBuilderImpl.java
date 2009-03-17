@@ -182,7 +182,6 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 Map<String, Object> parameters = new CascadeMap<String, Object>(new HashMap<String, Object>(), fragment
                         .getParameterMap(), new BeanMap(preferences));
                 parameters.put(ParameterKeys.BEHAVIOR, behavior);
-
                 expandMold(project, preferences, fragment, parameters, new SubProgressMonitor(monitor, 1));
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
@@ -273,8 +272,9 @@ public class ProjectBuilderImpl implements ProjectBuilder {
 
             ViliBehavior behavior = skeleton.getBehavior();
             @SuppressWarnings("unchecked")//$NON-NLS-1$
-            Map<String, Object> parameters = new CascadeMap<String, Object>(skeleton.getParameterMap(), new BeanMap(
-                    preferences));
+            Map<String, Object> parameters = new CascadeMap<String, Object>(new HashMap<String, Object>(), skeleton
+                    .getParameterMap(), new BeanMap(preferences));
+            parameters.put(ParameterKeys.BEHAVIOR, behavior);
             expandMold(project, preferences, skeleton, parameters, new SubProgressMonitor(monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
