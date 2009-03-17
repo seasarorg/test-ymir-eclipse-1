@@ -102,6 +102,10 @@ public interface ViliBehavior {
 
     boolean isTieUpWithBundle(String bundleName);
 
+    String getProperty(String name);
+
+    String getProperty(String name, String defaultValue);
+
     MapProperties getProperties();
 
     void notifyPropertiesChanged();
