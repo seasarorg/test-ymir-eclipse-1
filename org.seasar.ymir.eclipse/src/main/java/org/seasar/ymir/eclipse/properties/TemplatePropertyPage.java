@@ -21,7 +21,7 @@ import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.eclipse.ui.TemplateControl;
 
 public class TemplatePropertyPage extends PropertyPage {
-    private TemplateControl templateControl;
+    private TemplateControl control;
 
     /**
      * @see PreferencePage#createContents(Composite)
@@ -29,28 +29,27 @@ public class TemplatePropertyPage extends PropertyPage {
     protected Control createContents(Composite parent) {
         IPreferenceStore store = getPreferenceStore();
 
-        templateControl = new TemplateControl(parent, true);
-        Control control = templateControl.createControl();
+        control = new TemplateControl(parent, true);
+        Control ctl = control.createControl();
 
-        templateControl.setProjectSpecificSettingsEnabled(store
+        control.setProjectSpecificSettingsEnabled(store
                 .getBoolean(PreferenceConstants.P_TEMPLATE_PROJECTSPECIFICSETTINGSENABLED));
-        templateControl.setTemplate(store.getString(PreferenceConstants.P_TEMPLATE));
+        control.setTemplate(store.getString(PreferenceConstants.P_TEMPLATE));
 
-        return control;
+        return ctl;
     }
 
     protected void performDefaults() {
-        templateControl.setProjectSpecificSettingsEnabled(false);
-        templateControl.setTemplate(Activator.getDefault().getPreferenceStore().getString(
-                PreferenceConstants.P_TEMPLATE));
+        control.setProjectSpecificSettingsEnabled(false);
+        control.setTemplate(Activator.getDefault().getPreferenceStore().getString(PreferenceConstants.P_TEMPLATE));
     }
 
     public boolean performOk() {
         IPreferenceStore store = getPreferenceStore();
 
-        boolean templateProjectSpecificSettingsEnabled = templateControl.isProjectSpecificSettingsEnabled();
+        boolean templateProjectSpecificSettingsEnabled = control.isProjectSpecificSettingsEnabled();
         if (templateProjectSpecificSettingsEnabled) {
-            String template = templateControl.getTemplate().trim();
+            String template = control.getTemplate().trim();
             try {
                 Activator.getDefault().createTemplate(template);
             } catch (CoreException ex) {

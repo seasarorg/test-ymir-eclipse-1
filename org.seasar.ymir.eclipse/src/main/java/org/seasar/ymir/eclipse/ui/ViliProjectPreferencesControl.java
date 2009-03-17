@@ -124,17 +124,7 @@ public class ViliProjectPreferencesControl {
         useDatabaseField.addListener(SWT.Selection, validationListener);
         useDatabaseField.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
-                boolean enabled = useDatabaseField.getSelection();
-                databaseLabel.setEnabled(enabled);
-                databaseCombo.setEnabled(enabled);
-                databaseDriverClassNameLabel.setEnabled(enabled);
-                databaseDriverClassNameField.setEnabled(enabled);
-                databaseURLLabel.setEnabled(enabled);
-                databaseURLField.setEnabled(enabled);
-                databaseUserLabel.setEnabled(enabled);
-                databaseUserField.setEnabled(enabled);
-                databasePasswordLabel.setEnabled(enabled);
-                databasePasswordField.setEnabled(enabled);
+                setDatabaseFieldsEnabled(useDatabaseField.getSelection());
             }
         });
         useDatabaseField.addListener(SWT.Selection, new Listener() {
@@ -190,8 +180,8 @@ public class ViliProjectPreferencesControl {
         databaseDriverClassNameField.addListener(SWT.Modify, validationListener);
         databaseDriverClassNameField.addListener(SWT.Modify, new Listener() {
             public void handleEvent(Event e) {
-                if (!databaseDriverClassNameField.getText().equals(
-                        databases[databaseCombo.getSelectionIndex()].getDriverClassName())) {
+                int index = databaseCombo.getSelectionIndex();
+                if (index >= 0 && !databaseDriverClassNameField.getText().equals(databases[index].getDriverClassName())) {
                     databaseCombo.setText(databaseCombo.getItem(databases.length - 1));
                     Database database = preferences.getDatabase();
                     database.setName(databases[databases.length - 1].getName());
@@ -254,7 +244,7 @@ public class ViliProjectPreferencesControl {
 
     public void setDefaultValues() {
         if (isWebProject) {
-            viewEncodingField.setText("UTF-8"); //$NON-NLS-1$
+            viewEncodingField.setText(ViliProjectPreferences.DEFAULT_VIEWENCODING); //$NON-NLS-1$
         }
         if (isDatabaseProject) {
             useDatabaseField.setSelection(true);
@@ -267,6 +257,38 @@ public class ViliProjectPreferencesControl {
             database.setName(databases[DEFAULT_DATABASEENTRY_INDEX].getName());
             database.setType(databases[DEFAULT_DATABASEENTRY_INDEX].getType());
             database.setDependency(databases[DEFAULT_DATABASEENTRY_INDEX].getDependency());
+        }
+
+        setPageComplete(validatePage());
+    }
+
+    void setDatabaseFieldsEnabled(boolean enabled) {
+        databaseLabel.setEnabled(enabled);
+        databaseCombo.setEnabled(enabled);
+        databaseDriverClassNameLabel.setEnabled(enabled);
+        databaseDriverClassNameField.setEnabled(enabled);
+        databaseURLLabel.setEnabled(enabled);
+        databaseURLField.setEnabled(enabled);
+        databaseUserLabel.setEnabled(enabled);
+        databaseUserField.setEnabled(enabled);
+        databasePasswordLabel.setEnabled(enabled);
+        databasePasswordField.setEnabled(enabled);
+    }
+
+    public void resumeValues() {
+        if (isWebProject) {
+            viewEncodingField.setText(preferences.getViewEncoding());
+        }
+        if (isDatabaseProject) {
+            Database database = preferences.getDatabase();
+            boolean enabled = !"".equals(database.getName());
+            useDatabaseField.setSelection(enabled);
+            setDatabaseFieldsEnabled(enabled);
+            databaseCombo.setText(database.getName());
+            databaseDriverClassNameField.setText(database.getDriverClassName());
+            databaseURLField.setText(database.getURL());
+            databaseUserField.setText(database.getUser());
+            databasePasswordField.setText(database.getPassword());
         }
 
         setPageComplete(validatePage());

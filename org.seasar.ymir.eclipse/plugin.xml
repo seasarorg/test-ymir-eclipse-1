@@ -63,6 +63,30 @@
             class="org.seasar.ymir.eclipse.properties.TemplatePropertyPage"
             id="org.seasar.ymir.eclipse.properties.templatePropertyPage"
             name="Template">
+         <enabledWhen>
+            <adapt
+                  type="org.eclipse.core.resources.IProject">
+               <test
+                     property="org.eclipse.core.resources.projectNature"
+                     value="org.seasar.ymir.eclipse.viliProjectNature">
+               </test>
+            </adapt>
+         </enabledWhen>
+      </page>
+      <page
+            category="org.seasar.ymir.eclipse.properties.viliPropertyPage"
+            class="org.seasar.ymir.eclipse.properties.ViliProjectPreferencesPropertyPage"
+            id="org.seasar.ymir.eclipse.properties.viliProjectPreferencesPropertyPage"
+            name="Project preferences">
+         <enabledWhen>
+            <adapt
+                  type="org.eclipse.core.resources.IProject">
+               <test
+                     property="org.eclipse.core.resources.projectNature"
+                     value="org.seasar.ymir.eclipse.viliProjectNature">
+               </test>
+            </adapt>
+         </enabledWhen>
       </page>
    </extension>
    <extension

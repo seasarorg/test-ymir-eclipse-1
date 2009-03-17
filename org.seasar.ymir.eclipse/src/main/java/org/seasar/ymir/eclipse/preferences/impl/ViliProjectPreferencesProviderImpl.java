@@ -59,7 +59,11 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
     }
 
     public String getViewEncoding() {
-        return store.getString(ParameterKeys.VIEW_ENCODING);
+        String viewEncoding = store.getString(ParameterKeys.VIEW_ENCODING);
+        if ("".equals(viewEncoding)) {
+            viewEncoding = DEFAULT_VIEWENCODING;
+        }
+        return viewEncoding;
     }
 
     public boolean isUseDatabase() {
