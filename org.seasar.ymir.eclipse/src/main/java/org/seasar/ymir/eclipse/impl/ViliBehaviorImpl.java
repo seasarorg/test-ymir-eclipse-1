@@ -478,6 +478,14 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return tieUpBundleSet.contains(bundleName);
     }
 
+    public String getProperty(String name) {
+        return properties.getProperty(name);
+    }
+
+    public String getProperty(String name, String defaultValue) {
+        return properties.getProperty(name, defaultValue);
+    }
+
     public MapProperties getProperties() {
         return properties;
     }
