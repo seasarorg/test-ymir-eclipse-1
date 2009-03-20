@@ -204,6 +204,12 @@
                style="pulldown">
          </action>
          <action
+               class="org.seasar.ymir.eclipse.actions.CreatePathMappingsAction"
+               id="org.seasar.ymir.eclipse.createPathMappingsAction"
+               label="%action.createPathMappings"
+               menubarPath="org.seasar.ymir.eclipse.menu/additions2">
+         </action>
+         <action
                class="org.seasar.ymir.eclipse.actions.ViewRootOnServerAction"
                icon="icons/viewRootOnServer.gif"
                id="org.seasar.ymir.eclipse.viewRootOnServerAction"
