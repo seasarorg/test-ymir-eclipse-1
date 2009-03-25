@@ -614,7 +614,8 @@ public class ProjectBuilderImpl implements ProjectBuilder {
     private void expand(String path, JarFile jarFile, IProject project, ViliBehavior behavior,
             ViliProjectPreferences preferences, Map<String, Object> parameters, Configuration cfg,
             IProgressMonitor monitor) throws CoreException {
-        String resolvedPath = resolvePath(path, cfg, parameters);
+        String resolvedPath = resolvePath(behavior.getConfigurator().adjustPath(path, project, behavior, preferences,
+                parameters), cfg, parameters);
         if (!shouldExpand(path, resolvedPath, project, behavior, preferences, parameters)) {
             return;
         }
