@@ -3,4 +3,12 @@
   <artifactId>h2</artifactId>
   <version>1.0.78</version>
   <scope>runtime</scope>
+  <type>jar</type>
+  <optional>true</optional>
+  <exclusions>
+    <exclusion>
+      <groupId>com.hoe</groupId>
+      <artifactId>hoe</artifactId>
+    </exclusion>
+  </exclusions>
 </dependency>

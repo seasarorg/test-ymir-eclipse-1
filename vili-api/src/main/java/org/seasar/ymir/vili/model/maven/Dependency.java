@@ -11,6 +11,12 @@ public class Dependency {
 
     private String scope;
 
+    private String type;
+
+    private String optional;
+
+    private Exclusions exclusions;
+
     public Dependency() {
     }
 
@@ -18,7 +24,8 @@ public class Dependency {
         this(groupId, artifactId, version, null);
     }
 
-    public Dependency(String groupId, String artifactId, String version, String scope) {
+    public Dependency(String groupId, String artifactId, String version,
+            String scope) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
@@ -100,5 +107,32 @@ public class Dependency {
     @Child(order = 4)
     public void setScope(String scope) {
         this.scope = scope;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    @Child(order = 5)
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getOptional() {
+        return optional;
+    }
+
+    @Child(order = 6)
+    public void setOptional(String optional) {
+        this.optional = optional;
+    }
+
+    public Exclusions getExclusions() {
+        return exclusions;
+    }
+
+    @Child(order = 7)
+    public void setExclusions(Exclusions exclusions) {
+        this.exclusions = exclusions;
     }
 }

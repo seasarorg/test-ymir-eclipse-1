@@ -38,6 +38,24 @@ public interface IConfigurator {
             IProgressMonitor monitor);
 
     /**
+     * 指定されたパスを調整した結果を返します。
+     * <p>このメソッドは、リソースの展開先を動的に変更したい場合のために用意されているメソッドです。
+     * スケルトンやフラグメントに含まれているリソースのパスはfreemarkerの式になっています。
+     * リソースの展開先を動的に変更したい場合は、変更先を示すfreemarkerの式を返すようにして下さい。
+     * そうでない場合は引数のパスをそのまま返すようにして下さい。
+     * </p>
+     * 
+     * @param path パス。freemarkerの式になっています。
+     * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。
+     * @param behavior ViliBehaviorインスタンス。
+     * @param preferences ViliProjectPreferencesインスタンス。
+     * @param parameters フラグメントの展開時に使用されたパラメータ。
+     * @return 展開先を表すパス。freemarkerの式として評価されます。
+     */
+    String adjustPath(String path, IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters);
+
+    /**
      * 指定されたパスのリソースを展開するかどうかを返します。
      * <p>展開する場合は{@link InclusionType#INCLUDED}を、
      * 展開しない場合は{@link InclusionType#EXCLUDED}を、

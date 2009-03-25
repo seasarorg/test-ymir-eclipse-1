@@ -16,6 +16,12 @@ abstract public class AbstractConfigurator implements IConfigurator {
         monitor.done();
     }
 
+    public String adjustPath(String path, IProject project,
+            ViliBehavior behavior, ViliProjectPreferences preferences,
+            Map<String, Object> parameters) {
+        return path;
+    }
+
     public InclusionType shouldExpand(String path, String resolvedPath,
             IProject project, ViliBehavior behavior,
             ViliProjectPreferences preferences, Map<String, Object> parameters) {
