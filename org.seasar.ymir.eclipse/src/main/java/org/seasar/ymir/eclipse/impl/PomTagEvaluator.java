@@ -1,7 +1,5 @@
 package org.seasar.ymir.eclipse.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import net.skirnir.freyja.Attribute;
@@ -14,13 +12,21 @@ import net.skirnir.freyja.TemplateContext;
 import net.skirnir.freyja.TemplateEvaluator;
 import net.skirnir.freyja.VariableResolver;
 
+import org.seasar.ymir.vili.model.maven.Dependencies;
+import org.seasar.ymir.vili.model.maven.Dependency;
+import org.seasar.ymir.vili.model.maven.Exclusion;
+import org.seasar.ymir.vili.model.maven.Exclusions;
+
 class PomTagEvaluator implements TagEvaluator {
-    private static final String SP = System.getProperty("line.separator"); //$NON-NLS-1$
+    private static final String LS = System.getProperty("line.separator"); //$NON-NLS-1$
+
+    private static final String DEFAULT_PADDING = "  ";
 
     public String[] getSpecialTagPatternStrings() {
         return new String[] {
                 "project", "build", "profiles", "repositories", "repository", "pluginRepositories", "pluginRepository", "url", "dependencies", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
-                "dependency", "groupId", "artifactId", "version" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                "dependency", "groupId", "artifactId", "version", "classifier", "type", "scope", "systemPath", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+                "optional", "exclusions", "exclusion" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     public String evaluate(TemplateContext context, String name, Attribute[] attributes, Element[] body) {
@@ -29,43 +35,40 @@ class PomTagEvaluator implements TagEvaluator {
             if ("project".equals(name)) { //$NON-NLS-1$
                 StringBuilder sb = new StringBuilder();
                 sb.append(TagEvaluatorUtils.getBeginTagString(name, attributes)).append(
-                        TagEvaluatorUtils.evaluateElements(context, body));
+                        TagEvaluatorUtils.evaluateElements(ctx, body));
                 if (!ctx.isDependenciesOutputted()) {
-                    sb.append("<dependencies>").append(SP).append(ctx.outputDependenciesString()).append( //$NON-NLS-1$
-                            "</dependencies>").append(SP); //$NON-NLS-1$
+                    sb.append(DEFAULT_PADDING)
+                            .append("<dependencies>").append(LS).append(ctx.outputDependenciesString()) //$NON-NLS-1$
+                            .append(DEFAULT_PADDING).append("</dependencies>").append(LS); //$NON-NLS-1$
                 }
                 if (!ctx.isRepositoriesOutputted()) {
-                    sb.append("<repositories>").append(SP).append(ctx.outputRepositoriesString()).append( //$NON-NLS-1$
-                            "</repositories>").append(SP); //$NON-NLS-1$
+                    sb.append(DEFAULT_PADDING).append("<repositories>").append(LS).append( //$NON-NLS-1$
+                            ctx.outputRepositoriesString()).append(DEFAULT_PADDING)
+                            .append("</repositories>").append(LS); //$NON-NLS-1$
                 }
                 if (!ctx.isPluginRepositoriesOutputted()) {
-                    sb.append("<pluginRepositories>").append(SP).append(ctx.outputPluginRepositoriesString()).append( //$NON-NLS-1$
-                            "</pluginRepositories>").append(SP); //$NON-NLS-1$
+                    sb.append(DEFAULT_PADDING).append("<pluginRepositories>").append(LS).append( //$NON-NLS-1$
+                            ctx.outputPluginRepositoriesString()).append(DEFAULT_PADDING).append(
+                            "</pluginRepositories>").append(LS); //$NON-NLS-1$
                 }
                 if (!ctx.isProfilesOutputted()) {
-                    sb.append("<profiles>").append(SP).append(ctx.outputProfilesString()).append( //$NON-NLS-1$
-                            "</profiles>").append(SP); //$NON-NLS-1$
+                    sb.append(DEFAULT_PADDING).append("<profiles>").append(LS).append( //$NON-NLS-1$
+                            ctx.outputProfilesString()).append(DEFAULT_PADDING).append("</profiles>").append(LS); //$NON-NLS-1$
                 }
                 sb.append(TagEvaluatorUtils.getEndTagString(name));
                 return sb.toString();
             } else if ("build".equals(name)) { //$NON-NLS-1$
                 ctx.enter();
                 try {
-                    return TagEvaluatorUtils.evaluate(context, name, attributes, body);
+                    return TagEvaluatorUtils.evaluate(ctx, name, attributes, body);
                 } finally {
                     ctx.leave();
                 }
             } else if ("dependencies".equals(name)) { //$NON-NLS-1$
-                List<Element> bodyList = new ArrayList<Element>();
-                for (Element elem : body) {
-                    if (elem instanceof TagElement && "dependency".equals(((TagElement) elem).getName())) { //$NON-NLS-1$
-                        elem = ctx.mergeDependency((TagElement) elem);
-                    }
-                    bodyList.add(elem);
-                }
-                return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                        + TagEvaluatorUtils.evaluateElements(context, bodyList.toArray(new Element[0]))
-                        + ctx.outputDependenciesString() + TagEvaluatorUtils.getEndTagString(name);
+                ctx.setDependencyIndent(ctx.getElement().getColumnNumber() + 1);
+                ctx.setDependencies(buildDependencies(ctx, (TagElement) ctx.getElement()));
+                return TagEvaluatorUtils.getBeginTagString(name, attributes) + ctx.outputDependenciesString()
+                        + TagEvaluatorUtils.getEndTagString(name);
             } else if ("repositories".equals(name)) { //$NON-NLS-1$
                 for (Element elem : body) {
                     if (elem instanceof TagElement && "repository".equals(((TagElement) elem).getName())) { //$NON-NLS-1$
@@ -73,7 +76,7 @@ class PomTagEvaluator implements TagEvaluator {
                     }
                 }
                 return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                        + TagEvaluatorUtils.evaluateElements(context, body) + ctx.outputRepositoriesString()
+                        + TagEvaluatorUtils.evaluateElements(ctx, body) + ctx.outputRepositoriesString()
                         + TagEvaluatorUtils.getEndTagString(name);
             } else if ("pluginRepositories".equals(name)) { //$NON-NLS-1$
                 for (Element elem : body) {
@@ -82,23 +85,104 @@ class PomTagEvaluator implements TagEvaluator {
                     }
                 }
                 return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                        + TagEvaluatorUtils.evaluateElements(context, body) + ctx.outputPluginRepositoriesString()
+                        + TagEvaluatorUtils.evaluateElements(ctx, body) + ctx.outputPluginRepositoriesString()
                         + TagEvaluatorUtils.getEndTagString(name);
             } else if ("profiles".equals(name)) { //$NON-NLS-1$
                 ctx.enter();
                 try {
                     return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                            + TagEvaluatorUtils.evaluateElements(context, body) + ctx.outputProfilesString()
+                            + TagEvaluatorUtils.evaluateElements(ctx, body) + ctx.outputProfilesString()
                             + TagEvaluatorUtils.getEndTagString(name);
                 } finally {
                     ctx.leave();
                 }
             } else {
-                return TagEvaluatorUtils.evaluate(context, name, attributes, body);
+                return TagEvaluatorUtils.evaluate(ctx, name, attributes, body);
             }
         } else {
-            return TagEvaluatorUtils.evaluate(context, name, attributes, body);
+            return TagEvaluatorUtils.evaluate(ctx, name, attributes, body);
         }
+    }
+
+    Dependencies buildDependencies(TemplateContext context, TagElement element) {
+        Dependencies dependencies = new Dependencies();
+        for (Element elem : element.getBodyElements()) {
+            if (!(elem instanceof TagElement)) {
+                continue;
+            }
+            TagElement tag = (TagElement) elem;
+            String tagName = tag.getName();
+            if ("dependency".equals(tagName)) { //$NON-NLS-1$
+                dependencies.addDependency(buildDependency(context, tag));
+            }
+        }
+        return dependencies;
+    }
+
+    Dependency buildDependency(TemplateContext context, TagElement element) {
+        Dependency dependency = new Dependency();
+        for (Element elem : element.getBodyElements()) {
+            if (!(elem instanceof TagElement)) {
+                continue;
+            }
+            TagElement tag = (TagElement) elem;
+            String tagName = tag.getName();
+            if ("groupId".equals(tagName)) { //$NON-NLS-1$
+                dependency.setGroupId(getBodyAsString(context, tag));
+            } else if ("artifactId".equals(tagName)) { //$NON-NLS-1$
+                dependency.setArtifactId(getBodyAsString(context, tag));
+            } else if ("version".equals(tagName)) { //$NON-NLS-1$
+                dependency.setVersion(getBodyAsString(context, tag));
+            } else if ("classifier".equals(tagName)) { //$NON-NLS-1$
+                dependency.setClassifier(getBodyAsString(context, tag));
+            } else if ("type".equals(tagName)) { //$NON-NLS-1$
+                dependency.setType(getBodyAsString(context, tag));
+            } else if ("scope".equals(tagName)) { //$NON-NLS-1$
+                dependency.setScope(getBodyAsString(context, tag));
+            } else if ("systemPath".equals(tagName)) { //$NON-NLS-1$
+                dependency.setSystemPath(getBodyAsString(context, tag));
+            } else if ("optional".equals(tagName)) { //$NON-NLS-1$
+                dependency.setOptional(getBodyAsString(context, tag));
+            } else if ("exclusions".equals(tagName)) { //$NON-NLS-1$
+                dependency.setExclusions(buildExclusions(context, tag));
+            }
+        }
+        return dependency;
+    }
+
+    String getBodyAsString(TemplateContext context, TagElement element) {
+        return TagEvaluatorUtils.evaluateElements(context, element.getBodyElements()).trim();
+    }
+
+    Exclusions buildExclusions(TemplateContext context, TagElement element) {
+        Exclusions exclusions = new Exclusions();
+        for (Element elem : element.getBodyElements()) {
+            if (!(elem instanceof TagElement)) {
+                continue;
+            }
+            TagElement tag = (TagElement) elem;
+            if ("exclusion".equals(tag.getName())) {
+                exclusions.addExclusion(buildExclusion(context, tag));
+            }
+        }
+        return exclusions;
+    }
+
+    Exclusion buildExclusion(TemplateContext context, TagElement element) {
+        Exclusion exclusion = new Exclusion();
+        for (Element elem : element.getBodyElements()) {
+            if (!(elem instanceof TagElement)) {
+                continue;
+            }
+            TagElement tag = (TagElement) elem;
+            String tagName = tag.getName();
+            if ("groupId".equals(tagName)) { //$NON-NLS-1$
+                exclusion.setGroupId(getBodyAsString(context, tag));
+            } else if ("artifactId".equals(tagName)) { //$NON-NLS-1$
+                exclusion.setArtifactId(getBodyAsString(context, tag));
+            }
+        }
+        return exclusion;
     }
 
     public String[] getSpecialAttributePatternStrings() {

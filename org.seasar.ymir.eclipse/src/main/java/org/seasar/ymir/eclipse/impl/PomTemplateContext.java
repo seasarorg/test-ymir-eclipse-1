@@ -17,7 +17,11 @@ import net.skirnir.freyja.TagEvaluatorUtils;
 import net.skirnir.freyja.impl.TemplateContextImpl;
 import net.skirnir.xom.ValidationException;
 
+import org.eclipse.core.resources.IProject;
+import org.seasar.ymir.vili.ViliBehavior;
+import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
+import org.seasar.ymir.vili.model.maven.Dependencies;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.PluginRepository;
 import org.seasar.ymir.vili.model.maven.Profile;
@@ -26,6 +30,8 @@ import org.seasar.ymir.vili.model.maven.Repository;
 import org.seasar.ymir.vili.util.XOMUtils;
 
 class PomTemplateContext extends TemplateContextImpl {
+    private static final int DEFAULT_DEPENDENCY_INDENT = 4;
+
     private Map<Dependency, Dependency> dependencyMap = new HashMap<Dependency, Dependency>();
 
     private Set<Repository> repositorySet = new HashSet<Repository>();
@@ -44,20 +50,35 @@ class PomTemplateContext extends TemplateContextImpl {
 
     private boolean profilesOutputted;
 
-    public void setMetadataToMerge(Project project) {
-        if (project.getDependencies() != null) {
-            for (Dependency dependency : project.getDependencies().getDependencies()) {
+    private IProject project;
+
+    private ViliBehavior behavior;
+
+    private ViliProjectPreferences preferences;
+
+    private Map<String, Object> parameters;
+
+    private int dependencyIndent = DEFAULT_DEPENDENCY_INDENT;
+
+    public void setMetadataToMerge(Project pom, IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters) {
+        this.project = project;
+        this.behavior = behavior;
+        this.preferences = preferences;
+        this.parameters = parameters;
+        if (pom.getDependencies() != null) {
+            for (Dependency dependency : pom.getDependencies().getDependencies()) {
                 dependencyMap.put(dependency, dependency);
             }
         }
-        if (project.getRepositories() != null) {
-            repositorySet.addAll(Arrays.asList(project.getRepositories().getRepositories()));
+        if (pom.getRepositories() != null) {
+            repositorySet.addAll(Arrays.asList(pom.getRepositories().getRepositories()));
         }
-        if (project.getPluginRepositories() != null) {
-            pluginRepositorySet.addAll(Arrays.asList(project.getPluginRepositories().getPluginRepositories()));
+        if (pom.getPluginRepositories() != null) {
+            pluginRepositorySet.addAll(Arrays.asList(pom.getPluginRepositories().getPluginRepositories()));
         }
-        if (project.getProfiles() != null) {
-            profileList.addAll(Arrays.asList(project.getProfiles().getProfiles()));
+        if (pom.getProfiles() != null) {
+            profileList.addAll(Arrays.asList(pom.getProfiles().getProfiles()));
         }
     }
 
@@ -217,5 +238,14 @@ class PomTemplateContext extends TemplateContextImpl {
 
     public boolean isProfilesOutputted() {
         return profilesOutputted;
+    }
+
+    public void setDependencyIndent(int dependencyIndent) {
+        this.dependencyIndent = dependencyIndent;
+    }
+
+    public void setDependencies(Dependencies dependencies) {
+        // TODO Auto-generated method stub
+
     }
 }

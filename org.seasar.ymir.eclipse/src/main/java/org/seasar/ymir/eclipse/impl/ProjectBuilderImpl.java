@@ -76,13 +76,7 @@ import org.seasar.ymir.vili.model.Actions;
 import org.seasar.ymir.vili.model.dicon.Components;
 import org.seasar.ymir.vili.model.maven.Dependencies;
 import org.seasar.ymir.vili.model.maven.Dependency;
-import org.seasar.ymir.vili.model.maven.PluginRepositories;
-import org.seasar.ymir.vili.model.maven.PluginRepository;
-import org.seasar.ymir.vili.model.maven.Profile;
-import org.seasar.ymir.vili.model.maven.Profiles;
 import org.seasar.ymir.vili.model.maven.Project;
-import org.seasar.ymir.vili.model.maven.Repositories;
-import org.seasar.ymir.vili.model.maven.Repository;
 import org.seasar.ymir.vili.util.BeanMap;
 import org.seasar.ymir.vili.util.CascadeMap;
 import org.seasar.ymir.vili.util.StreamUtils;
@@ -159,16 +153,6 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("ProjectBuilderImpl.8"), fragments.length + 1); //$NON-NLS-1$
         try {
-            Project pom = new Project();
-            Dependencies dependencies = new Dependencies();
-            pom.setDependencies(dependencies);
-            Repositories repositories = new Repositories();
-            pom.setRepositories(repositories);
-            PluginRepositories pluginRepositories = new PluginRepositories();
-            pom.setPluginRepositories(pluginRepositories);
-            Profiles profiles = new Profiles();
-            pom.setProfiles(profiles);
-
             IPreferenceStore store = Activator.getDefault().getPreferenceStore(project);
             Actions actions = XOMUtils.getAsBean(store.getString(PreferenceConstants.P_ACTIONS), Actions.class);
             if (actions == null) {
@@ -187,28 +171,9 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                     throw new OperationCanceledException();
                 }
 
-                Project fPom = fragment.getBehavior().getPom(shouldEvaluateAsTemplate(Globals.PATH_POM_XML, behavior),
-                        parameters);
-                if (fPom.getDependencies() != null) {
-                    for (Dependency fDependency : fPom.getDependencies().getDependencies()) {
-                        dependencies.addDependency(fDependency);
-                    }
-                }
-                if (fPom.getRepositories() != null) {
-                    for (Repository fRepository : fPom.getRepositories().getRepositories()) {
-                        repositories.addRepository(fRepository);
-                    }
-                }
-                if (fPom.getPluginRepositories() != null) {
-                    for (PluginRepository fPluignRepository : fPom.getPluginRepositories().getPluginRepositories()) {
-                        pluginRepositories.addPluginRepository(fPluignRepository);
-                    }
-                }
-                if (fPom.getProfiles() != null) {
-                    for (Profile fProfile : fPom.getProfiles().getProfiles()) {
-                        profiles.addProfile(fProfile);
-                    }
-                }
+                updatePom(project, fragment.getBehavior().getPom(
+                        shouldEvaluateAsTemplate(Globals.PATH_POM_XML, behavior), parameters), behavior, preferences,
+                        parameters, new SubProgressMonitor(monitor, 1));
 
                 Actions fragmentActions = behavior.getActions();
                 if (fragmentActions != null) {
@@ -227,7 +192,6 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 }
             }
 
-            updatePom(project, pom, new SubProgressMonitor(monitor, 1));
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
@@ -1045,6 +1009,11 @@ public class ProjectBuilderImpl implements ProjectBuilder {
     }
 
     public void updatePom(IProject project, Project pom, IProgressMonitor monitor) throws CoreException {
+        updatePom(project, pom, null, null, null, monitor);
+    }
+
+    void updatePom(IProject project, Project pom, ViliBehavior behavior, ViliProjectPreferences preferences,
+            Map<String, Object> parameters, IProgressMonitor monitor) throws CoreException {
         monitor.beginTask(Messages.getString("ProjectBuilderImpl.1"), 2); //$NON-NLS-1$
         try {
             if (project == null) {
@@ -1062,7 +1031,8 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             InputStream is = null;
             try {
                 is = pomFile.getContents();
-                evaluated = mergePom(new InputStreamReader(is, Globals.ENCODING), pom);
+                evaluated = mergePom(project, new InputStreamReader(is, Globals.ENCODING), pom, behavior, preferences,
+                        parameters);
             } catch (UnsupportedEncodingException ex) {
                 Activator.getDefault().throwCoreException("Can't happen!", ex); //$NON-NLS-1$
                 return;
@@ -1096,17 +1066,18 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         return false;
     }
 
-    String mergePom(Reader reader, Project project) throws CoreException {
+    String mergePom(IProject project, Reader basePomReader, Project pom, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters) throws CoreException {
         Element[] elems;
         try {
-            elems = pomEvaluator.parse(reader);
+            elems = pomEvaluator.parse(basePomReader);
         } catch (FreyjaRuntimeException ex) {
             Activator.getDefault().throwCoreException("Illegal syntax", ex); //$NON-NLS-1$
             return null;
         }
 
         PomTemplateContext ctx = (PomTemplateContext) pomEvaluator.newContext();
-        ctx.setMetadataToMerge(project);
+        ctx.setMetadataToMerge(pom, project, behavior, preferences, parameters);
         return pomEvaluator.evaluate(ctx, elems);
     }
 
