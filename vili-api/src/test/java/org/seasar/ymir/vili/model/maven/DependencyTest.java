@@ -40,6 +40,10 @@ public class DependencyTest extends TestCase {
         assertEquals("h2", actual.getArtifactId());
         assertEquals("1.0.78", actual.getVersion());
         assertEquals("runtime", actual.getScope());
+        assertEquals("jar", actual.getType());
+        assertEquals("tests", actual.getClassifier());
+        assertEquals("path", actual.getSystemPath());
+        assertEquals("true", actual.getOptional());
         Exclusions exclusions = actual.getExclusions();
         assertNotNull(exclusions);
         Exclusion[] es = exclusions.getExclusions();
@@ -57,6 +61,8 @@ public class DependencyTest extends TestCase {
         dependency.setVersion("1.0.78");
         dependency.setScope("runtime");
         dependency.setType("jar");
+        dependency.setClassifier("tests");
+        dependency.setSystemPath("path");
         dependency.setOptional("true");
         dependency
                 .setExclusions(new Exclusions(new Exclusion("com.hoe", "hoe")));

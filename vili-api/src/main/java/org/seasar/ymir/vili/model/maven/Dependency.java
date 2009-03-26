@@ -9,9 +9,13 @@ public class Dependency {
 
     private String version;
 
-    private String scope;
+    private String classifier;
 
     private String type;
+
+    private String scope;
+
+    private String systemPath;
 
     private String optional;
 
@@ -44,6 +48,9 @@ public class Dependency {
         if (!equals(o.artifactId, artifactId)) {
             return false;
         }
+        if (!equals(o.classifier, classifier)) {
+            return false;
+        }
 
         return true;
     }
@@ -70,7 +77,9 @@ public class Dependency {
 
     @Override
     public String toString() {
-        return groupId + ":" + artifactId + "-" + version + ", scope=" + scope; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return groupId + ":" + artifactId + "-" + version + "-" + classifier
+                + ", type=" + type + ", scope=" + scope + ", systemPath="
+                + systemPath + ", optional=" + optional;
     }
 
     public String getGroupId() {
@@ -100,13 +109,13 @@ public class Dependency {
         this.version = version;
     }
 
-    public String getScope() {
-        return scope;
+    public String getClassifier() {
+        return classifier;
     }
 
     @Child(order = 4)
-    public void setScope(String scope) {
-        this.scope = scope;
+    public void setClassifier(String classifier) {
+        this.classifier = classifier;
     }
 
     public String getType() {
@@ -118,11 +127,29 @@ public class Dependency {
         this.type = type;
     }
 
+    public String getScope() {
+        return scope;
+    }
+
+    @Child(order = 6)
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+    public String getSystemPath() {
+        return systemPath;
+    }
+
+    @Child(order = 7)
+    public void setSystemPath(String systemPath) {
+        this.systemPath = systemPath;
+    }
+
     public String getOptional() {
         return optional;
     }
 
-    @Child(order = 6)
+    @Child(order = 8)
     public void setOptional(String optional) {
         this.optional = optional;
     }
@@ -131,7 +158,7 @@ public class Dependency {
         return exclusions;
     }
 
-    @Child(order = 7)
+    @Child(order = 9)
     public void setExclusions(Exclusions exclusions) {
         this.exclusions = exclusions;
     }
