@@ -1,7 +1,7 @@
 package org.seasar.ymir.vili;
 
 public enum ParameterType {
-    TEXT, CHECKBOX, SELECT, COMBOBOX;
+    TEXT, CHECKBOX, SELECT, COMBOBOX, GROUP, RADIO;
 
     public static ParameterType enumOf(String name) {
         if (name != null) {

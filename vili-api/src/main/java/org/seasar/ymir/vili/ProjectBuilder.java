@@ -62,6 +62,9 @@ public interface ProjectBuilder {
     Dependency getDependency(IProject project, String groupId, String artifactId)
             throws CoreException;
 
+    Dependency getDependency(IProject project, String groupId,
+            String artifactId, String classifier) throws CoreException;
+
     WizardDialog createAddFragmentsWizardDialog(Shell parentShell,
             IProject project, Mold... fragmentMolds);
 }

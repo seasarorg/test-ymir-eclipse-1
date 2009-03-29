@@ -24,16 +24,26 @@ public class Dependency {
     public Dependency() {
     }
 
+    public Dependency(String groupId, String artifactId) {
+        this(groupId, artifactId, null, null, null);
+    }
+
     public Dependency(String groupId, String artifactId, String version) {
         this(groupId, artifactId, version, null);
     }
 
     public Dependency(String groupId, String artifactId, String version,
             String scope) {
+        this(groupId, artifactId, version, scope, null);
+    }
+
+    public Dependency(String groupId, String artifactId, String version,
+            String scope, String classifier) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
         this.scope = scope;
+        this.classifier = classifier;
     }
 
     @Override

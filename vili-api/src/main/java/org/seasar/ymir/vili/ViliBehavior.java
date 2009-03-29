@@ -22,9 +22,9 @@ public interface ViliBehavior {
 
     String TEMPLATE_PARAMETERS = "template.parameters"; //$NON-NLS-1$
 
-    String VIEWTEMPLATE_INCLUDES = "viewTemplate.includes";
+    String VIEWTEMPLATE_INCLUDES = "viewTemplate.includes"; //$NON-NLS-1$
 
-    String VIEWTEMPLATE_EXCLUDES = "viewTemplate.excludes";
+    String VIEWTEMPLATE_EXCLUDES = "viewTemplate.excludes"; //$NON-NLS-1$
 
     String PREFIX_TEMPLATE_ENCODING = "template.encoding."; //$NON-NLS-1$
 
@@ -34,7 +34,9 @@ public interface ViliBehavior {
 
     String SUFFIX_TEMPLATE_PARAMETER_DEFAULT = ".default"; //$NON-NLS-1$
 
-    String SUFFIX_TEMPLATE_PARAMETER_CANDIDATES = ".candidates";
+    String SUFFIX_TEMPLATE_PARAMETER_CANDIDATES = ".candidates"; //$NON-NLS-1$
+
+    String SUFFIX_TEMPLATE_PARAMETER_MEMBERS = ".members"; //$NON-NLS-1$
 
     String SUFFIX_TEMPLATE_PARAMETER_REQUIRED = ".required"; //$NON-NLS-1$
 
@@ -73,6 +75,11 @@ public interface ViliBehavior {
     String getTemplateParameterDefault(String name);
 
     String[] getTemplateParameterCandidates(String name);
+
+    /**
+     * @since 0.2.2
+     */
+    String[] getTemplateParameterMembers(String name);
 
     boolean isTemplateParameterRequired(String name);
 

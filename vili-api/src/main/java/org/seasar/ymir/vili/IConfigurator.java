@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.seasar.ymir.vili.model.maven.Dependency;
 
 public interface IConfigurator {
     /**
@@ -48,6 +49,9 @@ public interface IConfigurator {
      * @param path パス。freemarkerの式になっています。
      * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。
      * @param behavior ViliBehaviorインスタンス。
+     * ViliBehaviorが持つプロパティが変更されることは想定していません。
+     * もしもプロパティを変更した場合は{@link ViliBehavior#notifyPropertiesChanged()}
+     * を呼び出して下さい。
      * @param preferences ViliProjectPreferencesインスタンス。
      * @param parameters フラグメントの展開時に使用されたパラメータ。
      * @return 展開先を表すパス。freemarkerの式として評価されます。
@@ -70,11 +74,42 @@ public interface IConfigurator {
      * @param resolvedPath リソースのパスを評価したパス（例：dbflute_abc）。
      * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。
      * @param behavior ViliBehaviorインスタンス。
+     * ViliBehaviorが持つプロパティが変更されることは想定していません。
+     * もしもプロパティを変更した場合は{@link ViliBehavior#notifyPropertiesChanged()}
+     * を呼び出して下さい。
      * @param preferences ViliProjectPreferencesインスタンス。
      * @param parameters フラグメントの展開時に使用されたパラメータ。
      * @return リソースを展開するかどうか。
      */
     InclusionType shouldExpand(String path, String resolvedPath,
+            IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters);
+
+    /**
+     * プロジェクトのPOMが持つdependencyとフラグメントのPOMが持つdependencyをマージします。
+     * <p>dependencyのマージ処理を独自に行ないたい場合は、このメソッドの中でマージ処理を行なって
+     * マージ結果を返すようにして下さい。
+     * 独自のマージ処理は行なわず、デフォルトのマージ処理を行なう場合はnullを返すようにして下さい。
+     * なおdependencyMapやfragmentDependencyMapの内容を変更してからnullを返すと、
+     * 変更されたdependency情報がマージされます。
+     * </p>
+     * 
+     * @param dependencyMap プロジェクトのPOMが持つdependencyが格納されたMap。
+     * 内容を変更しても構いません。
+     * @param fragmentDependencyMap フラグメントのPOMが持つdependencyが格納されたMap。
+     * 内容を変更しても構いません。
+     * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。
+     * @param behavior ViliBehaviorインスタンス。
+     * ViliBehaviorが持つプロパティが変更されることは想定していません。
+     * もしもプロパティを変更した場合は{@link ViliBehavior#notifyPropertiesChanged()}
+     * を呼び出して下さい。
+     * @param preferences ViliProjectPreferencesインスタンス。
+     * @param parameters フラグメントの展開時に使用されたパラメータ。
+     * @return マージ後のdependencyの配列。
+     */
+    Dependency[] mergePomDependencies(
+            Map<Dependency, Dependency> dependencyMap,
+            Map<Dependency, Dependency> fragmentDependencyMap,
             IProject project, ViliBehavior behavior,
             ViliProjectPreferences preferences, Map<String, Object> parameters);
 
