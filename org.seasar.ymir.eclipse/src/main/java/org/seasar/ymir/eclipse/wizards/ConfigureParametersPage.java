@@ -36,10 +36,14 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Widget;
-import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.ui.ViliProjectPreferencesControl;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
+import org.seasar.ymir.eclipse.wizards.model.ButtonParameterModel;
+import org.seasar.ymir.eclipse.wizards.model.ComboParameterModel;
+import org.seasar.ymir.eclipse.wizards.model.ParameterModel;
+import org.seasar.ymir.eclipse.wizards.model.RadioParameterModel;
+import org.seasar.ymir.eclipse.wizards.model.TextParameterModel;
 import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
@@ -226,130 +230,182 @@ public class ConfigureParametersPage extends WizardPage {
         parameterModelMaps = new Map[molds.length];
         java.util.List<ParameterModel> requiredList = new ArrayList<ParameterModel>();
 
-        int count = 0;
         for (int i = 0; i < molds.length; i++) {
-            Map<String, ParameterModel> modelMap = new LinkedHashMap<String, ParameterModel>();
-            parameterModelMaps[i] = modelMap;
-
             Mold mold = molds[i];
+            parameterModelMaps[i] = new LinkedHashMap<String, ParameterModel>();
             ViliBehavior behavior = mold.getBehavior();
             String[] names = behavior.getTemplateParameters();
-            count += names.length;
+
             if (names.length == 0) {
                 continue;
             }
 
-            Group group = new Group(parent, SWT.NONE);
-            GridLayout layout = new GridLayout();
-            layout.numColumns = 2;
-            group.setLayout(layout);
-            group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            group.setText(behavior.getLabel());
+            createGroupControl(parent, mold, behavior, parameterModelMaps[i], requiredList, null, names);
+        }
+        requiredParameterModels = requiredList.toArray(new ParameterModel[0]);
+    }
 
-            for (int j = 0; j < names.length; j++) {
-                String name = names[j];
-                String description = behavior.getTemplateParameterDescription(name);
-                switch (behavior.getTemplateParameterType(name)) {
-                case TEXT: {
-                    Label label = new Label(group, SWT.NONE);
-                    label.setText(behavior.getTemplateParameterLabel(name));
-                    Text text = new Text(group, SWT.BORDER);
-                    ParameterModel model = new TextParameterModel(mold, name, text, label);
-                    modelMap.put(name, model);
-                    GridData data = new GridData(GridData.FILL_HORIZONTAL);
-                    data.widthHint = 250;
-                    text.setLayoutData(data);
-                    if (description.length() > 0) {
-                        text.setToolTipText(description);
-                    }
-                    if (behavior.isTemplateParameterRequired(name)) {
-                        requiredList.add(model);
-                        text.addListener(SWT.Modify, validationListener);
-                    }
-                    String[] dependents = behavior.getTemplateParameterDependents(name);
-                    if (dependents.length > 0) {
-                        text.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
-                    }
+    void createGroupControl(Composite parent, Mold mold, ViliBehavior behavior, Map<String, ParameterModel> modelMap,
+            List<ParameterModel> requiredList, String groupName, String[] childNames) {
+
+        String prefix;
+        String groupLabel;
+        if (groupName == null) {
+            prefix = "";
+            groupLabel = behavior.getLabel();
+        } else {
+            prefix = groupName + ".";
+            groupLabel = behavior.getTemplateParameterLabel(groupName);
+        }
+
+        Group group = new Group(parent, SWT.NONE);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 2;
+        group.setLayout(layout);
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        group.setText(groupLabel);
+
+        for (int i = 0; i < childNames.length; i++) {
+            String name = prefix + childNames[i];
+            String description = behavior.getTemplateParameterDescription(name);
+            switch (behavior.getTemplateParameterType(name)) {
+            case TEXT: {
+                Label label = new Label(group, SWT.NONE);
+                label.setText(behavior.getTemplateParameterLabel(name));
+                Text text = new Text(group, SWT.BORDER);
+                ParameterModel model = new TextParameterModel(mold, name, text, label);
+                modelMap.put(name, model);
+                GridData data = new GridData(GridData.FILL_HORIZONTAL);
+                data.widthHint = 250;
+                text.setLayoutData(data);
+                if (description.length() > 0) {
+                    text.setToolTipText(description);
                 }
-                    break;
+                if (behavior.isTemplateParameterRequired(name)) {
+                    requiredList.add(model);
+                    text.addListener(SWT.Modify, validationListener);
+                }
+                String[] dependents = behavior.getTemplateParameterDependents(name);
+                if (dependents.length > 0) {
+                    text.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
+                }
+            }
+                break;
 
-                case CHECKBOX: {
-                    Button button = new Button(group, SWT.CHECK | SWT.LEFT);
-                    ParameterModel model = new ButtonParameterModel(mold, name, button);
-                    modelMap.put(name, model);
+            case CHECKBOX: {
+                Button button = new Button(group, SWT.CHECK | SWT.LEFT);
+                ParameterModel model = new ButtonParameterModel(mold, name, button);
+                modelMap.put(name, model);
+                GridData data = new GridData();
+                data.horizontalSpan = 2;
+                button.setLayoutData(data);
+                button.setText(behavior.getTemplateParameterLabel(name));
+                if (description.length() > 0) {
+                    button.setToolTipText(description);
+                }
+                String[] dependents = behavior.getTemplateParameterDependents(name);
+                if (dependents.length > 0) {
+                    button.addListener(SWT.Selection, new DependencyListener(modelMap, dependents));
+                }
+            }
+                break;
+
+            case SELECT: {
+                Label label = new Label(group, SWT.NONE);
+                label.setText(behavior.getTemplateParameterLabel(name));
+                Combo combo = new Combo(group, SWT.READ_ONLY);
+                ParameterModel model = new ComboParameterModel(mold, name, combo, label);
+                modelMap.put(name, model);
+                GridData data = new GridData(GridData.FILL_HORIZONTAL);
+                data.widthHint = 250;
+                combo.setLayoutData(data);
+                String[] candidates = behavior.getTemplateParameterCandidates(name);
+                for (int k = 0; k < candidates.length; k++) {
+                    combo.add(candidates[k]);
+                }
+                if (description.length() > 0) {
+                    combo.setToolTipText(description);
+                }
+                if (behavior.isTemplateParameterRequired(name)) {
+                    requiredList.add(model);
+                    combo.addListener(SWT.Modify, validationListener);
+                }
+                String[] dependents = behavior.getTemplateParameterDependents(name);
+                if (dependents.length > 0) {
+                    combo.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
+                }
+            }
+                break;
+
+            case COMBOBOX: {
+                Label label = new Label(group, SWT.NONE);
+                label.setText(behavior.getTemplateParameterLabel(name));
+                Combo combo = new Combo(group, SWT.DROP_DOWN);
+                ParameterModel model = new ComboParameterModel(mold, name, combo, label);
+                modelMap.put(name, model);
+                GridData data = new GridData(GridData.FILL_HORIZONTAL);
+                data.widthHint = 250;
+                combo.setLayoutData(data);
+                String[] candidates = behavior.getTemplateParameterCandidates(name);
+                for (int k = 0; k < candidates.length; k++) {
+                    combo.add(candidates[k]);
+                }
+                if (description.length() > 0) {
+                    combo.setToolTipText(description);
+                }
+                if (behavior.isTemplateParameterRequired(name)) {
+                    requiredList.add(model);
+                    combo.addListener(SWT.Modify, validationListener);
+                }
+                String[] dependents = behavior.getTemplateParameterDependents(name);
+                if (dependents.length > 0) {
+                    combo.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
+                }
+            }
+                break;
+
+            case GROUP:
+                createGroupControl(parent, mold, behavior, modelMap, requiredList, name, behavior
+                        .getTemplateParameterMembers(name));
+                break;
+
+            case RADIO: {
+                Group radio = new Group(group, SWT.NONE);
+                GridLayout radioLayout = new GridLayout();
+                radioLayout.numColumns = 2;
+                radio.setLayout(radioLayout);
+                radio.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                radio.setText(behavior.getTemplateParameterLabel(name));
+
+                String[] candidates = behavior.getTemplateParameterCandidates(name);
+                Button[] buttons = new Button[candidates.length];
+                for (int j = 0; j < candidates.length; j++) {
+                    String key = name + "." + candidates[j];
+                    Button button = new Button(group, SWT.RADIO | SWT.LEFT);
                     GridData data = new GridData();
                     data.horizontalSpan = 2;
                     button.setLayoutData(data);
-                    button.setText(behavior.getTemplateParameterLabel(name));
-                    if (description.length() > 0) {
-                        button.setToolTipText(description);
+                    button.setText(behavior.getTemplateParameterLabel(key));
+                    String buttonDescription = behavior.getTemplateParameterDescription(key);
+                    if (buttonDescription.length() > 0) {
+                        button.setToolTipText(buttonDescription);
                     }
-                    String[] dependents = behavior.getTemplateParameterDependents(name);
-                    if (dependents.length > 0) {
-                        button.addListener(SWT.Selection, new DependencyListener(modelMap, dependents));
-                    }
+                    buttons[j] = button;
                 }
-                    break;
 
-                case SELECT: {
-                    Label label = new Label(group, SWT.NONE);
-                    label.setText(behavior.getTemplateParameterLabel(name));
-                    Combo combo = new Combo(group, SWT.READ_ONLY);
-                    ParameterModel model = new ComboParameterModel(mold, name, combo, label);
-                    modelMap.put(name, model);
-                    GridData data = new GridData(GridData.FILL_HORIZONTAL);
-                    data.widthHint = 250;
-                    combo.setLayoutData(data);
-                    String[] candidates = behavior.getTemplateParameterCandidates(name);
-                    for (int k = 0; k < candidates.length; k++) {
-                        combo.add(candidates[k]);
-                    }
-                    if (description.length() > 0) {
-                        combo.setToolTipText(description);
-                    }
-                    if (behavior.isTemplateParameterRequired(name)) {
-                        requiredList.add(model);
-                        combo.addListener(SWT.Modify, validationListener);
-                    }
-                    String[] dependents = behavior.getTemplateParameterDependents(name);
-                    if (dependents.length > 0) {
-                        combo.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
-                    }
-                }
-                    break;
+                ParameterModel model = new RadioParameterModel(mold, name, radio, candidates, buttons);
+                modelMap.put(name, model);
 
-                case COMBOBOX: {
-                    Label label = new Label(group, SWT.NONE);
-                    label.setText(behavior.getTemplateParameterLabel(name));
-                    Combo combo = new Combo(group, SWT.DROP_DOWN);
-                    ParameterModel model = new ComboParameterModel(mold, name, combo, label);
-                    modelMap.put(name, model);
-                    GridData data = new GridData(GridData.FILL_HORIZONTAL);
-                    data.widthHint = 250;
-                    combo.setLayoutData(data);
-                    String[] candidates = behavior.getTemplateParameterCandidates(name);
-                    for (int k = 0; k < candidates.length; k++) {
-                        combo.add(candidates[k]);
-                    }
-                    if (description.length() > 0) {
-                        combo.setToolTipText(description);
-                    }
-                    if (behavior.isTemplateParameterRequired(name)) {
-                        requiredList.add(model);
-                        combo.addListener(SWT.Modify, validationListener);
-                    }
-                    String[] dependents = behavior.getTemplateParameterDependents(name);
-                    if (dependents.length > 0) {
-                        combo.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
-                    }
-                }
-                    break;
-
-                default:
+                String[] dependents = behavior.getTemplateParameterDependents(name);
+                if (dependents.length > 0) {
+                    button.addListener(SWT.Selection, new DependencyListener(modelMap, dependents));
                 }
             }
+                break;
+
+            default:
+            }
         }
-        requiredParameterModels = requiredList.toArray(new ParameterModel[0]);
     }
 
     @Override
@@ -394,6 +450,7 @@ public class ConfigureParametersPage extends WizardPage {
                 try {
                     for (ViliBehavior behavior : behaviorList) {
                         behavior.getConfigurator().start(project, behavior, preferences);
+                        behavior.notifyPropertiesChanged();
                         monitor.worked(1);
                     }
                 } finally {
@@ -568,162 +625,6 @@ public class ConfigureParametersPage extends WizardPage {
                     model.setEnabled(enabled);
                 }
             }
-        }
-    }
-
-    static interface ParameterModel {
-        boolean valueExists();
-
-        void notifyChanged();
-
-        String getLabelText();
-
-        Object getValue();
-
-        void setValue(Object value);
-
-        void setEnabled(boolean enabled);
-    }
-
-    static class TextParameterModel implements ParameterModel {
-        private Mold mold;
-
-        private String name;
-
-        private Label label;
-
-        private Text text;
-
-        TextParameterModel(Mold mold, String name, Text text, Label label) {
-            this.mold = mold;
-            this.name = name;
-            this.text = text;
-            this.label = label;
-        }
-
-        public boolean valueExists() {
-            return text.getText().trim().length() > 0;
-        }
-
-        public String getLabelText() {
-            return mold.getBehavior().getTemplateParameterLabel(name);
-        }
-
-        public Object getValue() {
-            return text.getText().trim();
-        }
-
-        public void setValue(Object value) {
-            text.setText(String.valueOf(value));
-        }
-
-        public void notifyChanged() {
-            Event event = new Event();
-            event.widget = text;
-            text.notifyListeners(SWT.Modify, event);
-        }
-
-        public void setEnabled(boolean enabled) {
-            text.setEnabled(enabled);
-            label.setEnabled(enabled);
-        }
-    }
-
-    static class ButtonParameterModel implements ParameterModel {
-        private Mold mold;
-
-        private String name;
-
-        private Button button;
-
-        ButtonParameterModel(Mold mold, String name, Button button) {
-            this.mold = mold;
-            this.name = name;
-            this.button = button;
-        }
-
-        public boolean valueExists() {
-            return true;
-        }
-
-        public String getLabelText() {
-            return mold.getBehavior().getTemplateParameterLabel(name);
-        }
-
-        public Object getValue() {
-            return Boolean.valueOf(button.getSelection());
-        }
-
-        public void setValue(Object value) {
-            button.setSelection(PropertyUtils.valueOf(value, false));
-        }
-
-        public void notifyChanged() {
-            Event event = new Event();
-            event.widget = button;
-            button.notifyListeners(SWT.Selection, event);
-        }
-
-        public void setEnabled(boolean enabled) {
-            button.setEnabled(enabled);
-        }
-    }
-
-    static class ComboParameterModel implements ParameterModel {
-        private Mold mold;
-
-        private String name;
-
-        private Combo combo;
-
-        private Label label;
-
-        ComboParameterModel(Mold mold, String name, Combo combo, Label label) {
-            this.mold = mold;
-            this.name = name;
-            this.combo = combo;
-            this.label = label;
-        }
-
-        public boolean valueExists() {
-            return combo.getText().trim().length() > 0;
-        }
-
-        public String getLabelText() {
-            return mold.getBehavior().getTemplateParameterLabel(name);
-        }
-
-        public Object getValue() {
-            return combo.getText().trim();
-        }
-
-        public void setValue(Object value) {
-            String text = String.valueOf(value);
-
-            int selectedIndex = -1;
-            int n = combo.getItemCount();
-            for (int i = 0; i < n; i++) {
-                if (combo.getItem(i).equals(text)) {
-                    selectedIndex = i;
-                    break;
-                }
-            }
-            if (selectedIndex >= 0) {
-                combo.select(selectedIndex);
-            } else {
-                combo.setText(text);
-            }
-        }
-
-        public void notifyChanged() {
-            Event event = new Event();
-            event.widget = combo;
-            combo.notifyListeners(SWT.Modify, event);
-        }
-
-        public void setEnabled(boolean enabled) {
-            combo.setEnabled(enabled);
-            label.setEnabled(enabled);
         }
     }
 }

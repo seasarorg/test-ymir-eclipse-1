@@ -4,13 +4,12 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.skirnir.freyja.ConstantElement;
 import net.skirnir.freyja.Element;
 import net.skirnir.freyja.TagElement;
 import net.skirnir.freyja.TagEvaluatorUtils;
@@ -20,25 +19,28 @@ import net.skirnir.xom.ValidationException;
 import org.eclipse.core.resources.IProject;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
-import org.seasar.ymir.vili.maven.ArtifactVersion;
+import org.seasar.ymir.vili.maven.util.ArtifactUtils;
 import org.seasar.ymir.vili.model.maven.Dependencies;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.PluginRepository;
 import org.seasar.ymir.vili.model.maven.Profile;
 import org.seasar.ymir.vili.model.maven.Project;
 import org.seasar.ymir.vili.model.maven.Repository;
+import org.seasar.ymir.vili.util.ViliUtils;
 import org.seasar.ymir.vili.util.XOMUtils;
 
 class PomTemplateContext extends TemplateContextImpl {
     private static final int DEFAULT_DEPENDENCY_INDENT = 4;
 
-    private Map<Dependency, Dependency> dependencyMap = new HashMap<Dependency, Dependency>();
+    private Map<Dependency, Dependency> dependencyMap = new LinkedHashMap<Dependency, Dependency>();
 
-    private Set<Repository> repositorySet = new HashSet<Repository>();
+    private Map<Dependency, Dependency> fragmentDependencyMap = new LinkedHashMap<Dependency, Dependency>();
 
-    private Set<PluginRepository> pluginRepositorySet = new HashSet<PluginRepository>();
+    private Set<Repository> fragmentRepositorySet = new LinkedHashSet<Repository>();
 
-    private List<Profile> profileList = new ArrayList<Profile>();
+    private Set<PluginRepository> fragmentPluginRepositorySet = new LinkedHashSet<PluginRepository>();
+
+    private List<Profile> fragmentProfileList = new ArrayList<Profile>();
 
     private int depth;
 
@@ -58,8 +60,6 @@ class PomTemplateContext extends TemplateContextImpl {
 
     private Map<String, Object> parameters;
 
-    private int dependencyIndent = DEFAULT_DEPENDENCY_INDENT;
-
     public void setMetadataToMerge(Project pom, IProject project, ViliBehavior behavior,
             ViliProjectPreferences preferences, Map<String, Object> parameters) {
         this.project = project;
@@ -68,17 +68,17 @@ class PomTemplateContext extends TemplateContextImpl {
         this.parameters = parameters;
         if (pom.getDependencies() != null) {
             for (Dependency dependency : pom.getDependencies().getDependencies()) {
-                dependencyMap.put(dependency, dependency);
+                fragmentDependencyMap.put(dependency, dependency);
             }
         }
         if (pom.getRepositories() != null) {
-            repositorySet.addAll(Arrays.asList(pom.getRepositories().getRepositories()));
+            fragmentRepositorySet.addAll(Arrays.asList(pom.getRepositories().getRepositories()));
         }
         if (pom.getPluginRepositories() != null) {
-            pluginRepositorySet.addAll(Arrays.asList(pom.getPluginRepositories().getPluginRepositories()));
+            fragmentPluginRepositorySet.addAll(Arrays.asList(pom.getPluginRepositories().getPluginRepositories()));
         }
         if (pom.getProfiles() != null) {
-            profileList.addAll(Arrays.asList(pom.getProfiles().getProfiles()));
+            fragmentProfileList.addAll(Arrays.asList(pom.getProfiles().getProfiles()));
         }
     }
 
@@ -94,48 +94,6 @@ class PomTemplateContext extends TemplateContextImpl {
         return depth == 0;
     }
 
-    public TagElement mergeDependency(TagElement element) {
-        Dependency dependency = new Dependency();
-        for (Element elem : element.getBodyElements()) {
-            if (!(elem instanceof TagElement)) {
-                continue;
-            }
-            TagElement tag = (TagElement) elem;
-            if ("groupId".equals(tag.getName())) { //$NON-NLS-1$
-                dependency.setGroupId(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
-            } else if ("artifactId".equals(tag.getName())) { //$NON-NLS-1$
-                dependency.setArtifactId(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
-            } else if ("version".equals(tag.getName())) { //$NON-NLS-1$
-                dependency.setVersion(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
-            }
-        }
-
-        Dependency dep = dependencyMap.remove(dependency);
-        if (dep == null
-                || new ArtifactVersion(dep.getVersion()).compareTo(new ArtifactVersion(dependency.getVersion())) <= 0) {
-            return element;
-        } else {
-            // フラグメントのpom.xmlで指定されているdependencyと同一groupId、artifactIdのdependencyが既に存在している場合は、
-            // フラグメント側のバージョンの方が新しい時にだけ、バージョン情報だけをフラグメントのものに変更する。
-            // バージョン以外の情報については、プロジェクト生成後にカスタマイズが入っている可能性があるのでそのまま保存しておく。
-            // XXX そうするとバージョン以外の情報を更新できないことになる。それでもいいのか？
-            // Configuratorで、特定のgroupId、artifactIdのdependencyを好きなようにマージできるようにできるようにしてもいいかも。
-            List<Element> bodyList = new ArrayList<Element>();
-            for (Element elem : element.getBodyElements()) {
-                if (elem instanceof TagElement) {
-                    TagElement tag = (TagElement) elem;
-                    if ("version".equals(tag.getName())) { //$NON-NLS-1$
-                        elem = new TagElement(tag.getName(), tag.getAttributes(), new Element[] { new ConstantElement(
-                                dep.getVersion()) });
-                    }
-                }
-                bodyList.add(elem);
-            }
-
-            return new TagElement(element.getName(), element.getAttributes(), bodyList.toArray(new Element[0]));
-        }
-    }
-
     public void removeRepository(TagElement element) {
         Repository repository = new Repository();
         for (Element elem : element.getBodyElements()) {
@@ -147,7 +105,7 @@ class PomTemplateContext extends TemplateContextImpl {
                 repository.setUrl(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
             }
         }
-        repositorySet.remove(repository);
+        fragmentRepositorySet.remove(repository);
     }
 
     public void removePluginRepository(TagElement element) {
@@ -161,12 +119,18 @@ class PomTemplateContext extends TemplateContextImpl {
                 pluginRepository.setUrl(TagEvaluatorUtils.evaluateElements(this, tag.getBodyElements()).trim());
             }
         }
-        pluginRepositorySet.remove(pluginRepository);
+        fragmentPluginRepositorySet.remove(pluginRepository);
     }
 
-    public String outputDependenciesString() {
+    public String outputDependenciesString(int indent) {
+        Dependency[] dependencies = behavior.getConfigurator().mergePomDependencies(dependencyMap,
+                fragmentDependencyMap, project, behavior, preferences, parameters);
+        if (dependencies == null) {
+            dependencies = mergePomDependencies(dependencyMap, fragmentDependencyMap, project, behavior, preferences,
+                    parameters);
+        }
         StringWriter sw = new StringWriter();
-        for (Dependency dependency : dependencyMap.values()) {
+        for (Dependency dependency : dependencies) {
             try {
                 XOMUtils.getXOMapper().toXML(dependency, sw);
             } catch (ValidationException ex) {
@@ -176,12 +140,32 @@ class PomTemplateContext extends TemplateContextImpl {
             }
         }
         dependenciesOutputted = true;
-        return sw.toString();
+        return ViliUtils.addIndent(sw.toString(), ViliUtils.padding(indent));
     }
 
-    public String outputRepositoriesString() {
+    Dependency[] mergePomDependencies(Map<Dependency, Dependency> dependencyMap,
+            Map<Dependency, Dependency> fragmentDependencyMap, IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences, Map<String, Object> parameters) {
+        List<Dependency> list = new ArrayList<Dependency>();
+        for (Dependency dependency : dependencyMap.values()) {
+            Dependency fragmentDependency = fragmentDependencyMap.remove(dependency);
+            if (fragmentDependency != null
+                    && ArtifactUtils.compareVersions(fragmentDependency.getVersion(), dependency.getVersion()) > 0) {
+                list.add(fragmentDependency);
+            } else {
+                list.add(dependency);
+            }
+        }
+        for (Dependency dependency : fragmentDependencyMap.values()) {
+            list.add(dependency);
+        }
+
+        return list.toArray(new Dependency[0]);
+    }
+
+    public String outputRepositoriesString(int indent) {
         StringWriter sw = new StringWriter();
-        for (Repository repository : repositorySet) {
+        for (Repository repository : fragmentRepositorySet) {
             try {
                 XOMUtils.getXOMapper().toXML(repository, sw);
             } catch (ValidationException ex) {
@@ -191,12 +175,12 @@ class PomTemplateContext extends TemplateContextImpl {
             }
         }
         repositoriesOutputted = true;
-        return sw.toString();
+        return ViliUtils.addIndent(sw.toString(), ViliUtils.padding(indent));
     }
 
-    public String outputPluginRepositoriesString() {
+    public String outputPluginRepositoriesString(int indent) {
         StringWriter sw = new StringWriter();
-        for (PluginRepository pluginRepository : pluginRepositorySet) {
+        for (PluginRepository pluginRepository : fragmentPluginRepositorySet) {
             try {
                 XOMUtils.getXOMapper().toXML(pluginRepository, sw);
             } catch (ValidationException ex) {
@@ -206,12 +190,12 @@ class PomTemplateContext extends TemplateContextImpl {
             }
         }
         pluginRepositoriesOutputted = true;
-        return sw.toString();
+        return ViliUtils.addIndent(sw.toString(), ViliUtils.padding(indent));
     }
 
-    public String outputProfilesString() {
+    public String outputProfilesString(int indent) {
         StringWriter sw = new StringWriter();
-        for (Profile profile : profileList) {
+        for (Profile profile : fragmentProfileList) {
             try {
                 XOMUtils.getXOMapper().toXML(profile, sw);
             } catch (ValidationException ex) {
@@ -221,7 +205,7 @@ class PomTemplateContext extends TemplateContextImpl {
             }
         }
         profilesOutputted = true;
-        return sw.toString();
+        return ViliUtils.addIndent(sw.toString(), ViliUtils.padding(indent));
     }
 
     public boolean isDependenciesOutputted() {
@@ -240,12 +224,10 @@ class PomTemplateContext extends TemplateContextImpl {
         return profilesOutputted;
     }
 
-    public void setDependencyIndent(int dependencyIndent) {
-        this.dependencyIndent = dependencyIndent;
-    }
-
     public void setDependencies(Dependencies dependencies) {
-        // TODO Auto-generated method stub
-
+        dependencyMap.clear();
+        for (Dependency dependency : dependencies.getDependencies()) {
+            dependencyMap.put(dependency, dependency);
+        }
     }
 }

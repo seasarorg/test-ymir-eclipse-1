@@ -22,6 +22,8 @@ class PomTagEvaluator implements TagEvaluator {
 
     private static final String DEFAULT_PADDING = "  ";
 
+    private static final int DEFAULT_INDENT = DEFAULT_PADDING.length();
+
     public String[] getSpecialTagPatternStrings() {
         return new String[] {
                 "project", "build", "profiles", "repositories", "repository", "pluginRepositories", "pluginRepository", "url", "dependencies", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
@@ -37,23 +39,25 @@ class PomTagEvaluator implements TagEvaluator {
                 sb.append(TagEvaluatorUtils.getBeginTagString(name, attributes)).append(
                         TagEvaluatorUtils.evaluateElements(ctx, body));
                 if (!ctx.isDependenciesOutputted()) {
-                    sb.append(DEFAULT_PADDING)
-                            .append("<dependencies>").append(LS).append(ctx.outputDependenciesString()) //$NON-NLS-1$
+                    sb
+                            .append(DEFAULT_PADDING)
+                            .append("<dependencies>").append(LS).append(ctx.outputDependenciesString(DEFAULT_INDENT * 2)) //$NON-NLS-1$
                             .append(DEFAULT_PADDING).append("</dependencies>").append(LS); //$NON-NLS-1$
                 }
                 if (!ctx.isRepositoriesOutputted()) {
                     sb.append(DEFAULT_PADDING).append("<repositories>").append(LS).append( //$NON-NLS-1$
-                            ctx.outputRepositoriesString()).append(DEFAULT_PADDING)
-                            .append("</repositories>").append(LS); //$NON-NLS-1$
+                            ctx.outputRepositoriesString(DEFAULT_INDENT * 2)).append(DEFAULT_PADDING).append(
+                            "</repositories>").append(LS); //$NON-NLS-1$
                 }
                 if (!ctx.isPluginRepositoriesOutputted()) {
                     sb.append(DEFAULT_PADDING).append("<pluginRepositories>").append(LS).append( //$NON-NLS-1$
-                            ctx.outputPluginRepositoriesString()).append(DEFAULT_PADDING).append(
+                            ctx.outputPluginRepositoriesString(DEFAULT_INDENT * 2)).append(DEFAULT_PADDING).append(
                             "</pluginRepositories>").append(LS); //$NON-NLS-1$
                 }
                 if (!ctx.isProfilesOutputted()) {
                     sb.append(DEFAULT_PADDING).append("<profiles>").append(LS).append( //$NON-NLS-1$
-                            ctx.outputProfilesString()).append(DEFAULT_PADDING).append("</profiles>").append(LS); //$NON-NLS-1$
+                            ctx.outputProfilesString(DEFAULT_INDENT * 2)).append(DEFAULT_PADDING)
+                            .append("</profiles>").append(LS); //$NON-NLS-1$
                 }
                 sb.append(TagEvaluatorUtils.getEndTagString(name));
                 return sb.toString();
@@ -65,9 +69,9 @@ class PomTagEvaluator implements TagEvaluator {
                     ctx.leave();
                 }
             } else if ("dependencies".equals(name)) { //$NON-NLS-1$
-                ctx.setDependencyIndent(ctx.getElement().getColumnNumber() + 1);
                 ctx.setDependencies(buildDependencies(ctx, (TagElement) ctx.getElement()));
-                return TagEvaluatorUtils.getBeginTagString(name, attributes) + ctx.outputDependenciesString()
+                return TagEvaluatorUtils.getBeginTagString(name, attributes)
+                        + ctx.outputDependenciesString(getCurrentIndent(ctx) * 2)
                         + TagEvaluatorUtils.getEndTagString(name);
             } else if ("repositories".equals(name)) { //$NON-NLS-1$
                 for (Element elem : body) {
@@ -76,7 +80,8 @@ class PomTagEvaluator implements TagEvaluator {
                     }
                 }
                 return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                        + TagEvaluatorUtils.evaluateElements(ctx, body) + ctx.outputRepositoriesString()
+                        + TagEvaluatorUtils.evaluateElements(ctx, body)
+                        + ctx.outputRepositoriesString(getCurrentIndent(ctx) * 2)
                         + TagEvaluatorUtils.getEndTagString(name);
             } else if ("pluginRepositories".equals(name)) { //$NON-NLS-1$
                 for (Element elem : body) {
@@ -85,13 +90,15 @@ class PomTagEvaluator implements TagEvaluator {
                     }
                 }
                 return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                        + TagEvaluatorUtils.evaluateElements(ctx, body) + ctx.outputPluginRepositoriesString()
+                        + TagEvaluatorUtils.evaluateElements(ctx, body)
+                        + ctx.outputPluginRepositoriesString(getCurrentIndent(ctx) * 2)
                         + TagEvaluatorUtils.getEndTagString(name);
             } else if ("profiles".equals(name)) { //$NON-NLS-1$
                 ctx.enter();
                 try {
                     return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                            + TagEvaluatorUtils.evaluateElements(ctx, body) + ctx.outputProfilesString()
+                            + TagEvaluatorUtils.evaluateElements(ctx, body)
+                            + ctx.outputProfilesString(getCurrentIndent(ctx) * 2)
                             + TagEvaluatorUtils.getEndTagString(name);
                 } finally {
                     ctx.leave();
@@ -102,6 +109,10 @@ class PomTagEvaluator implements TagEvaluator {
         } else {
             return TagEvaluatorUtils.evaluate(ctx, name, attributes, body);
         }
+    }
+
+    int getCurrentIndent(TemplateContext context) {
+        return context.getElement().getColumnNumber() - 1;
     }
 
     Dependencies buildDependencies(TemplateContext context, TagElement element) {

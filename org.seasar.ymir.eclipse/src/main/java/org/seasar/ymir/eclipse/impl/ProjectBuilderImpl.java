@@ -66,6 +66,7 @@ import org.seasar.ymir.eclipse.popup.dialogs.AddFragmentsWizardDialog;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.MoldType;
+import org.seasar.ymir.vili.NullConfigurator;
 import org.seasar.ymir.vili.ProjectBuilder;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
@@ -557,6 +558,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 ViliBehavior behavior = mold.getBehavior();
                 behavior.getConfigurator().processBeforeExpanding(project, behavior, preferences, parameters,
                         new SubProgressMonitor(monitor, 1));
+                behavior.notifyPropertiesChanged();
 
                 for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
                     JarEntry entry = enm.nextElement();
@@ -1023,7 +1025,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             IFile pomFile = project.getFile(Globals.PATH_POM_XML);
             if (!pomFile.exists()) {
                 return;
-            } else if (isEmpty(pom)) {
+            } else if (isEmpty(pom) && behavior.getConfigurator().getClass() == NullConfigurator.class) {
                 return;
             }
 
@@ -1082,6 +1084,11 @@ public class ProjectBuilderImpl implements ProjectBuilder {
     }
 
     public Dependency getDependency(IProject project, String groupId, String artifactId) throws CoreException {
+        return getDependency(project, groupId, artifactId, null);
+    }
+
+    public Dependency getDependency(IProject project, String groupId, String artifactId, String classifier)
+            throws CoreException {
         if (project == null) {
             return null;
         }
@@ -1094,12 +1101,35 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         if (dependencies == null) {
             return null;
         }
+        Map<String, Dependency> map = new LinkedHashMap<String, Dependency>();
         for (Dependency dependency : dependencies.getDependencies()) {
             if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
-                return dependency;
+                map.put(dependency.getClassifier(), dependency);
             }
         }
-        return null;
+        Dependency dependency;
+        if (classifier != null) {
+            dependency = map.get(classifier);
+        } else {
+            dependency = map.get(classifier);
+            if (dependency == null) {
+                Dependency[] ds = map.values().toArray(new Dependency[0]);
+                if (ds.length > 0) {
+                    dependency = ds[0];
+                } else {
+                    dependency = null;
+                }
+            }
+        }
+        return dependency;
+    }
+
+    boolean equals(String s1, String s2) {
+        if (s1 == null) {
+            return s2 == null;
+        } else {
+            return s1.equals(s2);
+        }
     }
 
     public WizardDialog createAddFragmentsWizardDialog(Shell parentShell, IProject project, Mold... fragmentMolds) {
