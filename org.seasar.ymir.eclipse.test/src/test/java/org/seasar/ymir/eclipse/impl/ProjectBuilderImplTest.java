@@ -33,20 +33,21 @@ public class ProjectBuilderImplTest extends TestCase {
     }
 
     public void testMergePom() throws Exception {
-        Project project = new Project();
-        project.setRepositories(new Repositories(new Repository("www.seasar.org",
+        Project pom = new Project();
+        pom.setRepositories(new Repositories(new Repository("www.seasar.org",
                 "The Seasar Foundation Maven2 Repository", "http://maven.seasar.org/maven2"), new Repository(
                 "snapshot.maven.seasar.org", "The Seasar Foundation Maven2 Snapshot Repository",
                 "http://maven.seasar.org/maven2-snapshot", true)));
-        project.setPluginRepositories(new PluginRepositories(new PluginRepository("codehaus snapshot repository", null,
+        pom.setPluginRepositories(new PluginRepositories(new PluginRepository("codehaus snapshot repository", null,
                 "http://snapshots.repository.codehaus.org/", true)));
-        project.setDependencies(new Dependencies(new Dependency("group1", "artifact1", "version1"), new Dependency(
+        pom.setDependencies(new Dependencies(new Dependency("group1", "artifact1", "version1"), new Dependency(
                 "org.seasar.container", "s2-extension", "1.0.0")));
         Profile profile = new Profile();
         profile.addElement(new Element("id", new Attribute[0], new Node[] { new Text("executable") }));
-        project.setProfiles(new Profiles(profile));
+        pom.setProfiles(new Profiles(profile));
         assertEquals(IOUtils.readString(getClass().getResourceAsStream("pom_expected.xml"), "UTF-8", false), target
-                .mergePom(new InputStreamReader(getClass().getResourceAsStream("pom.xml"), "UTF-8"), project));
+                .mergePom(null, new InputStreamReader(getClass().getResourceAsStream("pom.xml"), "UTF-8"), pom,
+                        new MockViliBehavior(), null, null));
     }
 
     public void testMergeDicon1_混合パターン() throws Exception {
