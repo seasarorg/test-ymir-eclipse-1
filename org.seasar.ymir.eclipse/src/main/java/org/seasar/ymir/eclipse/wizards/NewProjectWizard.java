@@ -28,6 +28,7 @@ import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.HotdeployType;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
 import org.seasar.ymir.vili.Mold;
+import org.seasar.ymir.vili.ProcessContext;
 import org.seasar.ymir.vili.ProjectBuilder;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.ExtendedContext;
@@ -72,7 +73,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
      */
 
     public void addPages() {
-        firstPage = new SelectArtifactPage(null, preferences, nonTransitiveContext, true);
+        firstPage = new SelectArtifactPage(null, preferences, ProcessContext.CREATE_PROJECT, nonTransitiveContext, true);
         firstPage.setTitle(Messages.getString("NewProjectWizard.26")); //$NON-NLS-1$
         firstPage.setDescription(Messages.getString("NewProjectWizard.27")); //$NON-NLS-1$
         addPage(firstPage);

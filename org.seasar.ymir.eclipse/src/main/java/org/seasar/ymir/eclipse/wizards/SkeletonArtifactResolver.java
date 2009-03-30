@@ -11,6 +11,7 @@ import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.MoldResolver;
 import org.seasar.ymir.vili.MoldType;
 import org.seasar.ymir.vili.MoldTypeMismatchException;
+import org.seasar.ymir.vili.ProcessContext;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliVersionMismatchException;
 import org.seasar.ymir.vili.maven.ExtendedContext;
@@ -24,11 +25,13 @@ public class SkeletonArtifactResolver implements Runnable {
 
     private ViliProjectPreferences preferences;
 
+    private ProcessContext processCtx;
+
     private Skeleton skeleton;
 
     private long wait;
 
-    private ExtendedContext context;
+    private ExtendedContext ctx;
 
     private Thread thread;
 
@@ -37,11 +40,12 @@ public class SkeletonArtifactResolver implements Runnable {
     private String errorMessage;
 
     public SkeletonArtifactResolver(SelectArtifactPage page, IProject project, ViliProjectPreferences preferences,
-            ExtendedContext context, Skeleton skeleton, long wait) {
+            ProcessContext processCtx, ExtendedContext ctx, Skeleton skeleton, long wait) {
         this.page = page;
         this.project = project;
         this.preferences = preferences;
-        this.context = context;
+        this.processCtx = processCtx;
+        this.ctx = ctx;
         this.skeleton = skeleton;
         this.wait = wait;
     }
@@ -74,9 +78,9 @@ public class SkeletonArtifactResolver implements Runnable {
                 boolean failed = false;
                 do {
                     try {
-                        skeletonMold = moldResolver.resolveMold(context, skeleton.getGroupId(), skeleton
-                                .getArtifactId(), skeleton.getVersion(), MoldType.SKELETON, preferences
-                                .getViliVersion(), page.useSkeletonSnapshot(), project, new NullProgressMonitor());
+                        skeletonMold = moldResolver.resolveMold(ctx, skeleton.getGroupId(), skeleton.getArtifactId(),
+                                skeleton.getVersion(), MoldType.SKELETON, preferences.getViliVersion(), page
+                                        .useSkeletonSnapshot(), project, processCtx, new NullProgressMonitor());
                     } catch (MoldTypeMismatchException ex) {
                         errorMessage = Messages.getString("SkeletonArtifactResolver.0"); //$NON-NLS-1$
                     } catch (ViliVersionMismatchException ex) {
@@ -96,9 +100,10 @@ public class SkeletonArtifactResolver implements Runnable {
                     for (Fragment fragment : skeleton.getAllFragments()) {
                         Mold fragmentMold = null;
                         try {
-                            fragmentMold = moldResolver.resolveMold(context, fragment.getGroupId(), fragment
+                            fragmentMold = moldResolver.resolveMold(ctx, fragment.getGroupId(), fragment
                                     .getArtifactId(), fragment.getVersion(), MoldType.FRAGMENT, preferences
-                                    .getViliVersion(), page.useFragmentSnapshot(), project, new NullProgressMonitor());
+                                    .getViliVersion(), page.useFragmentSnapshot(), project, processCtx,
+                                    new NullProgressMonitor());
                         } catch (MoldTypeMismatchException ex) {
                             errorMessage = MessageFormat.format(
                                     Messages.getString("SkeletonArtifactResolver.4"), fragment.toString()); //$NON-NLS-1$

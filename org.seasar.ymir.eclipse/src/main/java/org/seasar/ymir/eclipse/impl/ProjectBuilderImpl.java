@@ -607,7 +607,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 ViliBehavior behavior = mold.getBehavior();
                 behavior.getConfigurator().processBeforeExpanding(project, behavior, preferences, parameters,
                         new SubProgressMonitor(monitor, 1));
-                behavior.notifyPropertiesChanged();
+                behavior.update();
 
                 for (Enumeration<JarEntry> enm = jarFile.entries(); enm.hasMoreElements();) {
                     JarEntry entry = enm.nextElement();

@@ -16,6 +16,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.vili.Mold;
+import org.seasar.ymir.vili.ProcessContext;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.ExtendedContext;
 
@@ -59,7 +60,8 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
 
     public void addPages() {
         if (fragmentMolds.length == 0) {
-            firstPage = new SelectArtifactPage(project, preferences, nonTransitiveContext, false);
+            firstPage = new SelectArtifactPage(project, preferences, ProcessContext.ADD_FRAGMENT, nonTransitiveContext,
+                    false);
             firstPage.setTitle(Messages.getString("AddFragmentsWizard.1")); //$NON-NLS-1$
             firstPage.setDescription(Messages.getString("AddFragmentsWizard.2")); //$NON-NLS-1$
             addPage(firstPage);

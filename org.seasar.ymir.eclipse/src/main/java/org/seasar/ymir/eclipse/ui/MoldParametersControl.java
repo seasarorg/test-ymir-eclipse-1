@@ -308,9 +308,10 @@ public class MoldParametersControl {
         for (int i = 0; i < parameterModelMaps.length; i++) {
             Map<String, ParameterModel> modelMap = parameterModelMaps[i];
             ViliBehavior behavior = molds[i].getBehavior();
-            Map<String, Object> resumed = behavior.getConfigurator().resumeParameters(project, molds[i], preferences);
+            Map<String, Object> loaded = behavior.getConfigurator().loadParameters(project, molds[i], preferences);
+            molds[i].setParameterMap(loaded);
             for (String name : modelMap.keySet()) {
-                String defaultValue = toString(resumed.get(name));
+                String defaultValue = toString(loaded.get(name));
                 if (defaultValue != null) {
                     ParameterModel model = modelMap.get(name);
                     model.setValue(defaultValue);
@@ -353,7 +354,10 @@ public class MoldParametersControl {
 
     public void populateMoldParameters() {
         for (int i = 0; i < molds.length; i++) {
-            Map<String, Object> parameterMap = new HashMap<String, Object>();
+            if (molds[i].getParameterMap() == null) {
+                molds[i].setParameterMap(new HashMap<String, Object>());
+            }
+            Map<String, Object> parameterMap = molds[i].getParameterMap();
             Map<String, ParameterModel> modelMap = parameterModelMaps[i];
             for (Iterator<Map.Entry<String, ParameterModel>> itr = modelMap.entrySet().iterator(); itr.hasNext();) {
                 Map.Entry<String, ParameterModel> entry = itr.next();

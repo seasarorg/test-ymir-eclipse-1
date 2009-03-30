@@ -247,7 +247,7 @@ public class ConfigureParametersPage extends WizardPage {
                 try {
                     for (ViliBehavior behavior : behaviorList) {
                         behavior.getConfigurator().start(project, behavior, preferences);
-                        behavior.notifyPropertiesChanged();
+                        behavior.update();
                         monitor.worked(1);
                     }
                 } finally {

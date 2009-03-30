@@ -30,6 +30,7 @@ import org.seasar.ymir.vili.InclusionType;
 import org.seasar.ymir.vili.MoldType;
 import org.seasar.ymir.vili.NullConfigurator;
 import org.seasar.ymir.vili.ParameterType;
+import org.seasar.ymir.vili.ProcessContext;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
@@ -51,6 +52,8 @@ public class ViliBehaviorImpl implements ViliBehavior {
     private Artifact artifact;
 
     private ClassLoader projectClassLoader;
+
+    private ProcessContext context;
 
     private MapProperties properties;
 
@@ -95,9 +98,10 @@ public class ViliBehaviorImpl implements ViliBehavior {
         initializeViliVersion(properties);
     }
 
-    public ViliBehaviorImpl(Artifact artifact, ClassLoader projectClassLoader) {
+    public ViliBehaviorImpl(Artifact artifact, ClassLoader projectClassLoader, ProcessContext context) {
         this.artifact = artifact;
         this.projectClassLoader = projectClassLoader;
+        this.context = context;
         properties = readProperties(artifact);
         initializeViliVersion(properties);
     }
@@ -551,9 +555,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public void notifyPropertiesChanged() {
-        if (initialized) {
-            initialize0();
-        }
+        update();
     }
 
     public IConfigurator getConfigurator() {
@@ -576,5 +578,15 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     public boolean isAvailableOnlyIfProjectExists() {
         return PropertyUtils.valueOf(properties.getProperty(AVAILABLEONLYIFPROJECTEXISTS), false);
+    }
+
+    public ProcessContext getProcessContext() {
+        return context;
+    }
+
+    public void update() {
+        if (initialized) {
+            initialize0();
+        }
     }
 }

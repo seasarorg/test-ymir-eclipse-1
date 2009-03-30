@@ -38,6 +38,7 @@ import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.MoldType;
 import org.seasar.ymir.vili.MoldTypeMismatchException;
+import org.seasar.ymir.vili.ProcessContext;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliVersionMismatchException;
@@ -57,7 +58,9 @@ public class SelectArtifactPage extends WizardPage {
 
     private ViliProjectPreferences preferences;
 
-    private ExtendedContext context;
+    private ProcessContext processCtx;
+
+    private ExtendedContext ctx;
 
     private boolean showSkeletonTab;
 
@@ -127,13 +130,14 @@ public class SelectArtifactPage extends WizardPage {
 
     private volatile Mold[] fragmentTemplateMolds;
 
-    public SelectArtifactPage(IProject project, ViliProjectPreferences preferences, ExtendedContext context,
-            boolean showSkeletonTab) {
+    public SelectArtifactPage(IProject project, ViliProjectPreferences preferences, ProcessContext processCtx,
+            ExtendedContext ctx, boolean showSkeletonTab) {
         super("SelectArtifactPage"); //$NON-NLS-1$
 
         this.project = project;
         this.preferences = preferences;
-        this.context = context;
+        this.processCtx = processCtx;
+        this.ctx = ctx;
         this.showSkeletonTab = showSkeletonTab;
     }
 
@@ -718,7 +722,8 @@ public class SelectArtifactPage extends WizardPage {
 
         Skeleton skeleton = getSkeleton();
         if (skeleton != null) {
-            skeletonArtifactResolver = new SkeletonArtifactResolver(this, project, preferences, context, skeleton, wait);
+            skeletonArtifactResolver = new SkeletonArtifactResolver(this, project, preferences, processCtx, ctx,
+                    skeleton, wait);
             skeletonArtifactResolver.start();
         }
     }
@@ -752,8 +757,8 @@ public class SelectArtifactPage extends WizardPage {
             public void run(IProgressMonitor monitor) throws InvocationTargetException {
                 resolved[0] = new Resolved();
                 try {
-                    Mold mold = Activator.getDefault().getMoldResolver().resolveMold(context, groupId, artifactId,
-                            version, MoldType.FRAGMENT, preferences.getViliVersion(), useFragmentSnapshot, project,
+                    Mold mold = Activator.getDefault().getMoldResolver().resolveMold(ctx, groupId, artifactId, version,
+                            MoldType.FRAGMENT, preferences.getViliVersion(), useFragmentSnapshot, project, processCtx,
                             monitor);
                     if (mold == null) {
                         resolved[0].setErrorMessage(Messages.getString("SelectArtifactPage.19")); //$NON-NLS-1$

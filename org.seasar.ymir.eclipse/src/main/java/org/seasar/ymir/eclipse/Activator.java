@@ -32,6 +32,7 @@ import org.seasar.ymir.eclipse.preferences.impl.ViliNewProjectPreferencesProvide
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesImpl;
 import org.seasar.ymir.eclipse.preferences.impl.ViliProjectPreferencesProviderImpl;
 import org.seasar.ymir.vili.MoldResolver;
+import org.seasar.ymir.vili.ProcessContext;
 import org.seasar.ymir.vili.ProjectBuilder;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
@@ -243,7 +244,8 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    public ViliBehavior newViliBehavior(Artifact artifact, ClassLoader projectClassLoader) throws CoreException {
-        return new ViliBehaviorImpl(artifact, projectClassLoader);
+    public ViliBehavior newViliBehavior(Artifact artifact, ClassLoader projectClassLoader, ProcessContext context)
+            throws CoreException {
+        return new ViliBehaviorImpl(artifact, projectClassLoader, context);
     }
 }

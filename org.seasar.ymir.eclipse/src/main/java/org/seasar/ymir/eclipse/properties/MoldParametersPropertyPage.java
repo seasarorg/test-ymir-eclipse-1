@@ -14,6 +14,7 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ui.MoldParametersControl;
 import org.seasar.ymir.vili.Mold;
+import org.seasar.ymir.vili.ProcessContext;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 
 public class MoldParametersPropertyPage extends PropertyPage {
@@ -31,7 +32,7 @@ public class MoldParametersPropertyPage extends PropertyPage {
             project = getProject();
             preferences = Activator.getDefault().getViliProjectPreferences(project);
             control = new MoldParametersControl(parent, project, preferences, Activator.getDefault()
-                    .getProjectRelative(project).getMolds()) {
+                    .getProjectRelative(project).getMolds(ProcessContext.MODIFY_PROPERTIES)) {
                 @Override
                 public void setErrorMessage(String message) {
                     MoldParametersPropertyPage.this.setErrorMessage(message);

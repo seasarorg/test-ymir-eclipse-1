@@ -1,9 +1,7 @@
 package org.seasar.ymir.eclipse;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -20,6 +18,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.vili.IAction;
 import org.seasar.ymir.vili.Mold;
+import org.seasar.ymir.vili.ProcessContext;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
 import org.seasar.ymir.vili.model.Fragment;
@@ -37,12 +36,6 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
 
     private Skeleton skeleton;
 
-    private Mold skeletonMold;
-
-    private Map<Fragment, Mold> moldByFragmentMap = new LinkedHashMap<Fragment, Mold>();
-
-    private Mold[] molds;
-
     private Actions actions;
 
     public ProjectRelative(IProject project) {
@@ -54,13 +47,13 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
                 PreferenceConstants.P_ACTIONS));
     }
 
-    private Mold createMold(String groupId, String artifactId, String version) {
+    private Mold createMold(ProcessContext context, String groupId, String artifactId, String version) {
         if (groupId == null || artifactId == null || version == null) {
             return null;
         }
         Artifact artifact = Activator.getDefault().getArtifactResolver().resolve(groupId, artifactId, version, false);
         if (artifact != null) {
-            return Mold.newInstance(artifact, getProjectClassLoader());
+            return Mold.newInstance(artifact, getProjectClassLoader(), context);
         } else {
             return null;
         }
@@ -79,24 +72,6 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
             skeleton = new Skeleton();
             skeleton.setFragments(new Fragments());
         }
-        skeletonMold = createMold(skeleton.getGroupId(), skeleton.getArtifactId(), skeleton.getVersion());
-
-        List<Mold> moldList = new ArrayList<Mold>();
-        if (skeletonMold != null) {
-            moldList.add(skeletonMold);
-        }
-
-        for (Fragment fragment : skeleton.getFragments().getFragments()) {
-            Artifact artifact = Activator.getDefault().getArtifactResolver().resolve(fragment.getGroupId(),
-                    fragment.getArtifactId(), fragment.getVersion(), false);
-            if (artifact != null) {
-                Mold mold = Mold.newInstance(artifact, getProjectClassLoader());
-                moldList.add(mold);
-                moldByFragmentMap.put(fragment, mold);
-            }
-        }
-
-        molds = moldList.toArray(new Mold[0]);
 
         return skeleton;
     }
@@ -120,8 +95,10 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
                     action.getArtifactId(), action.getVersion(), false);
             if (artifact != null) {
                 try {
-                    action.setClass((Class<? extends IAction>) Mold.newInstance(artifact, getProjectClassLoader())
-                            .getBehavior().getClassLoader().loadClass(action.getActionClass()));
+                    action
+                            .setClass((Class<? extends IAction>) Mold.newInstance(artifact, getProjectClassLoader(),
+                                    ProcessContext.TEMPORARY).getBehavior().getClassLoader().loadClass(
+                                    action.getActionClass()));
                 } catch (ClassNotFoundException ex) {
                     Activator.getDefault().log(ex);
                 }
@@ -216,16 +193,24 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
         return skeleton;
     }
 
-    public Mold getSkeletonMold() {
-        return skeletonMold;
-    }
+    public Mold[] getMolds(ProcessContext context) {
+        Mold skeletonMold = createMold(context, skeleton.getGroupId(), skeleton.getArtifactId(), skeleton.getVersion());
 
-    public Mold[] getFragmentMolds() {
-        return moldByFragmentMap.values().toArray(new Mold[0]);
-    }
+        List<Mold> moldList = new ArrayList<Mold>();
+        if (skeletonMold != null) {
+            moldList.add(skeletonMold);
+        }
 
-    public Mold[] getMolds() {
-        return molds;
+        for (Fragment fragment : skeleton.getFragments().getFragments()) {
+            Artifact artifact = Activator.getDefault().getArtifactResolver().resolve(fragment.getGroupId(),
+                    fragment.getArtifactId(), fragment.getVersion(), false);
+            if (artifact != null) {
+                Mold mold = Mold.newInstance(artifact, getProjectClassLoader(), context);
+                moldList.add(mold);
+            }
+        }
+
+        return moldList.toArray(new Mold[0]);
     }
 
     public Actions getActions() {
