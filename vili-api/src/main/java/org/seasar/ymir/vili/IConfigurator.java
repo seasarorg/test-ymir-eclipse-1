@@ -136,9 +136,10 @@ public interface IConfigurator {
      * </p>
      * 
      * @param project プロジェクト。nullが渡されることはありません。
-     * @param mold パラメータを復元する対象であるMold。nullが渡されることはありません。
+     * @param mold パラメータを保存する対象であるMold。nullが渡されることはありません。
      * @param preferences ViliProjectPreferencesインスタンス。nullが渡されることはありません。
-     * @param parameters 保存すべきパラメータ。nullが渡されることはありません。
+     * @param parameters 保存すべきパラメータを持つMap。nullが渡されることはありません。
+     * このMapはmodifiableなパラメータを含めた全てのパラメータを持っています。
      * @param store 指定されたMold用のIPreferenceStoreオブジェクト。
      * @return パラメータを保存できたかどうか。
      * @since 0.2.2
@@ -148,17 +149,20 @@ public interface IConfigurator {
             IPersistentPreferenceStore store);
 
     /**
-     * 指定されたMoldのパラメータをプロジェクトから復元します。
+     * 指定されたMoldのパラメータをプロジェクトから読み込みます。
      * <p>このメソッドは、プロジェクトが持つパラメータを変更するためのProperties画面で各パラメータの現在の値を埋めるために
      * システムから呼び出されます。
+     * </p>
+     * <p>このメソッドが返すMapはmodifiableでないパラメータを含めた全てのパラメータを持つ
+     * ようにして下さい。
      * </p>
      * 
      * @param project プロジェクト。nullが渡されることはありません。
      * @param mold パラメータを復元する対象であるMold。nullが渡されることはありません。
      * @param preferences ViliProjectPreferencesインスタンス。nullが渡されることはありません。
-     * @return 復元されたパラメータを保持するMap。nullを返してはいけません。
+     * @return 読み込まれたパラメータを保持するMap。nullを返してはいけません。
      * @since 0.2.2
      */
-    Map<String, Object> resumeParameters(IProject project, Mold mold,
+    Map<String, Object> loadParameters(IProject project, Mold mold,
             ViliProjectPreferences preferences);
 }

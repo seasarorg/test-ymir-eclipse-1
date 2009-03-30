@@ -60,14 +60,16 @@ public class Activator {
     }
 
     public static ViliBehavior newViliBehavior(Artifact artifact,
-            ClassLoader projectClassLoader) throws CoreException {
+            ClassLoader projectClassLoader, ProcessContext context)
+            throws CoreException {
         try {
             Class<?> activatorClass = Class.forName(CLASS_ACTIVATOR);
             Object activator = activatorClass.getMethod(METHOD_GETDEFAULT)
                     .invoke(null);
             return (ViliBehavior) activatorClass.getMethod(
-                    METHOD_NEWVILIBEHAVIOR, Artifact.class, ClassLoader.class)
-                    .invoke(activator, artifact, projectClassLoader);
+                    METHOD_NEWVILIBEHAVIOR, Artifact.class, ClassLoader.class,
+                    ProcessContext.class).invoke(activator, artifact,
+                    projectClassLoader, context);
         } catch (Throwable t) {
             throwCoreException("Can't construct ViliBehavior instance", t);
             return null;

@@ -11,22 +11,26 @@ public class Mold {
 
     private ClassLoader projectClassLoader;
 
+    private ProcessContext context;
+
     private ViliBehavior behavior;
 
     private Map<String, Object> parameterMap;
 
     public static Mold newInstance(Artifact artifact,
-            ClassLoader projectClassLoader) {
+            ClassLoader projectClassLoader, ProcessContext context) {
         if (artifact == null) {
             return null;
         } else {
-            return new Mold(artifact, projectClassLoader);
+            return new Mold(artifact, projectClassLoader, context);
         }
     }
 
-    private Mold(Artifact artifact, ClassLoader projectClassLoader) {
+    private Mold(Artifact artifact, ClassLoader projectClassLoader,
+            ProcessContext context) {
         this.artifact = artifact;
         this.projectClassLoader = projectClassLoader;
+        this.context = context;
     }
 
     @Override
@@ -42,7 +46,7 @@ public class Mold {
         if (behavior == null) {
             try {
                 behavior = Activator.newViliBehavior(artifact,
-                        projectClassLoader);
+                        projectClassLoader, context);
             } catch (CoreException ex) {
                 Activator.log(ex);
                 throw new RuntimeException(

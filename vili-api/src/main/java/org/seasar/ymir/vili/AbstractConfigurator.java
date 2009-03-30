@@ -62,7 +62,7 @@ abstract public class AbstractConfigurator implements IConfigurator {
         }
     }
 
-    public Map<String, Object> resumeParameters(IProject project, Mold mold,
+    public Map<String, Object> loadParameters(IProject project, Mold mold,
             ViliProjectPreferences preferences) {
         return new HashMap<String, Object>();
     }

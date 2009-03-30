@@ -132,9 +132,16 @@ public interface ViliBehavior {
 
     MapProperties getProperties();
 
+    /**
+     * @deprecated
+     */
     void notifyPropertiesChanged();
+
+    void update();
 
     ClassLoader getClassLoader();
 
     Actions getActions();
+
+    ProcessContext getProcessContext();
 }
