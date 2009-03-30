@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.seasar.kvasir.util.collection.MapProperties;
@@ -67,4 +68,7 @@ public interface ProjectBuilder {
 
     WizardDialog createAddFragmentsWizardDialog(Shell parentShell,
             IProject project, Mold... fragmentMolds);
+
+    IPersistentPreferenceStore getMoldPreferenceStore(IProject project,
+            Mold mold);
 }

@@ -36,11 +36,13 @@ public interface ViliBehavior {
 
     String SUFFIX_TEMPLATE_PARAMETER_CANDIDATES = ".candidates"; //$NON-NLS-1$
 
-    String SUFFIX_TEMPLATE_PARAMETER_MEMBERS = ".members"; //$NON-NLS-1$
+    String SUFFIX_TEMPLATE_PARAMETER_PARAMETERS = ".parameters"; //$NON-NLS-1$
 
     String SUFFIX_TEMPLATE_PARAMETER_REQUIRED = ".required"; //$NON-NLS-1$
 
     String SUFFIX_TEMPLATE_PARAMETER_DEPENDS = ".depends"; //$NON-NLS-1$
+
+    String SUFFIX_TEMPLATE_PARAMETER_VOLATILE = ".volatile"; //$NON-NLS-1$
 
     String SUFFIX_TEMPLATE_PARAMETER_LABEL = ".label"; //$NON-NLS-1$
 
@@ -70,16 +72,31 @@ public interface ViliBehavior {
 
     String[] getTemplateParameters();
 
+    /**
+     * @since 0.2.2
+     */
+    String[] getTemplateParameters(boolean exceptForVolatile);
+
+    /**
+     * @since 0.2.2
+     */
+    String[] getTemplateParameters(String groupName);
+
+    /**
+     * @since 0.2.2
+     */
+    String[] getTemplateParameters(String groupName, boolean exceptForVolatile);
+
+    /**
+     * @since 0.2.2
+     */
+    boolean isTemplateParameterVolatile(String name);
+
     ParameterType getTemplateParameterType(String name);
 
     String getTemplateParameterDefault(String name);
 
     String[] getTemplateParameterCandidates(String name);
-
-    /**
-     * @since 0.2.2
-     */
-    String[] getTemplateParameterMembers(String name);
 
     boolean isTemplateParameterRequired(String name);
 

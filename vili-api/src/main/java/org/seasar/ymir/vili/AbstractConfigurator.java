@@ -1,9 +1,12 @@
 package org.seasar.ymir.vili;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.seasar.ymir.vili.model.maven.Dependency;
 
 abstract public class AbstractConfigurator implements IConfigurator {
@@ -41,5 +44,26 @@ abstract public class AbstractConfigurator implements IConfigurator {
             ViliProjectPreferences preferences, Map<String, Object> parameters,
             IProgressMonitor monitor) {
         monitor.done();
+    }
+
+    public boolean saveParameters(IProject project, Mold mold,
+            ViliProjectPreferences preferences, Map<String, Object> parameters,
+            IPersistentPreferenceStore store) {
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            store.setValue(entry.getKey(), entry.getValue().toString());
+        }
+        try {
+            store.save();
+            return true;
+        } catch (IOException ex) {
+            Activator.log("Can't save parameters for mold " + mold
+                    + ": project=" + project, ex);
+            return false;
+        }
+    }
+
+    public Map<String, Object> resumeParameters(IProject project, Mold mold,
+            ViliProjectPreferences preferences) {
+        return new HashMap<String, Object>();
     }
 }
