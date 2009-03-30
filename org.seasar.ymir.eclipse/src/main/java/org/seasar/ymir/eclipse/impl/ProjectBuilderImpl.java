@@ -631,6 +631,9 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             IProgressMonitor monitor) throws CoreException {
         String resolvedPath = resolvePath(behavior.getConfigurator().adjustPath(path, project, behavior, preferences,
                 parameters), cfg, parameters);
+        if (resolvedPath == null) {
+            return;
+        }
         if (!shouldExpand(path, resolvedPath, project, behavior, preferences, parameters)) {
             return;
         }
@@ -901,6 +904,9 @@ public class ProjectBuilderImpl implements ProjectBuilder {
     }
 
     private String resolvePath(String path, Configuration cfg, Map<String, Object> parameterMap) throws CoreException {
+        if (path == null) {
+            return null;
+        }
         try {
             StringWriter sw = new StringWriter();
             new freemarker.template.Template("pathName", new StringReader(path), cfg).process(parameterMap, sw); //$NON-NLS-1$
