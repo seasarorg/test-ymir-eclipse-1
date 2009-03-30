@@ -6,23 +6,20 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.seasar.ymir.vili.Mold;
 
-public class RadioParameterModel implements ParameterModel {
+public class GroupParameterModel implements ParameterModel {
     private Mold mold;
 
     private String name;
 
     private Group group;
 
-    private String[] candidates;
+    private ParameterModel[] members;
 
-    private Button[] buttons;
-
-    public RadioParameterModel(Mold mold, String name, Group group, String[] candidates, Button[] buttons) {
+    public GroupParameterModel(Mold mold, String name, Group group, ParameterModel[] members) {
         this.mold = mold;
         this.name = name;
         this.group = group;
-        this.candidates = candidates;
-        this.buttons = buttons;
+        this.members = members;
     }
 
     public boolean valueExists() {

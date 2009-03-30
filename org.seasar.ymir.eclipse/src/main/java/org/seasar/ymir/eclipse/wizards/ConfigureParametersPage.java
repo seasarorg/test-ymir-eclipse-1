@@ -246,15 +246,12 @@ public class ConfigureParametersPage extends WizardPage {
     }
 
     void createGroupControl(Composite parent, Mold mold, ViliBehavior behavior, Map<String, ParameterModel> modelMap,
-            List<ParameterModel> requiredList, String groupName, String[] childNames) {
+            List<ParameterModel> requiredList, String groupName, String[] memberNames) {
 
-        String prefix;
         String groupLabel;
         if (groupName == null) {
-            prefix = "";
             groupLabel = behavior.getLabel();
         } else {
-            prefix = groupName + ".";
             groupLabel = behavior.getTemplateParameterLabel(groupName);
         }
 
@@ -265,8 +262,9 @@ public class ConfigureParametersPage extends WizardPage {
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         group.setText(groupLabel);
 
-        for (int i = 0; i < childNames.length; i++) {
-            String name = prefix + childNames[i];
+        ParameterModel[] members = new ParameterModel[memberNames.length];
+        for (int i = 0; i < memberNames.length; i++) {
+            String name = memberNames[i];
             String description = behavior.getTemplateParameterDescription(name);
             switch (behavior.getTemplateParameterType(name)) {
             case TEXT: {
@@ -399,6 +397,12 @@ public class ConfigureParametersPage extends WizardPage {
                 ParameterModel model = new RadioParameterModel(mold, name, radio, candidates, buttons);
                 modelMap.put(name, model);
 
+                if (behavior.isTemplateParameterRequired(name)) {
+                    requiredList.add(model);
+                    for (Button button : buttons) {
+                        button.addListener(SWT.Selection, validationListener);
+                    }
+                }
                 String[] dependents = behavior.getTemplateParameterDependents(name);
                 if (dependents.length > 0) {
                     for (Button button : buttons) {
