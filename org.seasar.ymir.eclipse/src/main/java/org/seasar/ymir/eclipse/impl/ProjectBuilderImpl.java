@@ -74,6 +74,9 @@ import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.util.ArtifactUtils;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
+import org.seasar.ymir.vili.model.Fragment;
+import org.seasar.ymir.vili.model.Fragments;
+import org.seasar.ymir.vili.model.Skeleton;
 import org.seasar.ymir.vili.model.dicon.Components;
 import org.seasar.ymir.vili.model.maven.Dependencies;
 import org.seasar.ymir.vili.model.maven.Dependency;
@@ -155,13 +158,22 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         monitor.beginTask(Messages.getString("ProjectBuilderImpl.8"), fragments.length + 1); //$NON-NLS-1$
         try {
             IPreferenceStore store = Activator.getDefault().getPreferenceStore(project);
+            Skeleton skeleton = XOMUtils.getAsBean(store.getString(PreferenceConstants.P_SKELETON), Skeleton.class);
+            if (skeleton == null) {
+                skeleton = new Skeleton();
+                skeleton.setFragments(new Fragments());
+            }
             Actions actions = XOMUtils.getAsBean(store.getString(PreferenceConstants.P_ACTIONS), Actions.class);
             if (actions == null) {
                 actions = new Actions();
             }
 
+            Set<Fragment> fragmentSet = new LinkedHashSet<Fragment>(Arrays.asList(skeleton.getFragments()
+                    .getFragments()));
             for (Mold fragment : fragments) {
                 Artifact artifact = fragment.getArtifact();
+                fragmentSet.add(new Fragment(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
+                        null, null));
                 ViliBehavior behavior = fragment.getBehavior();
                 @SuppressWarnings("unchecked")//$NON-NLS-1$
                 Map<String, Object> parameters = new CascadeMap<String, Object>(new HashMap<String, Object>(), fragment
@@ -193,14 +205,21 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 }
             }
 
+            skeleton.setFragments(new Fragments(fragmentSet.toArray(new Fragment[0])));
+
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
 
             try {
                 StringWriter sw = new StringWriter();
+                XOMUtils.getXOMapper().toXML(skeleton, sw);
+                store.putValue(PreferenceConstants.P_SKELETON, sw.toString());
+
+                sw = new StringWriter();
                 XOMUtils.getXOMapper().toXML(actions, sw);
                 store.putValue(PreferenceConstants.P_ACTIONS, sw.toString());
+
                 ((IPersistentPreferenceStore) store).save();
             } catch (Throwable t) {
                 Activator.getDefault().log(t);

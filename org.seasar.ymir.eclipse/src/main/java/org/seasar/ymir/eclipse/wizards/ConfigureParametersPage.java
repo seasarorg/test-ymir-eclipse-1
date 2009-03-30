@@ -41,6 +41,7 @@ import org.seasar.ymir.eclipse.ui.ViliProjectPreferencesControl;
 import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
 import org.seasar.ymir.eclipse.wizards.model.ButtonParameterModel;
 import org.seasar.ymir.eclipse.wizards.model.ComboParameterModel;
+import org.seasar.ymir.eclipse.wizards.model.GroupParameterModel;
 import org.seasar.ymir.eclipse.wizards.model.ParameterModel;
 import org.seasar.ymir.eclipse.wizards.model.RadioParameterModel;
 import org.seasar.ymir.eclipse.wizards.model.TextParameterModel;
@@ -240,39 +241,34 @@ public class ConfigureParametersPage extends WizardPage {
                 continue;
             }
 
-            createGroupControl(parent, mold, behavior, parameterModelMaps[i], requiredList, null, names);
+            Group group = new Group(parent, SWT.NONE);
+            GridLayout layout = new GridLayout();
+            layout.numColumns = 2;
+            group.setLayout(layout);
+            group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            group.setText(behavior.getLabel());
+
+            createParameterModels(parent, mold, behavior, parameterModelMaps[i], requiredList, null, names);
         }
         requiredParameterModels = requiredList.toArray(new ParameterModel[0]);
     }
 
-    void createGroupControl(Composite parent, Mold mold, ViliBehavior behavior, Map<String, ParameterModel> modelMap,
-            List<ParameterModel> requiredList, String groupName, String[] memberNames) {
+    ParameterModel[] createParameterModels(Composite parent, Mold mold, ViliBehavior behavior,
+            Map<String, ParameterModel> modelMap, List<ParameterModel> requiredList, String[] names,
+            String[] parentDependents) {
 
-        String groupLabel;
-        if (groupName == null) {
-            groupLabel = behavior.getLabel();
-        } else {
-            groupLabel = behavior.getTemplateParameterLabel(groupName);
-        }
-
-        Group group = new Group(parent, SWT.NONE);
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        group.setLayout(layout);
-        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText(groupLabel);
-
-        ParameterModel[] members = new ParameterModel[memberNames.length];
-        for (int i = 0; i < memberNames.length; i++) {
-            String name = memberNames[i];
+        ParameterModel[] models = new ParameterModel[names.length];
+        for (int i = 0; i < names.length; i++) {
+            String name = names[i];
             String description = behavior.getTemplateParameterDescription(name);
+            String[] dependents = add(parentDependents, behavior.getTemplateParameterDependents(name));
+            ParameterModel model;
             switch (behavior.getTemplateParameterType(name)) {
             case TEXT: {
-                Label label = new Label(group, SWT.NONE);
+                Label label = new Label(parent, SWT.NONE);
                 label.setText(behavior.getTemplateParameterLabel(name));
-                Text text = new Text(group, SWT.BORDER);
-                ParameterModel model = new TextParameterModel(mold, name, text, label);
-                modelMap.put(name, model);
+                Text text = new Text(parent, SWT.BORDER);
+                model = new TextParameterModel(mold, name, text, label);
                 GridData data = new GridData(GridData.FILL_HORIZONTAL);
                 data.widthHint = 250;
                 text.setLayoutData(data);
@@ -283,7 +279,6 @@ public class ConfigureParametersPage extends WizardPage {
                     requiredList.add(model);
                     text.addListener(SWT.Modify, validationListener);
                 }
-                String[] dependents = behavior.getTemplateParameterDependents(name);
                 if (dependents.length > 0) {
                     text.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
                 }
@@ -291,9 +286,8 @@ public class ConfigureParametersPage extends WizardPage {
                 break;
 
             case CHECKBOX: {
-                Button button = new Button(group, SWT.CHECK | SWT.LEFT);
-                ParameterModel model = new ButtonParameterModel(mold, name, button);
-                modelMap.put(name, model);
+                Button button = new Button(parent, SWT.CHECK | SWT.LEFT);
+                model = new ButtonParameterModel(mold, name, button);
                 GridData data = new GridData();
                 data.horizontalSpan = 2;
                 button.setLayoutData(data);
@@ -301,7 +295,6 @@ public class ConfigureParametersPage extends WizardPage {
                 if (description.length() > 0) {
                     button.setToolTipText(description);
                 }
-                String[] dependents = behavior.getTemplateParameterDependents(name);
                 if (dependents.length > 0) {
                     button.addListener(SWT.Selection, new DependencyListener(modelMap, dependents));
                 }
@@ -309,11 +302,10 @@ public class ConfigureParametersPage extends WizardPage {
                 break;
 
             case SELECT: {
-                Label label = new Label(group, SWT.NONE);
+                Label label = new Label(parent, SWT.NONE);
                 label.setText(behavior.getTemplateParameterLabel(name));
-                Combo combo = new Combo(group, SWT.READ_ONLY);
-                ParameterModel model = new ComboParameterModel(mold, name, combo, label);
-                modelMap.put(name, model);
+                Combo combo = new Combo(parent, SWT.READ_ONLY);
+                model = new ComboParameterModel(mold, name, combo, label);
                 GridData data = new GridData(GridData.FILL_HORIZONTAL);
                 data.widthHint = 250;
                 combo.setLayoutData(data);
@@ -328,7 +320,6 @@ public class ConfigureParametersPage extends WizardPage {
                     requiredList.add(model);
                     combo.addListener(SWT.Modify, validationListener);
                 }
-                String[] dependents = behavior.getTemplateParameterDependents(name);
                 if (dependents.length > 0) {
                     combo.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
                 }
@@ -336,11 +327,10 @@ public class ConfigureParametersPage extends WizardPage {
                 break;
 
             case COMBOBOX: {
-                Label label = new Label(group, SWT.NONE);
+                Label label = new Label(parent, SWT.NONE);
                 label.setText(behavior.getTemplateParameterLabel(name));
-                Combo combo = new Combo(group, SWT.DROP_DOWN);
-                ParameterModel model = new ComboParameterModel(mold, name, combo, label);
-                modelMap.put(name, model);
+                Combo combo = new Combo(parent, SWT.DROP_DOWN);
+                model = new ComboParameterModel(mold, name, combo, label);
                 GridData data = new GridData(GridData.FILL_HORIZONTAL);
                 data.widthHint = 250;
                 combo.setLayoutData(data);
@@ -355,7 +345,6 @@ public class ConfigureParametersPage extends WizardPage {
                     requiredList.add(model);
                     combo.addListener(SWT.Modify, validationListener);
                 }
-                String[] dependents = behavior.getTemplateParameterDependents(name);
                 if (dependents.length > 0) {
                     combo.addListener(SWT.Modify, new DependencyListener(modelMap, dependents));
                 }
@@ -363,12 +352,23 @@ public class ConfigureParametersPage extends WizardPage {
                 break;
 
             case GROUP:
-                createGroupControl(parent, mold, behavior, modelMap, requiredList, name, behavior
-                        .getTemplateParameterMembers(name));
+                Group group = new Group(parent, SWT.NONE);
+                GridLayout layout = new GridLayout();
+                layout.numColumns = 2;
+                group.setLayout(layout);
+                group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                group.setText(behavior.getTemplateParameterLabel(name));
+                if (description.length() > 0) {
+                    group.setToolTipText(description);
+                }
+
+                model = new GroupParameterModel(mold, name, group, createParameterModels(group, mold, behavior,
+                        modelMap, requiredList, behavior.getTemplateParameterMembers(name), dependents));
+
                 break;
 
             case RADIO: {
-                Group radio = new Group(group, SWT.NONE);
+                Group radio = new Group(parent, SWT.NONE);
                 GridLayout radioLayout = new GridLayout();
                 radioLayout.numColumns = 2;
                 radio.setLayout(radioLayout);
@@ -382,7 +382,7 @@ public class ConfigureParametersPage extends WizardPage {
                 Button[] buttons = new Button[candidates.length];
                 for (int j = 0; j < candidates.length; j++) {
                     String key = name + "." + candidates[j];
-                    Button button = new Button(group, SWT.RADIO | SWT.LEFT);
+                    Button button = new Button(parent, SWT.RADIO | SWT.LEFT);
                     GridData data = new GridData();
                     data.horizontalSpan = 2;
                     button.setLayoutData(data);
@@ -394,8 +394,7 @@ public class ConfigureParametersPage extends WizardPage {
                     buttons[j] = button;
                 }
 
-                ParameterModel model = new RadioParameterModel(mold, name, radio, candidates, buttons);
-                modelMap.put(name, model);
+                model = new RadioParameterModel(mold, name, radio, candidates, buttons);
 
                 if (behavior.isTemplateParameterRequired(name)) {
                     requiredList.add(model);
@@ -403,7 +402,6 @@ public class ConfigureParametersPage extends WizardPage {
                         button.addListener(SWT.Selection, validationListener);
                     }
                 }
-                String[] dependents = behavior.getTemplateParameterDependents(name);
                 if (dependents.length > 0) {
                     for (Button button : buttons) {
                         button.addListener(SWT.Selection, new DependencyListener(modelMap, dependents));
@@ -413,6 +411,31 @@ public class ConfigureParametersPage extends WizardPage {
                 break;
 
             default:
+                throw new RuntimeException("Unknown model type: " + behavior.getTemplateParameterType(name));
+            }
+
+            models[i] = model;
+            modelMap.put(name, model);
+        }
+
+        return models;
+    }
+
+    String[] add(String[] a1, String[] a2) {
+        if (a1 == null) {
+            if (a2 == null) {
+                return new String[0];
+            } else {
+                return a2;
+            }
+        } else {
+            if (a2 == null) {
+                return a1;
+            } else {
+                String[] a = new String[a1.length + a2.length];
+                System.arraycopy(a1, 0, a, 0, a1.length);
+                System.arraycopy(a2, 0, a, a1.length, a2.length);
+                return a;
             }
         }
     }

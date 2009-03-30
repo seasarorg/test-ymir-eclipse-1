@@ -15,4 +15,6 @@ public interface PreferenceConstants {
     String P_TEMPLATE_PROJECTSPECIFICSETTINGSENABLED = "template.projectSpecificSettingsEnabled"; //$NON-NLS-1$
 
     String P_ACTIONS = "actions"; //$NON-NLS-1$
+
+    String P_SKELETON = "skeleton"; //$NON-NLS-1$
 }

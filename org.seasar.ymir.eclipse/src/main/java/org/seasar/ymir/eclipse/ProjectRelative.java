@@ -1,5 +1,8 @@
 package org.seasar.ymir.eclipse;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -13,10 +16,13 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
-import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.IAction;
+import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.model.Action;
 import org.seasar.ymir.vili.model.Actions;
+import org.seasar.ymir.vili.model.Fragment;
+import org.seasar.ymir.vili.model.Fragments;
+import org.seasar.ymir.vili.model.Skeleton;
 import org.seasar.ymir.vili.util.ProjectClassLoader;
 import org.seasar.ymir.vili.util.XOMUtils;
 
@@ -27,16 +33,62 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
 
     private ClassLoader projectClassLoader;
 
+    private Skeleton skeleton;
+
+    private Mold skeletonMold;
+
+    private Map<Fragment, Mold> moldByFragmentMap = new LinkedHashMap<Fragment, Mold>();
+
     private Actions actions;
 
     public ProjectRelative(IProject project) {
         this.project = project;
 
+        skeleton = createSkeleton(Activator.getDefault().getPreferenceStore(project).getString(
+                PreferenceConstants.P_SKELETON));
         actions = createActions(Activator.getDefault().getPreferenceStore(project).getString(
                 PreferenceConstants.P_ACTIONS));
     }
 
-    @SuppressWarnings("unchecked") //$NON-NLS-1$
+    private Mold createMold(String groupId, String artifactId, String version) {
+        if (groupId == null || artifactId == null || version == null) {
+            return null;
+        }
+        Artifact artifact = Activator.getDefault().getArtifactResolver().resolve(groupId, artifactId, version, false);
+        if (artifact != null) {
+            return Mold.newInstance(artifact, getProjectClassLoader());
+        } else {
+            return null;
+        }
+    }
+
+    private Skeleton createSkeleton(String text) {
+        Skeleton skeleton = null;
+        if (text != null & text.length() > 0) {
+            try {
+                skeleton = XOMUtils.getAsBean(text, Skeleton.class);
+            } catch (CoreException ex) {
+                Activator.getDefault().log(ex);
+            }
+        }
+        if (skeleton == null) {
+            skeleton = new Skeleton();
+            skeleton.setFragments(new Fragments());
+        }
+        skeletonMold = createMold(skeleton.getGroupId(), skeleton.getArtifactId(), skeleton.getVersion());
+
+        for (Fragment fragment : skeleton.getFragments().getFragments()) {
+            Artifact artifact = Activator.getDefault().getArtifactResolver().resolve(fragment.getGroupId(),
+                    fragment.getArtifactId(), fragment.getVersion(), false);
+            if (artifact != null) {
+                moldByFragmentMap.put(fragment, Mold.newInstance(artifact, getProjectClassLoader()));
+            }
+        }
+
+        return skeleton;
+    }
+
+    @SuppressWarnings("unchecked")//$NON-NLS-1$
     private Actions createActions(String text) {
         Actions actions = null;
         if (text != null && text.length() > 0) {
@@ -55,8 +107,8 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
                     action.getArtifactId(), action.getVersion(), false);
             if (artifact != null) {
                 try {
-                    action.setClass((Class<? extends IAction>) Mold.newInstance(artifact,
-                            getProjectClassLoader()).getBehavior().getClassLoader().loadClass(action.getActionClass()));
+                    action.setClass((Class<? extends IAction>) Mold.newInstance(artifact, getProjectClassLoader())
+                            .getBehavior().getClassLoader().loadClass(action.getActionClass()));
                 } catch (ClassNotFoundException ex) {
                     Activator.getDefault().log(ex);
                 }
@@ -145,6 +197,18 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
         if (PreferenceConstants.P_ACTIONS.equals(property)) {
             actions = createActions((String) event.getNewValue());
         }
+    }
+
+    public Skeleton getSkeleton() {
+        return skeleton;
+    }
+
+    public Mold getSkeletonMold() {
+        return skeletonMold;
+    }
+
+    public Mold[] getFragmentMolds() {
+        return moldByFragmentMap.values().toArray(new Mold[0]);
     }
 
     public Actions getActions() {
