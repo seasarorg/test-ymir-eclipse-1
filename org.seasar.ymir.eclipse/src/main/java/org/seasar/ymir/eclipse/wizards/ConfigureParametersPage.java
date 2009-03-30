@@ -376,6 +376,9 @@ public class ConfigureParametersPage extends WizardPage {
                 radio.setLayout(radioLayout);
                 radio.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 radio.setText(behavior.getTemplateParameterLabel(name));
+                if (description.length() > 0) {
+                    radio.setToolTipText(description);
+                }
 
                 String[] candidates = behavior.getTemplateParameterCandidates(name);
                 Button[] buttons = new Button[candidates.length];
@@ -398,7 +401,9 @@ public class ConfigureParametersPage extends WizardPage {
 
                 String[] dependents = behavior.getTemplateParameterDependents(name);
                 if (dependents.length > 0) {
-                    button.addListener(SWT.Selection, new DependencyListener(modelMap, dependents));
+                    for (Button button : buttons) {
+                        button.addListener(SWT.Selection, new DependencyListener(modelMap, dependents));
+                    }
                 }
             }
                 break;

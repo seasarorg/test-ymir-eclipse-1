@@ -68,6 +68,7 @@ public class RadioParameterModel implements ParameterModel {
     }
 
     public void setEnabled(boolean enabled) {
+        group.setEnabled(enabled);
         for (Button button : buttons) {
             button.setEnabled(enabled);
         }
