@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -188,6 +189,9 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                         shouldEvaluateAsTemplate(Globals.PATH_POM_XML, behavior), parameters), behavior, preferences,
                         parameters, new SubProgressMonitor(monitor, 1));
 
+                behavior.getConfigurator().saveParameters(project, fragment, preferences,
+                        dropVolatile(fragment.getParameterMap(), behavior), getMoldPreferenceStore(project, fragment));
+
                 Actions fragmentActions = behavior.getActions();
                 if (fragmentActions != null) {
                     List<Action> actionList = new ArrayList<Action>();
@@ -287,13 +291,25 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 monitor.worked(3);
             }
 
+            behavior.getConfigurator().saveParameters(project, skeleton, preferences,
+                    dropVolatile(skeleton.getParameterMap(), behavior), getMoldPreferenceStore(project, skeleton));
+
             Actions actions = behavior.getActions();
             if (actions != null) {
                 IPreferenceStore store = activator.getPreferenceStore(project);
                 try {
+                    Artifact artifact = skeleton.getArtifact();
                     StringWriter sw = new StringWriter();
+                    Skeleton skel = new Skeleton(artifact.getGroupId(), artifact.getArtifactId(),
+                            artifact.getVersion(), (String) null, (String) null);
+                    skel.setFragments(new Fragments());
+                    XOMUtils.getXOMapper().toXML(skel, sw);
+                    store.putValue(PreferenceConstants.P_SKELETON, sw.toString());
+
+                    sw = new StringWriter();
                     XOMUtils.getXOMapper().toXML(actions, sw);
                     store.putValue(org.seasar.ymir.eclipse.preferences.PreferenceConstants.P_ACTIONS, sw.toString());
+
                     ((IPersistentPreferenceStore) store).save();
                 } catch (Throwable t) {
                     activator.log(t);
@@ -324,6 +340,20 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         } finally {
             monitor.done();
         }
+    }
+
+    Map<String, Object> dropVolatile(Map<String, Object> parameterMap, ViliBehavior behavior) {
+        if (parameterMap == null) {
+            return null;
+        }
+        Map<String, Object> map = new LinkedHashMap<String, Object>();
+        for (Iterator<Map.Entry<String, Object>> itr = parameterMap.entrySet().iterator(); itr.hasNext();) {
+            Map.Entry<String, Object> entry = itr.next();
+            if (!behavior.isTemplateParameterVolatile(entry.getKey())) {
+                map.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return map;
     }
 
     private void addDatabaseDependenciesToPom(IProject project, ViliProjectPreferences preferences,
@@ -1153,5 +1183,11 @@ public class ProjectBuilderImpl implements ProjectBuilder {
 
     public WizardDialog createAddFragmentsWizardDialog(Shell parentShell, IProject project, Mold... fragmentMolds) {
         return new AddFragmentsWizardDialog(parentShell, project, fragmentMolds);
+    }
+
+    public IPersistentPreferenceStore getMoldPreferenceStore(IProject project, Mold mold) {
+        Artifact artifact = mold.getArtifact();
+        return (IPersistentPreferenceStore) Activator.getDefault().getPreferenceStore(project,
+                Globals.QUALIFIERPREFIX_MOLD + artifact.getGroupId() + ":" + artifact.getArtifactId());
     }
 }

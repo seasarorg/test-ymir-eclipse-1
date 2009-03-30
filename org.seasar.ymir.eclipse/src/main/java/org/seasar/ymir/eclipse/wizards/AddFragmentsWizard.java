@@ -74,7 +74,7 @@ public class AddFragmentsWizard extends Wizard implements ISelectArtifactWizard 
      * using wizard as execution context.
      */
     public boolean performFinish() {
-        secondPage.populateSkeletonParameters();
+        secondPage.populateMoldParameters();
         try {
             final Mold[] fragments = getFragmentMolds();
             IRunnableWithProgress op = new IRunnableWithProgress() {

@@ -26,4 +26,6 @@ public interface Globals extends org.seasar.ymir.vili.Globals {
     String PATH_MAVEN2ADDITIONAL_PREFS = ".settings/net.skirnir.eclipse.maven.prefs"; //$NON-NLS-1$
 
     String QUALIFIER_MAPPING = "org.seasar.ymir.extension.mapping"; //$NON-NLS-1$
+
+    String QUALIFIERPREFIX_MOLD = Activator.PLUGIN_ID + ".mold."; //$NON-NLS-1$
 }

@@ -30,8 +30,6 @@ import org.seasar.ymir.vili.util.ViliUtils;
 import org.seasar.ymir.vili.util.XOMUtils;
 
 class PomTemplateContext extends TemplateContextImpl {
-    private static final int DEFAULT_DEPENDENCY_INDENT = 4;
-
     private Map<Dependency, Dependency> dependencyMap = new LinkedHashMap<Dependency, Dependency>();
 
     private Map<Dependency, Dependency> fragmentDependencyMap = new LinkedHashMap<Dependency, Dependency>();

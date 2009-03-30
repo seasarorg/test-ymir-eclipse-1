@@ -97,7 +97,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
      * using wizard as execution context.
      */
     public boolean performFinish() {
-        thirdPage.populateSkeletonParameters();
+        thirdPage.populateMoldParameters();
         try {
             final Mold skeleton = firstPage.getSkeletonMold();
             final Mold[] fragments = firstPage.getFragmentTemplateMolds();

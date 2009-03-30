@@ -1,6 +1,8 @@
 package org.seasar.ymir.eclipse;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
@@ -38,6 +40,8 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
     private Mold skeletonMold;
 
     private Map<Fragment, Mold> moldByFragmentMap = new LinkedHashMap<Fragment, Mold>();
+
+    private Mold[] molds;
 
     private Actions actions;
 
@@ -77,13 +81,22 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
         }
         skeletonMold = createMold(skeleton.getGroupId(), skeleton.getArtifactId(), skeleton.getVersion());
 
+        List<Mold> moldList = new ArrayList<Mold>();
+        if (skeletonMold != null) {
+            moldList.add(skeletonMold);
+        }
+
         for (Fragment fragment : skeleton.getFragments().getFragments()) {
             Artifact artifact = Activator.getDefault().getArtifactResolver().resolve(fragment.getGroupId(),
                     fragment.getArtifactId(), fragment.getVersion(), false);
             if (artifact != null) {
-                moldByFragmentMap.put(fragment, Mold.newInstance(artifact, getProjectClassLoader()));
+                Mold mold = Mold.newInstance(artifact, getProjectClassLoader());
+                moldList.add(mold);
+                moldByFragmentMap.put(fragment, mold);
             }
         }
+
+        molds = moldList.toArray(new Mold[0]);
 
         return skeleton;
     }
@@ -209,6 +222,10 @@ public class ProjectRelative implements IElementChangedListener, IResourceChange
 
     public Mold[] getFragmentMolds() {
         return moldByFragmentMap.values().toArray(new Mold[0]);
+    }
+
+    public Mold[] getMolds() {
+        return molds;
     }
 
     public Actions getActions() {

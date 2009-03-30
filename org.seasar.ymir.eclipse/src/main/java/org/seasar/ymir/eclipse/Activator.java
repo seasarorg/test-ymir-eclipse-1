@@ -186,7 +186,11 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public IPreferenceStore getPreferenceStore(IProject project) {
-        ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(project), PLUGIN_ID);
+        return getPreferenceStore(project, PLUGIN_ID);
+    }
+
+    public IPreferenceStore getPreferenceStore(IProject project, String qualifier) {
+        ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(project), qualifier);
         store.setSearchContexts(new IScopeContext[] { new ProjectScope(project), new InstanceScope() });
         return store;
     }

@@ -5,17 +5,13 @@ import java.text.MessageFormat;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.preferences.IScopeContext;
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.vili.util.WorkbenchUtils;
@@ -39,8 +35,9 @@ public class TogglePageAndHtmlAction extends AbstractWorkbenchWindowActionDelega
             if (file != null) {
                 WorkbenchUtils.openResource(file);
             } else {
-                WorkbenchUtils.showMessage(MessageFormat.format(Messages.getString("TogglePageAndHtmlAction.2"), pkg + "." //$NON-NLS-1$ //$NON-NLS-2$
-                        + type.getElementName()));
+                WorkbenchUtils.showMessage(MessageFormat.format(
+                        Messages.getString("TogglePageAndHtmlAction.2"), pkg + "." //$NON-NLS-1$ //$NON-NLS-2$
+                                + type.getElementName()));
             }
         }
     }
@@ -68,7 +65,8 @@ public class TogglePageAndHtmlAction extends AbstractWorkbenchWindowActionDelega
                 if (type != null && type.exists()) {
                     JavaUI.openInEditor(type);
                 } else {
-                    WorkbenchUtils.showMessage(MessageFormat.format(Messages.getString("TogglePageAndHtmlAction.4"), path)); //$NON-NLS-1$
+                    WorkbenchUtils.showMessage(MessageFormat.format(
+                            Messages.getString("TogglePageAndHtmlAction.4"), path)); //$NON-NLS-1$
                 }
             }
         } catch (Exception e) {
@@ -81,8 +79,6 @@ public class TogglePageAndHtmlAction extends AbstractWorkbenchWindowActionDelega
     }
 
     public IPreferenceStore getMappingPreferenceStore(IProject project) {
-        ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(project), Globals.QUALIFIER_MAPPING);
-        store.setSearchContexts(new IScopeContext[] { new ProjectScope(project), new InstanceScope() });
-        return store;
+        return Activator.getDefault().getPreferenceStore(project, Globals.QUALIFIER_MAPPING);
     }
 }

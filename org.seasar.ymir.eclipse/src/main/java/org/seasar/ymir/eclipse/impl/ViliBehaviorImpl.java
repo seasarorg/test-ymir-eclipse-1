@@ -3,11 +3,13 @@ package org.seasar.ymir.eclipse.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -23,9 +25,9 @@ import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.Globals;
-import org.seasar.ymir.vili.MoldType;
 import org.seasar.ymir.vili.IConfigurator;
 import org.seasar.ymir.vili.InclusionType;
+import org.seasar.ymir.vili.MoldType;
 import org.seasar.ymir.vili.NullConfigurator;
 import org.seasar.ymir.vili.ParameterType;
 import org.seasar.ymir.vili.ProjectType;
@@ -138,7 +140,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
         templateParameterDependentSetMap.clear();
 
-        for (String dependent : templateParameters) {
+        for (String dependent : getAllTemplateParameters(templateParameters)) {
             for (String name : getTemplateParameterDepends(dependent)) {
                 Set<String> set = templateParameterDependentSetMap.get(name);
                 if (set == null) {
@@ -146,6 +148,21 @@ public class ViliBehaviorImpl implements ViliBehavior {
                     templateParameterDependentSetMap.put(name, set);
                 }
                 set.add(dependent);
+            }
+        }
+    }
+
+    private String[] getAllTemplateParameters(String[] parameters) {
+        List<String> list = new ArrayList<String>();
+        getAllTemplateParameters(parameters, list);
+        return list.toArray(new String[0]);
+    }
+
+    private void getAllTemplateParameters(String[] parameters, List<String> parameterList) {
+        for (String parameter : parameters) {
+            parameterList.add(parameter);
+            if (getTemplateParameterType(parameter) == ParameterType.GROUP) {
+                getAllTemplateParameters(getTemplateParameters(parameter), parameterList);
             }
         }
     }
@@ -299,9 +316,52 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public String[] getTemplateParameters() {
+        return getTemplateParameters(false);
+    }
+
+    public String[] getTemplateParameters(boolean exceptForVolatile) {
         initialize();
 
-        return templateParameters;
+        if (!exceptForVolatile) {
+            return templateParameters;
+        }
+
+        List<String> list = new ArrayList<String>();
+        for (String parameter : templateParameters) {
+            if (!isTemplateParameterVolatile(parameter)) {
+                list.add(parameter);
+            }
+        }
+        return list.toArray(new String[0]);
+    }
+
+    public String[] getTemplateParameters(String name) {
+        return getTemplateParameters(name, false);
+    }
+
+    public String[] getTemplateParameters(String name, boolean exceptForVolatile) {
+        if (name == null) {
+            return getTemplateParameters(exceptForVolatile);
+        }
+
+        String[] parameters = PropertyUtils.toLines(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name
+                + SUFFIX_TEMPLATE_PARAMETER_PARAMETERS));
+        if (!exceptForVolatile) {
+            return parameters;
+        }
+
+        List<String> list = new ArrayList<String>();
+        for (String parameter : parameters) {
+            if (!isTemplateParameterVolatile(parameter)) {
+                list.add(parameter);
+            }
+        }
+        return list.toArray(new String[0]);
+    }
+
+    public boolean isTemplateParameterVolatile(String name) {
+        return PropertyUtils.valueOf(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name
+                + SUFFIX_TEMPLATE_PARAMETER_VOLATILE), false);
     }
 
     public ParameterType getTemplateParameterType(String name) {
@@ -312,11 +372,6 @@ public class ViliBehaviorImpl implements ViliBehavior {
     public String[] getTemplateParameterCandidates(String name) {
         return PropertyUtils.toLines(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name
                 + SUFFIX_TEMPLATE_PARAMETER_CANDIDATES));
-    }
-
-    public String[] getTemplateParameterMembers(String name) {
-        return PropertyUtils.toLines(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name
-                + SUFFIX_TEMPLATE_PARAMETER_MEMBERS));
     }
 
     private String[] getTemplateParameterDepends(String name) {

@@ -88,6 +88,21 @@
             </adapt>
          </enabledWhen>
       </page>
+      <page
+            category="org.seasar.ymir.eclipse.properties.viliPropertyPage"
+            class="org.seasar.ymir.eclipse.properties.MoldParametersPropertyPage"
+            id="org.seasar.ymir.eclipse.properties.moldParametersPropertyPage"
+            name="Skeleton/fragment parameters">
+         <enabledWhen>
+            <adapt
+                  type="org.eclipse.core.resources.IProject">
+               <test
+                     property="org.eclipse.core.resources.projectNature"
+                     value="org.seasar.ymir.eclipse.viliProjectNature">
+               </test>
+            </adapt>
+         </enabledWhen>
+      </page>
    </extension>
    <extension
          id="org.seasar.ymir.eclipse.viliProjectNature"
