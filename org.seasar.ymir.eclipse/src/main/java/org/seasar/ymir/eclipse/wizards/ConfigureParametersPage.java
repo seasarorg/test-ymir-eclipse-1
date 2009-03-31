@@ -197,7 +197,7 @@ public class ConfigureParametersPage extends WizardPage {
 
     @SuppressWarnings("unchecked")//$NON-NLS-1$
     void createSkeletonParametersControl(Composite parent) {
-        moldParametersControl = new MoldParametersControl(parent, project, preferences, getMolds()) {
+        moldParametersControl = new MoldParametersControl(parent, project, preferences, getMolds(), false) {
             @Override
             public void setErrorMessage(String message) {
                 ConfigureParametersPage.this.setErrorMessage(message);

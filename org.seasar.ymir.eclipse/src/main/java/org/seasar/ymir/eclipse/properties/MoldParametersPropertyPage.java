@@ -32,7 +32,7 @@ public class MoldParametersPropertyPage extends PropertyPage {
             project = getProject();
             preferences = Activator.getDefault().getViliProjectPreferences(project);
             control = new MoldParametersControl(parent, project, preferences, Activator.getDefault()
-                    .getProjectRelative(project).getMolds(ProcessContext.MODIFY_PROPERTIES)) {
+                    .getProjectRelative(project).getMolds(ProcessContext.MODIFY_PROPERTIES), true) {
                 @Override
                 public void setErrorMessage(String message) {
                     MoldParametersPropertyPage.this.setErrorMessage(message);

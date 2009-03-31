@@ -16,6 +16,7 @@ import org.seasar.ymir.vili.model.maven.Dependencies;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.Exclusion;
 import org.seasar.ymir.vili.model.maven.Exclusions;
+import org.seasar.ymir.vili.util.ViliUtils;
 
 class PomTagEvaluator implements TagEvaluator {
     private static final String LS = System.getProperty("line.separator"); //$NON-NLS-1$
@@ -68,43 +69,46 @@ class PomTagEvaluator implements TagEvaluator {
                 } finally {
                     ctx.leave();
                 }
-            } else if ("dependencies".equals(name)) { //$NON-NLS-1$
-                ctx.setDependencies(buildDependencies(ctx, (TagElement) ctx.getElement()));
-                return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                        + ctx.outputDependenciesString(getCurrentIndent(ctx) * 2)
-                        + TagEvaluatorUtils.getEndTagString(name);
-            } else if ("repositories".equals(name)) { //$NON-NLS-1$
-                for (Element elem : body) {
-                    if (elem instanceof TagElement && "repository".equals(((TagElement) elem).getName())) { //$NON-NLS-1$
-                        ctx.removeRepository((TagElement) elem);
-                    }
-                }
-                return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                        + TagEvaluatorUtils.evaluateElements(ctx, body)
-                        + ctx.outputRepositoriesString(getCurrentIndent(ctx) * 2)
-                        + TagEvaluatorUtils.getEndTagString(name);
-            } else if ("pluginRepositories".equals(name)) { //$NON-NLS-1$
-                for (Element elem : body) {
-                    if (elem instanceof TagElement && "pluginRepository".equals(((TagElement) elem).getName())) { //$NON-NLS-1$
-                        ctx.removePluginRepository((TagElement) elem);
-                    }
-                }
-                return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                        + TagEvaluatorUtils.evaluateElements(ctx, body)
-                        + ctx.outputPluginRepositoriesString(getCurrentIndent(ctx) * 2)
-                        + TagEvaluatorUtils.getEndTagString(name);
-            } else if ("profiles".equals(name)) { //$NON-NLS-1$
-                ctx.enter();
-                try {
-                    return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                            + TagEvaluatorUtils.evaluateElements(ctx, body)
-                            + ctx.outputProfilesString(getCurrentIndent(ctx) * 2)
-                            + TagEvaluatorUtils.getEndTagString(name);
-                } finally {
-                    ctx.leave();
-                }
             } else {
-                return TagEvaluatorUtils.evaluate(ctx, name, attributes, body);
+                int indent = getCurrentIndent(ctx);
+                if ("dependencies".equals(name)) { //$NON-NLS-1$
+                    ctx.setDependencies(buildDependencies(ctx, (TagElement) ctx.getElement()));
+                    return TagEvaluatorUtils.getBeginTagString(name, attributes) + LS
+                            + ctx.outputDependenciesString(indent * 2) + ViliUtils.padding(indent)
+                            + TagEvaluatorUtils.getEndTagString(name);
+                } else if ("repositories".equals(name)) { //$NON-NLS-1$
+                    for (Element elem : body) {
+                        if (elem instanceof TagElement && "repository".equals(((TagElement) elem).getName())) { //$NON-NLS-1$
+                            ctx.removeRepository((TagElement) elem);
+                        }
+                    }
+                    return TagEvaluatorUtils.getBeginTagString(name, attributes)
+                            + ViliUtils.trimLastSpaces(TagEvaluatorUtils.evaluateElements(ctx, body))
+                            + ctx.outputRepositoriesString(indent * 2) + ViliUtils.padding(indent)
+                            + TagEvaluatorUtils.getEndTagString(name);
+                } else if ("pluginRepositories".equals(name)) { //$NON-NLS-1$
+                    for (Element elem : body) {
+                        if (elem instanceof TagElement && "pluginRepository".equals(((TagElement) elem).getName())) { //$NON-NLS-1$
+                            ctx.removePluginRepository((TagElement) elem);
+                        }
+                    }
+                    return TagEvaluatorUtils.getBeginTagString(name, attributes)
+                            + ViliUtils.trimLastSpaces(TagEvaluatorUtils.evaluateElements(ctx, body))
+                            + ctx.outputPluginRepositoriesString(indent * 2) + ViliUtils.padding(indent)
+                            + TagEvaluatorUtils.getEndTagString(name);
+                } else if ("profiles".equals(name)) { //$NON-NLS-1$
+                    ctx.enter();
+                    try {
+                        return TagEvaluatorUtils.getBeginTagString(name, attributes)
+                                + ViliUtils.trimLastSpaces(TagEvaluatorUtils.evaluateElements(ctx, body))
+                                + ctx.outputProfilesString(indent * 2) + ViliUtils.padding(indent)
+                                + TagEvaluatorUtils.getEndTagString(name);
+                    } finally {
+                        ctx.leave();
+                    }
+                } else {
+                    return TagEvaluatorUtils.evaluate(ctx, name, attributes, body);
+                }
             }
         } else {
             return TagEvaluatorUtils.evaluate(ctx, name, attributes, body);

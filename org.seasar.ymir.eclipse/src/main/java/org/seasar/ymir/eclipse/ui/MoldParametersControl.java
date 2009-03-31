@@ -45,6 +45,8 @@ public class MoldParametersControl {
 
     private Mold[] molds;
 
+    private boolean onlyModifiable;
+
     private Map<String, ParameterModel>[] parameterModelMaps;
 
     private ParameterModel[] requiredParameterModels = new ParameterModel[0];
@@ -57,11 +59,13 @@ public class MoldParametersControl {
         }
     };
 
-    public MoldParametersControl(Composite parent, IProject project, ViliProjectPreferences preferences, Mold[] molds) {
+    public MoldParametersControl(Composite parent, IProject project, ViliProjectPreferences preferences, Mold[] molds,
+            boolean onlyModifiable) {
         this.parent = parent;
         this.project = project;
         this.preferences = preferences;
         this.molds = molds;
+        this.onlyModifiable = onlyModifiable;
     }
 
     public Control createControl() {
@@ -97,18 +101,19 @@ public class MoldParametersControl {
             group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             group.setText(behavior.getLabel());
 
-            createParameterModels(parent, null, false, mold, parameterModelMaps[i], requiredList, null);
+            createParameterModels(parent, null, mold, parameterModelMaps[i], requiredList, null);
         }
         requiredParameterModels = requiredList.toArray(new ParameterModel[0]);
     }
 
-    ParameterModel[] createParameterModels(Composite parent, String groupName, boolean exceptForVolatile, Mold mold,
+    ParameterModel[] createParameterModels(Composite parent, String groupName, Mold mold,
             Map<String, ParameterModel> modelMap, List<ParameterModel> requiredList, String[] parentDependents) {
         ViliBehavior behavior = mold.getBehavior();
-        String[] names = behavior.getTemplateParameters(groupName, exceptForVolatile);
-        ParameterModel[] models = new ParameterModel[names.length];
-        for (int i = 0; i < names.length; i++) {
-            String name = names[i];
+        List<ParameterModel> modelList = new ArrayList<ParameterModel>();
+        for (String name : behavior.getTemplateParameters(groupName)) {
+            if (onlyModifiable && !behavior.isTemplateParameterModifiable(name)) {
+                continue;
+            }
             String description = behavior.getTemplateParameterDescription(name);
             String[] dependents = add(parentDependents, behavior.getTemplateParameterDependents(name));
             ParameterModel model;
@@ -211,8 +216,8 @@ public class MoldParametersControl {
                     group.setToolTipText(description);
                 }
 
-                model = new GroupParameterModel(mold, name, group, createParameterModels(group, name,
-                        exceptForVolatile, mold, modelMap, requiredList, dependents));
+                model = new GroupParameterModel(mold, name, group, createParameterModels(group, name, mold, modelMap,
+                        requiredList, dependents));
 
                 break;
 
@@ -263,11 +268,11 @@ public class MoldParametersControl {
                 throw new RuntimeException("Unknown model type: " + behavior.getTemplateParameterType(name));
             }
 
-            models[i] = model;
+            modelList.add(model);
             modelMap.put(name, model);
         }
 
-        return models;
+        return modelList.toArray(new ParameterModel[0]);
     }
 
     String[] add(String[] a1, String[] a2) {

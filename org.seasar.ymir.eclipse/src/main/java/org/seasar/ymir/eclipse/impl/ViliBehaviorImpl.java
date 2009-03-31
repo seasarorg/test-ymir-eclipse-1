@@ -49,6 +49,8 @@ import werkzeugkasten.mvnhack.repository.Artifact;
 public class ViliBehaviorImpl implements ViliBehavior {
     private static final String DEFAULT_VILIVERSION = "0.0.1"; //$NON-NLS-1$
 
+    private static final String[] EMPTY_STRINGS = new String[0];
+
     private Artifact artifact;
 
     private ClassLoader projectClassLoader;
@@ -320,52 +322,49 @@ public class ViliBehaviorImpl implements ViliBehavior {
     }
 
     public String[] getTemplateParameters() {
-        return getTemplateParameters(false);
-    }
-
-    public String[] getTemplateParameters(boolean exceptForVolatile) {
         initialize();
 
-        if (!exceptForVolatile) {
-            return templateParameters;
-        }
+        return templateParameters;
+    }
 
-        List<String> list = new ArrayList<String>();
-        for (String parameter : templateParameters) {
-            if (!isTemplateParameterVolatile(parameter)) {
-                list.add(parameter);
+    public void setTemplateParameters(String[] names) {
+        properties.setProperty(TEMPLATE_PARAMETERS, PropertyUtils.join(names));
+    }
+
+    public String[] getTemplateParameters(String groupName) {
+        if (groupName == null) {
+            return getTemplateParameters();
+        } else {
+            return PropertyUtils.toLines(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + groupName
+                    + SUFFIX_TEMPLATE_PARAMETER_PARAMETERS));
+        }
+    }
+
+    public void setTemplateParameters(String groupName, String[] names) {
+        if (groupName == null) {
+            setTemplateParameters(names);
+        } else {
+            String key = PREFIX_TEMPLATE_PARAMETER + groupName + SUFFIX_TEMPLATE_PARAMETER_PARAMETERS;
+            if (names != null) {
+                properties.setProperty(key, PropertyUtils.join(names));
+            } else {
+                properties.removeProperty(key);
             }
         }
-        return list.toArray(new String[0]);
     }
 
-    public String[] getTemplateParameters(String name) {
-        return getTemplateParameters(name, false);
-    }
-
-    public String[] getTemplateParameters(String name, boolean exceptForVolatile) {
-        if (name == null) {
-            return getTemplateParameters(exceptForVolatile);
-        }
-
-        String[] parameters = PropertyUtils.toLines(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name
-                + SUFFIX_TEMPLATE_PARAMETER_PARAMETERS));
-        if (!exceptForVolatile) {
-            return parameters;
-        }
-
-        List<String> list = new ArrayList<String>();
-        for (String parameter : parameters) {
-            if (!isTemplateParameterVolatile(parameter)) {
-                list.add(parameter);
-            }
-        }
-        return list.toArray(new String[0]);
-    }
-
-    public boolean isTemplateParameterVolatile(String name) {
+    public boolean isTemplateParameterModifiable(String name) {
         return PropertyUtils.valueOf(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name
-                + SUFFIX_TEMPLATE_PARAMETER_VOLATILE), false);
+                + SUFFIX_TEMPLATE_PARAMETER_MODIFIABLE), false);
+    }
+
+    public void setTemplateParameterModifiable(String name, boolean modifiable) {
+        String key = PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_MODIFIABLE;
+        if (modifiable) {
+            properties.setProperty(key, String.valueOf(true));
+        } else {
+            properties.removeProperty(key);
+        }
     }
 
     public ParameterType getTemplateParameterType(String name) {
@@ -373,18 +372,54 @@ public class ViliBehaviorImpl implements ViliBehavior {
                 + SUFFIX_TEMPLATE_PARAMETER_TYPE));
     }
 
+    public void setTemplateParameterType(String name, ParameterType type) {
+        String key = PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_TYPE;
+        if (type != null && type != ParameterType.TEXT) {
+            properties.setProperty(key, type.name().toLowerCase());
+        } else {
+            properties.removeProperty(key);
+        }
+    }
+
     public String[] getTemplateParameterCandidates(String name) {
         return PropertyUtils.toLines(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name
                 + SUFFIX_TEMPLATE_PARAMETER_CANDIDATES));
     }
 
-    private String[] getTemplateParameterDepends(String name) {
+    public void setTemplateParameterCandidates(String name, String[] candidates) {
+        String key = PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_CANDIDATES;
+        if (candidates != null) {
+            properties.setProperty(key, PropertyUtils.join(candidates));
+        } else {
+            properties.removeProperty(key);
+        }
+    }
+
+    public String[] getTemplateParameterDepends(String name) {
         return PropertyUtils.toLines(properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name
                 + SUFFIX_TEMPLATE_PARAMETER_DEPENDS));
     }
 
+    public void setTemplateParameterDepends(String name, String[] depends) {
+        String key = PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_DEPENDS;
+        if (depends != null) {
+            properties.setProperty(key, PropertyUtils.join(depends));
+        } else {
+            properties.removeProperty(key);
+        }
+    }
+
     public String getTemplateParameterDefault(String name) {
         return properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_DEFAULT, ""); //$NON-NLS-1$
+    }
+
+    public void setTemplateParameterDefault(String name, String defaultValue) {
+        String key = PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_DEFAULT;
+        if (defaultValue != null) {
+            properties.setProperty(key, defaultValue);
+        } else {
+            properties.removeProperty(key);
+        }
     }
 
     public boolean isTemplateParameterRequired(String name) {
@@ -392,12 +427,21 @@ public class ViliBehaviorImpl implements ViliBehavior {
                 + SUFFIX_TEMPLATE_PARAMETER_REQUIRED), false);
     }
 
+    public void setTemplateParameterRequired(String name, boolean required) {
+        String key = PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_REQUIRED;
+        if (required) {
+            properties.setProperty(key, String.valueOf(true));
+        } else {
+            properties.removeProperty(key);
+        }
+    }
+
     public String[] getTemplateParameterDependents(String name) {
         initialize();
 
         Set<String> set = templateParameterDependentSetMap.get(name);
         if (set == null) {
-            return new String[0];
+            return EMPTY_STRINGS;
         } else {
             return set.toArray(new String[0]);
         }
@@ -407,8 +451,26 @@ public class ViliBehaviorImpl implements ViliBehavior {
         return properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_LABEL, name);
     }
 
+    public void setTemplateParameterLabel(String name, String label) {
+        String key = PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_LABEL;
+        if (label != null && !label.equals(name)) {
+            properties.setProperty(key, label);
+        } else {
+            properties.removeProperty(key);
+        }
+    }
+
     public String getTemplateParameterDescription(String name) {
         return properties.getProperty(PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_DESCRIPTION, ""); //$NON-NLS-1$
+    }
+
+    public void setTemplateParameterDescription(String name, String description) {
+        String key = PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_DESCRIPTION;
+        if (description != null && !description.equals("")) {
+            properties.setProperty(key, description);
+        } else {
+            properties.removeProperty(key);
+        }
     }
 
     public String getLabel() {
