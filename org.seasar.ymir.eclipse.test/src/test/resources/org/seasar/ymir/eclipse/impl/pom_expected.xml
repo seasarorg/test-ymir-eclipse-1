@@ -19,15 +19,15 @@
       <name>The Seasar Foundation Maven2 Repository</name>
       <url>http://maven.seasar.org/maven2</url>
     </repository>
-  <repository>
-  <id>snapshot.maven.seasar.org</id>
-  <name>The Seasar Foundation Maven2 Snapshot Repository</name>
-  <url>http://maven.seasar.org/maven2-snapshot</url>
-  <snapshots>
-    <enabled>true</enabled>
-  </snapshots>
-</repository>
-</repositories>
+    <repository>
+      <id>snapshot.maven.seasar.org</id>
+      <name>The Seasar Foundation Maven2 Snapshot Repository</name>
+      <url>http://maven.seasar.org/maven2-snapshot</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
   <dependencies>
     <dependency>
       <groupId>org.seasar.ymir</groupId>
@@ -39,24 +39,24 @@
       <artifactId>s2-extension</artifactId>
       <version>2.4.20</version>
     </dependency>
-  <dependency>
-  <groupId>group1</groupId>
-  <artifactId>artifact1</artifactId>
-  <version>version1</version>
-</dependency>
-</dependencies>
-<pluginRepositories>
-<pluginRepository>
-  <id>codehaus snapshot repository</id>
-  <url>http://snapshots.repository.codehaus.org</url>
-  <releases>
-    <enabled>true</enabled>
-  </releases>
-</pluginRepository>
-</pluginRepositories>
-<profiles>
-<profile>
-  <id>executable</id>
-</profile>
-</profiles>
+    <dependency>
+      <groupId>group1</groupId>
+      <artifactId>artifact1</artifactId>
+      <version>version1</version>
+    </dependency>
+  </dependencies>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>codehaus snapshot repository</id>
+      <url>http://snapshots.repository.codehaus.org</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+  <profiles>
+    <profile>
+      <id>executable</id>
+    </profile>
+  </profiles>
 </project>

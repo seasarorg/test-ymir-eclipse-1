@@ -8,6 +8,7 @@ import org.seasar.ymir.vili.InclusionType;
 import org.seasar.ymir.vili.MoldType;
 import org.seasar.ymir.vili.NullConfigurator;
 import org.seasar.ymir.vili.ParameterType;
+import org.seasar.ymir.vili.ProcessContext;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
@@ -130,5 +131,58 @@ public class MockViliBehavior implements ViliBehavior {
 
     public InclusionType shouldTreatAsViewTemplate(String path) {
         return null;
+    }
+
+    public ProcessContext getProcessContext() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String[] getTemplateParameterDepends(String name) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String[] getTemplateParameters(String groupName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public boolean isTemplateParameterModifiable(String name) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public void setTemplateParameterCandidates(String name, String[] candidates) {
+    }
+
+    public void setTemplateParameterDefault(String name, String defaultValue) {
+    }
+
+    public void setTemplateParameterDepends(String name, String[] depends) {
+    }
+
+    public void setTemplateParameterDescription(String name, String description) {
+    }
+
+    public void setTemplateParameterLabel(String name, String label) {
+    }
+
+    public void setTemplateParameterModifiable(String name, boolean modifiable) {
+    }
+
+    public void setTemplateParameterRequired(String name, boolean required) {
+    }
+
+    public void setTemplateParameterType(String name, ParameterType type) {
+    }
+
+    public void setTemplateParameters(String[] names) {
+    }
+
+    public void setTemplateParameters(String groupName, String[] names) {
+    }
+
+    public void update() {
     }
 }
