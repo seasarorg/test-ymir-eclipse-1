@@ -42,7 +42,7 @@ public interface ViliBehavior {
 
     String SUFFIX_TEMPLATE_PARAMETER_DEPENDS = ".depends"; //$NON-NLS-1$
 
-    String SUFFIX_TEMPLATE_PARAMETER_VOLATILE = ".volatile"; //$NON-NLS-1$
+    String SUFFIX_TEMPLATE_PARAMETER_MODIFIABLE = ".modifiable"; //$NON-NLS-1$
 
     String SUFFIX_TEMPLATE_PARAMETER_LABEL = ".label"; //$NON-NLS-1$
 
@@ -75,7 +75,7 @@ public interface ViliBehavior {
     /**
      * @since 0.2.2
      */
-    String[] getTemplateParameters(boolean exceptForVolatile);
+    void setTemplateParameters(String[] names);
 
     /**
      * @since 0.2.2
@@ -85,26 +85,71 @@ public interface ViliBehavior {
     /**
      * @since 0.2.2
      */
-    String[] getTemplateParameters(String groupName, boolean exceptForVolatile);
+    void setTemplateParameters(String groupName, String[] names);
 
     /**
      * @since 0.2.2
      */
-    boolean isTemplateParameterVolatile(String name);
+    boolean isTemplateParameterModifiable(String name);
+
+    /**
+     * @since 0.2.2
+     */
+    void setTemplateParameterModifiable(String name, boolean modifiable);
 
     ParameterType getTemplateParameterType(String name);
 
+    /**
+     * @since 0.2.2
+     */
+    void setTemplateParameterType(String name, ParameterType type);
+
     String getTemplateParameterDefault(String name);
+
+    /**
+     * @since 0.2.2
+     */
+    void setTemplateParameterDefault(String name, String defaultValue);
 
     String[] getTemplateParameterCandidates(String name);
 
+    /**
+     * @since 0.2.2
+     */
+    void setTemplateParameterCandidates(String name, String[] candidates);
+
     boolean isTemplateParameterRequired(String name);
+
+    /**
+     * @since 0.2.2
+     */
+    void setTemplateParameterRequired(String name, boolean required);
+
+    /**
+     * @since 0.2.2
+     */
+    String[] getTemplateParameterDepends(String name);
+
+    /**
+     * @since 0.2.2
+     */
+    void setTemplateParameterDepends(String name, String[] depends);
 
     String[] getTemplateParameterDependents(String name);
 
     String getTemplateParameterLabel(String name);
 
+    /**
+     * @since 0.2.2
+     */
+    void setTemplateParameterLabel(String name, String label);
+
     String getTemplateParameterDescription(String name);
+
+    /**
+     * @since 0.2.2
+     */
+    void setTemplateParameterDescription(String name, String description);
 
     String getLabel();
 

@@ -52,12 +52,10 @@ public class ViliUtils {
         StringBuilder sb = new StringBuilder();
         String line;
         String delim = "";
-        String idt = "";
         try {
             while ((line = br.readLine()) != null) {
-                sb.append(delim).append(idt).append(line);
+                sb.append(delim).append(indent).append(line);
                 delim = LS;
-                idt = indent;
             }
         } catch (IOException ex) {
             throw new RuntimeException("Can't happen!", ex);
@@ -77,5 +75,17 @@ public class ViliUtils {
             sb.append(' ');
         }
         return sb.toString();
+    }
+
+    public static String trimLastSpaces(String str) {
+        if (str == null) {
+            return null;
+        }
+        for (int i = str.length() - 1; i >= 0; i--) {
+            if (str.charAt(i) != ' ') {
+                return str.substring(0, i + 1);
+            }
+        }
+        return "";
     }
 }
