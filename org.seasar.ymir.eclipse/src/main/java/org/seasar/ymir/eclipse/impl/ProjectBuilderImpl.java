@@ -551,7 +551,26 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         description.setBuildSpec(map.values().toArray(new ICommand[0]));
     }
 
-    public String evaluateTemplate(String path, Map<String, Object> parameterMap) throws CoreException {
+    String evaluateTemplate(String path, Map<String, Object> parameterMap) throws CoreException {
+        return evaluateTemplate(cfg, path, parameterMap);
+    }
+
+    public String evaluateTemplate(final ClassLoader classLoader, String path, Map<String, Object> parameterMap)
+            throws CoreException {
+        Configuration cfg = new Configuration();
+        cfg.setLocalizedLookup(false);
+        cfg.setEncoding(Locale.getDefault(), Globals.ENCODING);
+        cfg.setTemplateLoader(new URLTemplateLoader() {
+            protected URL getURL(String path) {
+                return classLoader.getResource(path);
+            }
+        });
+
+        return evaluateTemplate(cfg, path, parameterMap);
+    }
+
+    public String evaluateTemplate(Configuration cfg, String path, Map<String, Object> parameterMap)
+            throws CoreException {
         StringWriter sw = new StringWriter();
         try {
             cfg.getTemplate(path).process(parameterMap, sw);
@@ -1180,5 +1199,11 @@ public class ProjectBuilderImpl implements ProjectBuilder {
         Artifact artifact = mold.getArtifact();
         return (IPersistentPreferenceStore) Activator.getDefault().getPreferenceStore(project,
                 Globals.QUALIFIERPREFIX_MOLD + artifact.getGroupId() + ":" + artifact.getArtifactId());
+    }
+
+    public void addNature(IProject project, String natureId, IProgressMonitor monitor) throws CoreException {
+        IProjectDescription description = project.getDescription();
+        addNatures(description, Arrays.asList(natureId));
+        project.setDescription(description, monitor);
     }
 }

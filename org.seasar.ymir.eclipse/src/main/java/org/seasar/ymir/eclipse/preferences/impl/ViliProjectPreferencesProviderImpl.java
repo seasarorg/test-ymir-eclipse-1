@@ -8,6 +8,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
@@ -52,7 +53,13 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
 
     public String getRootPackageName() {
         if (isYmirProject) {
-            return applicationProperties.getProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME);
+            String[] rootPackageNames = PropertyUtils.toLines(applicationProperties
+                    .getProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME));
+            if (rootPackageNames.length > 0) {
+                return rootPackageNames[0];
+            } else {
+                return "";
+            }
         } else {
             return store.getString(ParameterKeys.ROOT_PACKAGE_NAME);
         }
