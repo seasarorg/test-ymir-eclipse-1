@@ -30,8 +30,8 @@ public interface ProjectBuilder {
             Mold mold, Map<String, Object> parameters, IProgressMonitor monitor)
             throws CoreException;
 
-    String evaluateTemplate(String path, Map<String, Object> parameterMap)
-            throws CoreException;
+    String evaluateTemplate(ClassLoader classLoader, String path,
+            Map<String, Object> parameterMap) throws CoreException;
 
     String evaluate(String content, Map<String, Object> parameterMap)
             throws CoreException;
@@ -71,4 +71,7 @@ public interface ProjectBuilder {
 
     IPersistentPreferenceStore getMoldPreferenceStore(IProject project,
             Mold mold);
+
+    void addNature(IProject project, String natureId, IProgressMonitor monitor)
+            throws CoreException;
 }
