@@ -2,7 +2,6 @@ package org.seasar.ymir.eclipse.ui;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -359,9 +358,6 @@ public class MoldParametersControl {
 
     public void populateMoldParameters() {
         for (int i = 0; i < molds.length; i++) {
-            if (molds[i].getParameterMap() == null) {
-                molds[i].setParameterMap(new HashMap<String, Object>());
-            }
             Map<String, Object> parameterMap = molds[i].getParameterMap();
             Map<String, ParameterModel> modelMap = parameterModelMaps[i];
             for (Iterator<Map.Entry<String, ParameterModel>> itr = modelMap.entrySet().iterator(); itr.hasNext();) {

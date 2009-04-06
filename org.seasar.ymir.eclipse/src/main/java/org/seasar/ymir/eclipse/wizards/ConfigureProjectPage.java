@@ -160,7 +160,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
         rootPackageNameField.addModifyListener(validationListener);
         rootPackageNameField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                String rootPackageName = rootPackageNameField.getText().trim();
+                String rootPackageName = getRootPackageName();
                 if (useRootPackageNameAsProjectGroupIdField.getSelection()) {
                     projectGroupIdField.setText(rootPackageName);
                     preferences.setGroupId(rootPackageName);
@@ -196,7 +196,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
                 projectGroupIdLabel.setEnabled(enabled);
                 projectGroupIdField.setEnabled(enabled);
                 if (!enabled) {
-                    projectGroupIdField.setText(rootPackageNameField.getText());
+                    projectGroupIdField.setText(getRootPackageName());
                 }
             }
         });
@@ -271,7 +271,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
             return false;
         }
 
-        if (javaProject && rootPackageNameField.getText().length() == 0) {
+        if (javaProject && getRootPackageName().length() == 0) {
             setErrorMessage(MessageFormat.format(REQUIRED_TEMPLATE, Messages.getString("ConfigureProjectPage.4"))); //$NON-NLS-1$
             return false;
         }
@@ -315,7 +315,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
         projectGroupIdLabel.setEnabled(groupIdEnabled);
         projectGroupIdField.setEnabled(groupIdEnabled);
         if (!groupIdEnabled) {
-            projectGroupIdField.setText(rootPackageNameField.getText());
+            projectGroupIdField.setText(getRootPackageName());
         }
     }
 
@@ -335,5 +335,14 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
         projectVersionField.setText("0.0.1-SNAPSHOT"); //$NON-NLS-1$
 
         setPageComplete(validatePage());
+    }
+
+    private String getRootPackageName() {
+        String[] rootPackageNames = PropertyUtils.toLines(rootPackageNameField.getText().trim());
+        if (rootPackageNames.length > 0) {
+            return rootPackageNames[0];
+        } else {
+            return "";
+        }
     }
 }
