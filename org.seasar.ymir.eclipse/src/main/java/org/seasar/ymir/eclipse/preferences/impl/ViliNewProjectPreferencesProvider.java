@@ -25,6 +25,10 @@ public class ViliNewProjectPreferencesProvider extends ViliProjectPreferencesPro
         return ""; //$NON-NLS-1$
     }
 
+    public String[] getRootPackageNames() {
+        return new String[0];
+    }
+
     public String getViewEncoding() {
         return ""; //$NON-NLS-1$
     }

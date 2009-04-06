@@ -77,7 +77,7 @@
             category="org.seasar.ymir.eclipse.properties.viliPropertyPage"
             class="org.seasar.ymir.eclipse.properties.ViliProjectPreferencesPropertyPage"
             id="org.seasar.ymir.eclipse.properties.viliProjectPreferencesPropertyPage"
-            name="Project preferences">
+            name="Project Preferences">
          <enabledWhen>
             <adapt
                   type="org.eclipse.core.resources.IProject">
@@ -92,7 +92,7 @@
             category="org.seasar.ymir.eclipse.properties.viliPropertyPage"
             class="org.seasar.ymir.eclipse.properties.MoldParametersPropertyPage"
             id="org.seasar.ymir.eclipse.properties.moldParametersPropertyPage"
-            name="Skeleton/fragment parameters">
+            name="Skeleton/Fragment Parameters">
          <enabledWhen>
             <adapt
                   type="org.eclipse.core.resources.IProject">

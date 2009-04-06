@@ -52,14 +52,21 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
     }
 
     public String getRootPackageName() {
+        String[] rootPackageNames = getRootPackageNames();
+        if (rootPackageNames.length > 0) {
+            return rootPackageNames[0];
+        } else {
+            return "";
+        }
+    }
+
+    public String[] getRootPackageNames() {
+        return PropertyUtils.toLines(getRawRootPackageName());
+    }
+
+    String getRawRootPackageName() {
         if (isYmirProject) {
-            String[] rootPackageNames = PropertyUtils.toLines(applicationProperties
-                    .getProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME));
-            if (rootPackageNames.length > 0) {
-                return rootPackageNames[0];
-            } else {
-                return "";
-            }
+            return applicationProperties.getProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME);
         } else {
             return store.getString(ParameterKeys.ROOT_PACKAGE_NAME);
         }

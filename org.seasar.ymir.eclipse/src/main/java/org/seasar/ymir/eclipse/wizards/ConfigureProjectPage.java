@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
+import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.ymir.eclipse.wizards.jre.BuildJREDescriptor;
 import org.seasar.ymir.eclipse.wizards.jre.JREsComboBlock;
 import org.seasar.ymir.vili.ProjectType;
@@ -168,7 +169,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
         });
         rootPackageNameField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                preferences.setRootPackageName(rootPackageNameField.getText().trim());
+                preferences.setRootPackageNames(PropertyUtils.toLines(rootPackageNameField.getText().trim()));
             }
         });
 

@@ -121,11 +121,13 @@ class PomTemplateContext extends TemplateContextImpl {
     }
 
     public String outputDependenciesString(int indent) {
-        Dependency[] dependencies = behavior.getConfigurator().mergePomDependencies(dependencyMap,
-                fragmentDependencyMap, project, behavior, preferences, parameters);
+        Dependency[] dependencies = null;
+        if (behavior != null) {
+            dependencies = behavior.getConfigurator().mergePomDependencies(dependencyMap, fragmentDependencyMap,
+                    project, behavior, preferences, parameters);
+        }
         if (dependencies == null) {
-            dependencies = mergePomDependencies(dependencyMap, fragmentDependencyMap, project, behavior, preferences,
-                    parameters);
+            dependencies = mergePomDependencies(dependencyMap, fragmentDependencyMap);
         }
         StringWriter sw = new StringWriter();
         for (Dependency dependency : dependencies) {
@@ -142,8 +144,7 @@ class PomTemplateContext extends TemplateContextImpl {
     }
 
     Dependency[] mergePomDependencies(Map<Dependency, Dependency> dependencyMap,
-            Map<Dependency, Dependency> fragmentDependencyMap, IProject project, ViliBehavior behavior,
-            ViliProjectPreferences preferences, Map<String, Object> parameters) {
+            Map<Dependency, Dependency> fragmentDependencyMap) {
         List<Dependency> list = new ArrayList<Dependency>();
         for (Dependency dependency : dependencyMap.values()) {
             Dependency fragmentDependency = fragmentDependencyMap.remove(dependency);

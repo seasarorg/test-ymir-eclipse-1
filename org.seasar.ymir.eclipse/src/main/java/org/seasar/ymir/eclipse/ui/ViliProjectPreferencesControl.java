@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.model.Database;
 
@@ -27,6 +28,8 @@ public class ViliProjectPreferencesControl {
     private Composite parent;
 
     private ViliProjectPreferences preferences;
+
+    private boolean showRootPackageName;
 
     private boolean isWebProject;
 
@@ -41,6 +44,8 @@ public class ViliProjectPreferencesControl {
             setPageComplete(validatePage());
         }
     };
+
+    private Text rootPackageNameField;
 
     private Text viewEncodingField;
 
@@ -66,10 +71,11 @@ public class ViliProjectPreferencesControl {
 
     private Text databasePasswordField;
 
-    public ViliProjectPreferencesControl(Composite parent, ViliProjectPreferences preferences, boolean isWebProject,
-            boolean isDatabaseProject) {
+    public ViliProjectPreferencesControl(Composite parent, ViliProjectPreferences preferences,
+            boolean showRootPackageName, boolean isWebProject, boolean isDatabaseProject) {
         this.parent = parent;
         this.preferences = preferences;
+        this.showRootPackageName = showRootPackageName;
         this.isWebProject = isWebProject;
         this.isDatabaseProject = isDatabaseProject;
 
@@ -82,6 +88,9 @@ public class ViliProjectPreferencesControl {
         composite.setLayout(new GridLayout());
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        if (showRootPackageName) {
+            createGeneralParametersControl(composite);
+        }
         if (isWebProject) {
             createViewParametersControl(composite);
         }
@@ -93,6 +102,29 @@ public class ViliProjectPreferencesControl {
         }
 
         return composite;
+    }
+
+    void createGeneralParametersControl(Composite parent) {
+        Group group = new Group(parent, SWT.NONE);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 2;
+        group.setLayout(layout);
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        group.setText("General");
+
+        Label rootPackageNameLabel = new Label(group, SWT.NONE);
+        rootPackageNameLabel.setText(Messages.getString("ViliProjectPreferencesControl.11")); //$NON-NLS-1$
+
+        rootPackageNameField = new Text(group, SWT.BORDER);
+        GridData data = new GridData(GridData.FILL_HORIZONTAL);
+        data.widthHint = 250;
+        rootPackageNameField.setLayoutData(data);
+        rootPackageNameField.addListener(SWT.Modify, validationListener);
+        rootPackageNameField.addListener(SWT.Modify, new Listener() {
+            public void handleEvent(Event event) {
+                preferences.setRootPackageNames(PropertyUtils.toLines(rootPackageNameField.getText().trim()));
+            }
+        });
     }
 
     void createViewParametersControl(Composite parent) {
@@ -237,12 +269,17 @@ public class ViliProjectPreferencesControl {
     }
 
     public void setVisible(boolean visible) {
-        if (viewEncodingField != null) {
+        if (showRootPackageName) {
+            rootPackageNameField.setFocus();
+        } else if (viewEncodingField != null) {
             viewEncodingField.setFocus();
         }
     }
 
     public void setDefaultValues() {
+        if (showRootPackageName) {
+            rootPackageNameField.setText("");
+        }
         if (isWebProject) {
             viewEncodingField.setText(ViliProjectPreferences.DEFAULT_VIEWENCODING); //$NON-NLS-1$
         }
@@ -276,6 +313,9 @@ public class ViliProjectPreferencesControl {
     }
 
     public void resumeValues() {
+        if (showRootPackageName) {
+            rootPackageNameField.setText(PropertyUtils.join(preferences.getRootPackageNames()));
+        }
         if (isWebProject) {
             viewEncodingField.setText(preferences.getViewEncoding());
         }

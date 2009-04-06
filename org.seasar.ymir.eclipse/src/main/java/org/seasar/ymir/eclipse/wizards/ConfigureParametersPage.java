@@ -87,9 +87,9 @@ public class ConfigureParametersPage extends WizardPage {
     }
 
     void createTabFolder() {
-        boolean skeletonParameterExists = skeletonParameterExists();
+        boolean moldParameterExists = skeletonParameterExists();
 
-        if (skeleton != null || skeletonParameterExists) {
+        if (skeleton != null || moldParameterExists) {
             tabFolder = new CTabFolder(tabFolderParent, SWT.NULL);
             tabFolder.setLayout(new FillLayout());
             tabFolder.setSimple(false);
@@ -107,8 +107,8 @@ public class ConfigureParametersPage extends WizardPage {
             genericTabContent.setLayout(new GridLayout());
             genericTabItem.setControl(genericTabContent);
 
-            preferencesControl = new ViliProjectPreferencesControl(genericTabContent, preferences, skeletonBehavior
-                    .isProjectOf(ProjectType.WEB), skeletonBehavior.isProjectOf(ProjectType.DATABASE)) {
+            preferencesControl = new ViliProjectPreferencesControl(genericTabContent, preferences, false,
+                    skeletonBehavior.isProjectOf(ProjectType.WEB), skeletonBehavior.isProjectOf(ProjectType.DATABASE)) {
                 @Override
                 public void setErrorMessage(String message) {
                     ConfigureParametersPage.this.setErrorMessage(message);
@@ -117,7 +117,7 @@ public class ConfigureParametersPage extends WizardPage {
             preferencesControl.createControl();
         }
 
-        if (skeletonParameterExists) {
+        if (moldParameterExists) {
             CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
             skeletonTabItem.setText(Messages.getString("ConfigureParametersPage.12")); //$NON-NLS-1$
 
@@ -131,7 +131,14 @@ public class ConfigureParametersPage extends WizardPage {
             skeletonTabContent.setLayout(new GridLayout());
             scroll.setContent(skeletonTabContent);
 
-            createSkeletonParametersControl(skeletonTabContent);
+            moldParametersControl = new MoldParametersControl(skeletonTabContent, project, preferences, getMolds(),
+                    false) {
+                @Override
+                public void setErrorMessage(String message) {
+                    ConfigureParametersPage.this.setErrorMessage(message);
+                }
+            };
+            moldParametersControl.createControl();
             scroll.setMinHeight(skeletonTabContent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
         }
 
@@ -193,16 +200,6 @@ public class ConfigureParametersPage extends WizardPage {
             moldList.addAll(Arrays.asList(fragments));
         }
         return moldList.toArray(new Mold[0]);
-    }
-
-    @SuppressWarnings("unchecked")//$NON-NLS-1$
-    void createSkeletonParametersControl(Composite parent) {
-        moldParametersControl = new MoldParametersControl(parent, project, preferences, getMolds(), false) {
-            @Override
-            public void setErrorMessage(String message) {
-                ConfigureParametersPage.this.setErrorMessage(message);
-            }
-        };
     }
 
     @Override

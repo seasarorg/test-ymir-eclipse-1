@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.Activator;
@@ -40,6 +41,8 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     private boolean projectSpecificTemplateEnabled;
 
     private String template;
+
+    private String[] rootPackageNames;
 
     private String rootPackageName;
 
@@ -93,7 +96,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
         projectSpecificTemplateEnabled = provider.isProjectSpecificTemplateEnabled();
         template = provider.getTemplate();
-        setRootPackageName(provider.getRootPackageName());
+        setRootPackageNames(provider.getRootPackageNames());
         viewEncoding = provider.getViewEncoding();
         useDatabase = provider.isUseDatabase();
         database = provider.getDatabase();
@@ -146,6 +149,10 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         return rootPackageName;
     }
 
+    public String[] getRootPackageNames() {
+        return rootPackageNames;
+    }
+
     public String getRootPackagePath() {
         return rootPackagePath;
     }
@@ -178,13 +185,10 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         this.template = template;
     }
 
-    public void setRootPackageName(String rootPackageName) {
-        this.rootPackageName = rootPackageName;
-        if (this.rootPackageName == null) {
-            rootPackagePath = null;
-        } else {
-            rootPackagePath = this.rootPackageName.replace('.', '/');
-        }
+    public void setRootPackageNames(String[] rootPackageNames) {
+        this.rootPackageNames = rootPackageNames;
+        this.rootPackageName = rootPackageNames.length > 0 ? rootPackageNames[0] : "";
+        rootPackagePath = this.rootPackageName.replace('.', '/');
     }
 
     public void setViewEncoding(String viewEncoding) {
@@ -213,9 +217,10 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         store.putValue(ParameterKeys.USE_DATABASE, String.valueOf(useDatabase));
         store.putValue(ParameterKeys.DATABASE_USER, database.getUser());
         if (isYmirProject) {
-            applicationProperties.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, rootPackageName);
+            applicationProperties.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, PropertyUtils
+                    .join(rootPackageNames));
         } else {
-            store.putValue(ParameterKeys.ROOT_PACKAGE_NAME, rootPackageName);
+            store.putValue(ParameterKeys.ROOT_PACKAGE_NAME, PropertyUtils.join(rootPackageNames));
         }
         store.putValue(PreferenceConstants.P_TEMPLATE_PROJECTSPECIFICSETTINGSENABLED, String
                 .valueOf(projectSpecificTemplateEnabled));

@@ -26,7 +26,7 @@ public class ViliProjectPreferencesPropertyPage extends PropertyPage {
     protected Control createContents(Composite parent) {
         try {
             preferences = Activator.getDefault().getViliProjectPreferences(getProject());
-            control = new ViliProjectPreferencesControl(parent, preferences, true, true) {
+            control = new ViliProjectPreferencesControl(parent, preferences, true, true, true) {
                 @Override
                 public void setErrorMessage(String message) {
                     ViliProjectPreferencesPropertyPage.this.setErrorMessage(message);
