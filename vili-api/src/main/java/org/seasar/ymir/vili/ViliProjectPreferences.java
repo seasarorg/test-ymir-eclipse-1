@@ -13,7 +13,7 @@ public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
 
     void setTemplate(String template);
 
-    void setRootPackageName(String rootPackageName);
+    void setRootPackageNames(String[] rootPackageNames);
 
     void setViewEncoding(String viewEncoding);
 

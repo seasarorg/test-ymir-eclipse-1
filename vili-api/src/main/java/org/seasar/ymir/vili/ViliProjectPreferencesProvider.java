@@ -13,6 +13,8 @@ public interface ViliProjectPreferencesProvider {
 
     String getRootPackageName();
 
+    String[] getRootPackageNames();
+
     String getViewEncoding();
 
     Database[] getDatabases();
