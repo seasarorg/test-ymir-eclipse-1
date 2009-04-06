@@ -1,5 +1,6 @@
 package org.seasar.ymir.vili;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
@@ -15,7 +16,7 @@ public class Mold {
 
     private ViliBehavior behavior;
 
-    private Map<String, Object> parameterMap;
+    private Map<String, Object> parameterMap = new HashMap<String, Object>();
 
     public static Mold newInstance(Artifact artifact,
             ClassLoader projectClassLoader, ProcessContext context) {
