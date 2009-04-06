@@ -12,11 +12,15 @@ import net.skirnir.freyja.TemplateContext;
 import net.skirnir.freyja.TemplateEvaluator;
 import net.skirnir.freyja.VariableResolver;
 
+import org.eclipse.core.runtime.CoreException;
 import org.seasar.ymir.vili.model.maven.Dependencies;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.Exclusion;
 import org.seasar.ymir.vili.model.maven.Exclusions;
+import org.seasar.ymir.vili.model.maven.Profile;
+import org.seasar.ymir.vili.model.maven.Profiles;
 import org.seasar.ymir.vili.util.ViliUtils;
+import org.seasar.ymir.vili.util.XOMUtils;
 
 class PomTagEvaluator implements TagEvaluator {
     private static final String LS = System.getProperty("line.separator"); //$NON-NLS-1$
@@ -29,7 +33,7 @@ class PomTagEvaluator implements TagEvaluator {
         return new String[] {
                 "project", "build", "profiles", "repositories", "repository", "pluginRepositories", "pluginRepository", "url", "dependencies", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
                 "dependency", "groupId", "artifactId", "version", "classifier", "type", "scope", "systemPath", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-                "optional", "exclusions", "exclusion" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                "optional", "exclusions", "exclusion", "id" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 
     public String evaluate(TemplateContext context, String name, Attribute[] attributes, Element[] body) {
@@ -99,6 +103,7 @@ class PomTagEvaluator implements TagEvaluator {
                 } else if ("profiles".equals(name)) { //$NON-NLS-1$
                     ctx.enter();
                     try {
+                        ctx.setProfiles(buildProfiles(ctx, (TagElement) ctx.getElement()));
                         return TagEvaluatorUtils.getBeginTagString(name, attributes)
                                 + ViliUtils.trimLastSpaces(TagEvaluatorUtils.evaluateElements(ctx, body))
                                 + ctx.outputProfilesString(indent * 2) + ViliUtils.padding(indent)
@@ -198,6 +203,30 @@ class PomTagEvaluator implements TagEvaluator {
             }
         }
         return exclusion;
+    }
+
+    Profiles buildProfiles(TemplateContext context, TagElement element) {
+        Profiles profiles = new Profiles();
+        for (Element elem : element.getBodyElements()) {
+            if (!(elem instanceof TagElement)) {
+                continue;
+            }
+            TagElement tag = (TagElement) elem;
+            String tagName = tag.getName();
+            if ("profile".equals(tagName)) { //$NON-NLS-1$
+                profiles.addProfile(buildProfile(context, tag));
+            }
+        }
+        return profiles;
+    }
+
+    Profile buildProfile(TemplateContext context, TagElement element) {
+        try {
+            return XOMUtils.getAsBean(TagEvaluatorUtils.evaluate(context, element.getName(), element.getAttributes(),
+                    element.getBodyElements()), Profile.class);
+        } catch (CoreException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public String[] getSpecialAttributePatternStrings() {

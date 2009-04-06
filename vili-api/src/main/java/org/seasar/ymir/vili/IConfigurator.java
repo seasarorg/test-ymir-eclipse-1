@@ -6,6 +6,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.seasar.ymir.vili.model.maven.Dependency;
+import org.seasar.ymir.vili.model.maven.Profile;
 
 public interface IConfigurator {
     /**
@@ -116,6 +117,34 @@ public interface IConfigurator {
             ViliProjectPreferences preferences, Map<String, Object> parameters);
 
     /**
+     * プロジェクトのPOMが持つprofileとフラグメントのPOMが持つprofileをマージします。
+     * <p>profileのマージ処理を独自に行ないたい場合は、このメソッドの中でマージ処理を行なって
+     * マージ結果を返すようにして下さい。
+     * 独自のマージ処理は行なわず、デフォルトのマージ処理を行なう場合はnullを返すようにして下さい。
+     * なおprofileMapやfragmentProfileMapの内容を変更してからnullを返すと、
+     * 変更されたprofile情報がマージされます。
+     * </p>
+     * 
+     * @param profileMap プロジェクトのPOMが持つprofileが格納されたMap。nullが渡されることはありません。
+     * 内容を変更しても構いません。
+     * @param fragmentProfileMap フラグメントのPOMが持つprofileが格納されたMap。nullが渡されることはありません。
+     * 内容を変更しても構いません。
+     * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。nullが渡されることはありません。
+     * @param behavior ViliBehaviorインスタンス。nullが渡されることはありません。
+     * ViliBehaviorが持つプロパティが変更されることは想定していません。
+     * もしもプロパティを変更した場合は{@link ViliBehavior#notifyPropertiesChanged()}
+     * を呼び出して下さい。
+     * @param preferences ViliProjectPreferencesインスタンス。nullが渡されることはありません。
+     * @param parameters フラグメントの展開時に使用されたパラメータ。nullが渡されることはありません。
+     * @return マージ後のprofileの配列。
+     * @since 0.2.2
+     */
+    Profile[] mergePomProfiles(Map<Profile, Profile> profileMap,
+            Map<Profile, Profile> fragmentProfileMap, IProject project,
+            ViliBehavior behavior, ViliProjectPreferences preferences,
+            Map<String, Object> parameters);
+
+    /**
      * フラグメントの展開処理の直後に呼び出されます。
      * 
      * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。nullが渡されることはありません。
@@ -165,4 +194,12 @@ public interface IConfigurator {
      */
     Map<String, Object> loadParameters(IProject project, Mold mold,
             ViliProjectPreferences preferences);
+
+    /**
+     * プロジェクト情報が変更された場合に呼び出されるメソッドです。
+     * 
+     * @param delta 変更情報。
+     * @since 0.2.2
+     */
+    void notifyPreferenceChanged(ViliProjectPreferencesDelta delta);
 }

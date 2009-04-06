@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.seasar.ymir.vili.model.maven.Dependency;
+import org.seasar.ymir.vili.model.maven.Profile;
 
 abstract public class AbstractConfigurator implements IConfigurator {
     public void start(IProject project, ViliBehavior behavior,
@@ -40,6 +41,13 @@ abstract public class AbstractConfigurator implements IConfigurator {
         return null;
     }
 
+    public Profile[] mergePomProfiles(Map<Profile, Profile> profileMap,
+            Map<Profile, Profile> fragmentProfileMap, IProject project,
+            ViliBehavior behavior, ViliProjectPreferences preferences,
+            Map<String, Object> parameters) {
+        return null;
+    }
+
     public void processAfterExpanded(IProject project, ViliBehavior behavior,
             ViliProjectPreferences preferences, Map<String, Object> parameters,
             IProgressMonitor monitor) {
@@ -65,5 +73,8 @@ abstract public class AbstractConfigurator implements IConfigurator {
     public Map<String, Object> loadParameters(IProject project, Mold mold,
             ViliProjectPreferences preferences) {
         return new HashMap<String, Object>();
+    }
+
+    public void notifyPreferenceChanged(ViliProjectPreferencesDelta delta) {
     }
 }

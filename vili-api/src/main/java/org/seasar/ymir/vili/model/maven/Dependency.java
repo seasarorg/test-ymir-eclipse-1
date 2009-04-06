@@ -82,6 +82,9 @@ public class Dependency {
         if (artifactId != null) {
             h += artifactId.hashCode();
         }
+        if (classifier != null) {
+            h += classifier.hashCode();
+        }
         return h;
     }
 

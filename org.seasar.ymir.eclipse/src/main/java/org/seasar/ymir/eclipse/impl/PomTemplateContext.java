@@ -24,6 +24,7 @@ import org.seasar.ymir.vili.model.maven.Dependencies;
 import org.seasar.ymir.vili.model.maven.Dependency;
 import org.seasar.ymir.vili.model.maven.PluginRepository;
 import org.seasar.ymir.vili.model.maven.Profile;
+import org.seasar.ymir.vili.model.maven.Profiles;
 import org.seasar.ymir.vili.model.maven.Project;
 import org.seasar.ymir.vili.model.maven.Repository;
 import org.seasar.ymir.vili.util.ViliUtils;
@@ -34,11 +35,13 @@ class PomTemplateContext extends TemplateContextImpl {
 
     private Map<Dependency, Dependency> fragmentDependencyMap = new LinkedHashMap<Dependency, Dependency>();
 
+    private Map<Profile, Profile> profileMap = new LinkedHashMap<Profile, Profile>();
+
+    private Map<Profile, Profile> fragmentProfileMap = new LinkedHashMap<Profile, Profile>();
+
     private Set<Repository> fragmentRepositorySet = new LinkedHashSet<Repository>();
 
     private Set<PluginRepository> fragmentPluginRepositorySet = new LinkedHashSet<PluginRepository>();
-
-    private List<Profile> fragmentProfileList = new ArrayList<Profile>();
 
     private int depth;
 
@@ -76,7 +79,9 @@ class PomTemplateContext extends TemplateContextImpl {
             fragmentPluginRepositorySet.addAll(Arrays.asList(pom.getPluginRepositories().getPluginRepositories()));
         }
         if (pom.getProfiles() != null) {
-            fragmentProfileList.addAll(Arrays.asList(pom.getProfiles().getProfiles()));
+            for (Profile profile : pom.getProfiles().getProfiles()) {
+                fragmentProfileMap.put(profile, profile);
+            }
         }
     }
 
@@ -193,8 +198,16 @@ class PomTemplateContext extends TemplateContextImpl {
     }
 
     public String outputProfilesString(int indent) {
+        Profile[] profiles = null;
+        if (behavior != null) {
+            profiles = behavior.getConfigurator().mergePomProfiles(profileMap, fragmentProfileMap, project, behavior,
+                    preferences, parameters);
+        }
+        if (profiles == null) {
+            profiles = mergePomProfiles(profileMap, fragmentProfileMap);
+        }
         StringWriter sw = new StringWriter();
-        for (Profile profile : fragmentProfileList) {
+        for (Profile profile : profiles) {
             try {
                 XOMUtils.getXOMapper().toXML(profile, sw);
             } catch (ValidationException ex) {
@@ -205,6 +218,23 @@ class PomTemplateContext extends TemplateContextImpl {
         }
         profilesOutputted = true;
         return ViliUtils.addIndent(sw.toString(), ViliUtils.padding(indent));
+    }
+
+    Profile[] mergePomProfiles(Map<Profile, Profile> profileMap, Map<Profile, Profile> fragmentProfileMap) {
+        List<Profile> list = new ArrayList<Profile>();
+        for (Profile profile : profileMap.values()) {
+            Profile fragmentProfile = fragmentProfileMap.remove(profile);
+            if (fragmentProfile != null) {
+                list.add(fragmentProfile);
+            } else {
+                list.add(profile);
+            }
+        }
+        for (Profile profile : fragmentProfileMap.values()) {
+            list.add(profile);
+        }
+
+        return list.toArray(new Profile[0]);
     }
 
     public boolean isDependenciesOutputted() {
@@ -228,5 +258,9 @@ class PomTemplateContext extends TemplateContextImpl {
         for (Dependency dependency : dependencies.getDependencies()) {
             dependencyMap.put(dependency, dependency);
         }
+    }
+
+    public void setProfiles(Profiles profiles) {
+        profileMap.clear();
     }
 }
