@@ -113,6 +113,12 @@ public class ConfigureParametersPage extends WizardPage {
                 public void setErrorMessage(String message) {
                     ConfigureParametersPage.this.setErrorMessage(message);
                 }
+
+                @Override
+                public void setPageComplete(boolean isPageComplete) {
+                    super.setPageComplete(isPageComplete);
+                    notifyPageStatusChanged();
+                }
             };
             preferencesControl.createControl();
         }
@@ -121,13 +127,23 @@ public class ConfigureParametersPage extends WizardPage {
             CTabItem skeletonTabItem = new CTabItem(tabFolder, SWT.NONE);
             skeletonTabItem.setText(Messages.getString("ConfigureParametersPage.12")); //$NON-NLS-1$
 
-            ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
+            final ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
             scroll.setLayout(new FillLayout());
             scroll.setExpandHorizontal(true);
             scroll.setExpandVertical(true);
+            scroll.getVerticalBar().addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (e.detail == SWT.ARROW_UP) {
+                        scroll.getVerticalBar().setIncrement(-SCROLL_UNIT);
+                    } else if (e.detail == SWT.ARROW_DOWN) {
+                        scroll.getVerticalBar().setIncrement(SCROLL_UNIT);
+                    }
+                }
+            });
             skeletonTabItem.setControl(scroll);
 
-            skeletonTabContent = new Composite(scroll, SWT.NULL);
+            skeletonTabContent = new Composite(scroll, SWT.NONE);
             skeletonTabContent.setLayout(new GridLayout());
             scroll.setContent(skeletonTabContent);
 
@@ -136,6 +152,12 @@ public class ConfigureParametersPage extends WizardPage {
                 @Override
                 public void setErrorMessage(String message) {
                     ConfigureParametersPage.this.setErrorMessage(message);
+                }
+
+                @Override
+                public void setPageComplete(boolean isPageComplete) {
+                    super.setPageComplete(isPageComplete);
+                    notifyPageStatusChanged();
                 }
             };
             moldParametersControl.createControl();
@@ -171,6 +193,12 @@ public class ConfigureParametersPage extends WizardPage {
                     @Override
                     public void setErrorMessage(String message) {
                         ConfigureParametersPage.this.setErrorMessage(message);
+                    }
+
+                    @Override
+                    public void setPageComplete(boolean isPageComplete) {
+                        super.setPageComplete(isPageComplete);
+                        notifyPageStatusChanged();
                     }
                 };
                 ymirConfigurationControl.createControl();
@@ -262,10 +290,10 @@ public class ConfigureParametersPage extends WizardPage {
         }
     }
 
-    @Override
-    public boolean isPageComplete() {
-        return super.isPageComplete() && (preferencesControl == null || preferencesControl.isPageComplete())
-                && (ymirConfigurationControl == null || ymirConfigurationControl.isPageComplete());
+    public void notifyPageStatusChanged() {
+        setPageComplete((preferencesControl == null || preferencesControl.isPageComplete())
+                && (moldParametersControl == null || moldParametersControl.isPageComplete())
+                && (ymirConfigurationControl == null || ymirConfigurationControl.isPageComplete()));
     }
 
     public void notifySkeletonAndFragmentsCleared() {

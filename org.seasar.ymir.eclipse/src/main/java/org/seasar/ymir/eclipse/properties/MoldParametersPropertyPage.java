@@ -15,6 +15,7 @@ import org.seasar.ymir.eclipse.Activator;
 import org.seasar.ymir.eclipse.ui.MoldParametersControl;
 import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.ProcessContext;
+import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 
 public class MoldParametersPropertyPage extends PropertyPage {
@@ -31,11 +32,22 @@ public class MoldParametersPropertyPage extends PropertyPage {
         try {
             project = getProject();
             preferences = Activator.getDefault().getViliProjectPreferences(project);
-            control = new MoldParametersControl(parent, project, preferences, Activator.getDefault()
-                    .getProjectRelative(project).getMolds(ProcessContext.MODIFY_PROPERTIES), true) {
+            Mold[] molds = Activator.getDefault().getProjectRelative(project)
+                    .getMolds(ProcessContext.MODIFY_PROPERTIES);
+            for (Mold mold : molds) {
+                ViliBehavior behavior = mold.getBehavior();
+                behavior.getConfigurator().start(project, behavior, preferences);
+            }
+            control = new MoldParametersControl(parent, project, preferences, molds, true) {
                 @Override
                 public void setErrorMessage(String message) {
                     MoldParametersPropertyPage.this.setErrorMessage(message);
+                }
+
+                @Override
+                public void setPageComplete(boolean isPageComplete) {
+                    super.setPageComplete(isPageComplete);
+                    setValid(isPageComplete);
                 }
             };
         } catch (CoreException ex) {

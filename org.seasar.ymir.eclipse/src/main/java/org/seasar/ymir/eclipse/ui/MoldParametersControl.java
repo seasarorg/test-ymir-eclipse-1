@@ -78,7 +78,7 @@ public class MoldParametersControl {
         return composite;
     }
 
-    @SuppressWarnings("unchecked") //$NON-NLS-1$
+    @SuppressWarnings("unchecked")//$NON-NLS-1$
     void createMoldParametersControl(Composite parent) {
         parameterModelMaps = new Map[molds.length];
         java.util.List<ParameterModel> requiredList = new ArrayList<ParameterModel>();
@@ -87,8 +87,8 @@ public class MoldParametersControl {
             Mold mold = molds[i];
             parameterModelMaps[i] = new LinkedHashMap<String, ParameterModel>();
             ViliBehavior behavior = mold.getBehavior();
-            String[] names = behavior.getTemplateParameters();
 
+            String[] names = getTemplateParameters(behavior, null);
             if (names.length == 0) {
                 continue;
             }
@@ -100,9 +100,23 @@ public class MoldParametersControl {
             group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             group.setText(behavior.getLabel());
 
-            createParameterModels(parent, null, mold, parameterModelMaps[i], requiredList, null);
+            createParameterModels(group, null, mold, parameterModelMaps[i], requiredList, null);
         }
         requiredParameterModels = requiredList.toArray(new ParameterModel[0]);
+    }
+
+    private String[] getTemplateParameters(ViliBehavior behavior, String groupName) {
+        String[] names = behavior.getTemplateParameters(groupName);
+        if (onlyModifiable) {
+            List<String> list = new ArrayList<String>();
+            for (String name : names) {
+                if (behavior.isTemplateParameterModifiable(name)) {
+                    list.add(name);
+                }
+            }
+            names = list.toArray(new String[0]);
+        }
+        return names;
     }
 
     ParameterModel[] createParameterModels(Composite parent, String groupName, Mold mold,
@@ -204,12 +218,14 @@ public class MoldParametersControl {
             }
                 break;
 
-            case GROUP:
+            case GROUP: {
                 Group group = new Group(parent, SWT.NONE);
+                GridData data = new GridData(GridData.FILL_HORIZONTAL);
+                data.horizontalSpan = 2;
+                group.setLayoutData(data);
                 GridLayout layout = new GridLayout();
                 layout.numColumns = 2;
                 group.setLayout(layout);
-                group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 group.setText(behavior.getTemplateParameterLabel(name));
                 if (description.length() > 0) {
                     group.setToolTipText(description);
@@ -217,7 +233,7 @@ public class MoldParametersControl {
 
                 model = new GroupParameterModel(mold, name, group, createParameterModels(group, name, mold, modelMap,
                         requiredList, dependents));
-
+            }
                 break;
 
             case RADIO: {
@@ -315,12 +331,9 @@ public class MoldParametersControl {
             Map<String, Object> loaded = behavior.getConfigurator().loadParameters(project, molds[i], preferences);
             molds[i].setParameterMap(loaded);
             for (String name : modelMap.keySet()) {
-                String defaultValue = toString(loaded.get(name));
-                if (defaultValue != null) {
-                    ParameterModel model = modelMap.get(name);
-                    model.setValue(defaultValue);
-                    model.notifyChanged();
-                }
+                ParameterModel model = modelMap.get(name);
+                model.setValue(toString(loaded.get(name)));
+                model.notifyChanged();
             }
         }
     }
@@ -330,19 +343,16 @@ public class MoldParametersControl {
             Map<String, ParameterModel> modelMap = parameterModelMaps[i];
             ViliBehavior behavior = molds[i].getBehavior();
             for (String name : modelMap.keySet()) {
-                String defaultValue = behavior.getTemplateParameterDefault(name);
-                if (defaultValue != null) {
-                    ParameterModel model = modelMap.get(name);
-                    model.setValue(defaultValue);
-                    model.notifyChanged();
-                }
+                ParameterModel model = modelMap.get(name);
+                model.setValue(behavior.getTemplateParameterDefault(name));
+                model.notifyChanged();
             }
         }
     }
 
     private String toString(Object obj) {
         if (obj == null) {
-            return null;
+            return "";
         } else {
             return obj.toString();
         }

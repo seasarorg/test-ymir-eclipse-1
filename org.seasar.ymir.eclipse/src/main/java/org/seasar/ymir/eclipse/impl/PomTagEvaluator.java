@@ -33,7 +33,7 @@ class PomTagEvaluator implements TagEvaluator {
         return new String[] {
                 "project", "build", "profiles", "repositories", "repository", "pluginRepositories", "pluginRepository", "url", "dependencies", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
                 "dependency", "groupId", "artifactId", "version", "classifier", "type", "scope", "systemPath", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-                "optional", "exclusions", "exclusion", "id" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                "optional", "exclusions", "exclusion", "profile" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 
     public String evaluate(TemplateContext context, String name, Attribute[] attributes, Element[] body) {
@@ -104,8 +104,7 @@ class PomTagEvaluator implements TagEvaluator {
                     ctx.enter();
                     try {
                         ctx.setProfiles(buildProfiles(ctx, (TagElement) ctx.getElement()));
-                        return TagEvaluatorUtils.getBeginTagString(name, attributes)
-                                + ViliUtils.trimLastSpaces(TagEvaluatorUtils.evaluateElements(ctx, body))
+                        return TagEvaluatorUtils.getBeginTagString(name, attributes) + LS
                                 + ctx.outputProfilesString(indent * 2) + ViliUtils.padding(indent)
                                 + TagEvaluatorUtils.getEndTagString(name);
                     } finally {

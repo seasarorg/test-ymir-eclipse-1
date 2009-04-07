@@ -534,6 +534,7 @@ public class SelectArtifactPage extends WizardPage {
                 list.addAll(customFragmentListModel.subList(pre, customFragmentListModel.size()));
                 customFragmentListModel = list;
                 customFragmentListField.remove(indices);
+                customFragmentDescriptionText.setText("");
 
                 removeCustomFragmentButton.setEnabled(false);
             }

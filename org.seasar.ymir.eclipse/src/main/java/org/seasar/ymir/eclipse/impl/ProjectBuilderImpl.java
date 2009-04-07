@@ -30,6 +30,7 @@ import net.skirnir.freyja.Element;
 import net.skirnir.freyja.FreyjaRuntimeException;
 import net.skirnir.freyja.TemplateEvaluator;
 import net.skirnir.freyja.impl.TemplateEvaluatorImpl;
+import net.skirnir.xom.ValidationException;
 
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
@@ -289,32 +290,45 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             } else {
                 monitor.worked(3);
             }
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
 
             behavior.getConfigurator().saveParameters(project, skeleton, preferences, skeleton.getParameterMap(),
                     getMoldPreferenceStore(project, skeleton));
+            monitor.worked(1);
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
 
-            Actions actions = behavior.getActions();
-            if (actions != null) {
+            try {
                 IPreferenceStore store = activator.getPreferenceStore(project);
-                try {
-                    Artifact artifact = skeleton.getArtifact();
-                    StringWriter sw = new StringWriter();
-                    Skeleton skel = new Skeleton(artifact.getGroupId(), artifact.getArtifactId(),
-                            artifact.getVersion(), (String) null, (String) null);
-                    skel.setFragments(new Fragments());
-                    XOMUtils.getXOMapper().toXML(skel, sw);
-                    store.putValue(PreferenceConstants.P_SKELETON, sw.toString());
+                Artifact artifact = skeleton.getArtifact();
+                StringWriter sw = new StringWriter();
+                Skeleton skel = new Skeleton(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
+                        (String) null, (String) null);
+                skel.setFragments(new Fragments());
+                XOMUtils.getXOMapper().toXML(skel, sw);
+                store.putValue(PreferenceConstants.P_SKELETON, sw.toString());
 
+                Actions actions = behavior.getActions();
+                if (actions != null) {
                     sw = new StringWriter();
                     XOMUtils.getXOMapper().toXML(actions, sw);
                     store.putValue(org.seasar.ymir.eclipse.preferences.PreferenceConstants.P_ACTIONS, sw.toString());
-
-                    ((IPersistentPreferenceStore) store).save();
-                } catch (Throwable t) {
-                    activator.log(t);
                 }
-            } else {
-                monitor.worked(1);
+
+                ((IPersistentPreferenceStore) store).save();
+            } catch (ValidationException ex) {
+                Activator.getDefault().throwCoreException("Can't save preferences", ex);
+                return;
+            } catch (IOException ex) {
+                Activator.getDefault().throwCoreException("Can't save preferences", ex);
+                return;
+            }
+            monitor.worked(1);
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
             }
 
             if (behavior.isProjectOf(ProjectType.YMIR)) {
@@ -335,7 +349,6 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             }
 
             preferences.save(project);
-            monitor.worked(1);
         } finally {
             monitor.done();
         }

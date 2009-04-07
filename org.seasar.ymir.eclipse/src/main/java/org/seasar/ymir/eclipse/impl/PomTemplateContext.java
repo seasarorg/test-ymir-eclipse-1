@@ -262,5 +262,8 @@ class PomTemplateContext extends TemplateContextImpl {
 
     public void setProfiles(Profiles profiles) {
         profileMap.clear();
+        for (Profile profile : profiles.getProfiles()) {
+            profileMap.put(profile, profile);
+        }
     }
 }

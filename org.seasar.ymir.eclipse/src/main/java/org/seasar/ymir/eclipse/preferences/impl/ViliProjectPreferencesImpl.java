@@ -2,8 +2,10 @@ package org.seasar.ymir.eclipse.preferences.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -24,8 +26,12 @@ import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.impl.PlatformDelegateImpl;
 import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
+import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.PlatformDelegate;
+import org.seasar.ymir.vili.ProcessContext;
+import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
+import org.seasar.ymir.vili.ViliProjectPreferencesDelta;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Database;
@@ -208,26 +214,53 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
             isYmirProject = false;
         }
 
+        List<ViliProjectPreferencesDelta> deltaList = new ArrayList<ViliProjectPreferencesDelta>();
+
+        boolean oldUseDatabase = provider.isUseDatabase();
+        store.putValue(ParameterKeys.USE_DATABASE, String.valueOf(useDatabase));
+        if (oldUseDatabase != useDatabase) {
+            deltaList.add(new ViliProjectPreferencesDelta(ViliProjectPreferences.NAME_USEDATABASE, Boolean
+                    .valueOf(oldUseDatabase), Boolean.valueOf(useDatabase)));
+        }
+
+        Database oldDatabase = provider.getDatabase();
         Database database = getDatabase();
         store.putValue(ParameterKeys.DATABASE_DRIVER_CLASS_NAME, database.getDriverClassName());
         store.putValue(ParameterKeys.DATABASE_PASSWORD, database.getPassword());
         store.putValue(ParameterKeys.DATABASE_NAME, database.getName());
         store.putValue(ParameterKeys.DATABASE_TYPE, database.getType());
         store.putValue(ParameterKeys.DATABASE_URL, database.getURL());
-        store.putValue(ParameterKeys.USE_DATABASE, String.valueOf(useDatabase));
         store.putValue(ParameterKeys.DATABASE_USER, database.getUser());
+        if (!database.equals(oldDatabase)) {
+            deltaList.add(new ViliProjectPreferencesDelta(ViliProjectPreferences.NAME_DATABASE, oldDatabase, database));
+        }
+
+        String[] oldRootPackageNames = provider.getRootPackageNames();
         if (isYmirProject) {
             applicationProperties.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, PropertyUtils
                     .join(rootPackageNames));
         } else {
             store.putValue(ParameterKeys.ROOT_PACKAGE_NAME, PropertyUtils.join(rootPackageNames));
         }
+        if (!PropertyUtils.join(oldRootPackageNames).equals(PropertyUtils.join(rootPackageNames))) {
+            deltaList.add(new ViliProjectPreferencesDelta(ViliProjectPreferences.NAME_ROOTPACKAGENAMES,
+                    oldRootPackageNames, rootPackageNames));
+
+        }
+
         store.putValue(PreferenceConstants.P_TEMPLATE_PROJECTSPECIFICSETTINGSENABLED, String
                 .valueOf(projectSpecificTemplateEnabled));
+
         if (isProjectSpecificTemplateEnabled()) {
             store.putValue(PreferenceConstants.P_TEMPLATE, template);
         } else {
             store.setToDefault(PreferenceConstants.P_TEMPLATE);
+        }
+
+        String oldViewEncoding = provider.getViewEncoding();
+        if (!oldViewEncoding.equals(viewEncoding)) {
+            deltaList.add(new ViliProjectPreferencesDelta(ViliProjectPreferences.NAME_VIEWENCODING, oldViewEncoding,
+                    viewEncoding));
         }
         store.putValue(ParameterKeys.VIEW_ENCODING, viewEncoding);
 
@@ -238,6 +271,15 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
             return;
         }
         Activator.getDefault().getProjectBuilder().saveApplicationProperties(project, applicationProperties, true);
+
+        for (Mold mold : Activator.getDefault().getProjectRelative(project).getMolds(ProcessContext.TEMPORARY)) {
+            ViliBehavior behavior = mold.getBehavior();
+            behavior.getConfigurator().start(project, behavior, this);
+            ViliProjectPreferences preferences = Activator.getDefault().getViliProjectPreferences(project);
+            for (ViliProjectPreferencesDelta delta : deltaList) {
+                behavior.getConfigurator().notifyPreferenceChanged(project, behavior, preferences, delta);
+            }
+        }
     }
 
     public String getSlash() {
