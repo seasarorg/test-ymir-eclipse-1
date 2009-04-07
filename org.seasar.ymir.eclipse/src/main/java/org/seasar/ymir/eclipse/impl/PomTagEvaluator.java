@@ -25,7 +25,7 @@ import org.seasar.ymir.vili.util.XOMUtils;
 class PomTagEvaluator implements TagEvaluator {
     private static final String LS = System.getProperty("line.separator"); //$NON-NLS-1$
 
-    private static final String DEFAULT_PADDING = "  ";
+    private static final String DEFAULT_PADDING = "  "; //$NON-NLS-1$
 
     private static final int DEFAULT_INDENT = DEFAULT_PADDING.length();
 
@@ -181,7 +181,7 @@ class PomTagEvaluator implements TagEvaluator {
                 continue;
             }
             TagElement tag = (TagElement) elem;
-            if ("exclusion".equals(tag.getName())) {
+            if ("exclusion".equals(tag.getName())) { //$NON-NLS-1$
                 exclusions.addExclusion(buildExclusion(context, tag));
             }
         }

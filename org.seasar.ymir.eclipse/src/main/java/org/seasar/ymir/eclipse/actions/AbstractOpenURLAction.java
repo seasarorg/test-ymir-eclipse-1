@@ -14,11 +14,11 @@ import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.vili.util.WorkbenchUtils;
 
 abstract public class AbstractOpenURLAction extends AbstractWorkbenchWindowActionDelegate {
-    private static final String KEY_BASEDIR = "baseDir";
+    private static final String KEY_BASEDIR = "baseDir"; //$NON-NLS-1$
 
-    private static final String KEY_CONTEXTNAME = "contextName";
+    private static final String KEY_CONTEXTNAME = "contextName"; //$NON-NLS-1$
 
-    private static final String KEY_HTTPPORT = "httpPort";
+    private static final String KEY_HTTPPORT = "httpPort"; //$NON-NLS-1$
 
     @Override
     protected void processResource(IProject project, IResource resource) throws Exception {
@@ -37,7 +37,7 @@ abstract public class AbstractOpenURLAction extends AbstractWorkbenchWindowActio
     final protected IPath getBaseURL(IPreferenceStore store) {
         String contextName = getContextName(store);
         String httpPort = getHttpPort(store);
-        return new Path("http://localhost:" + httpPort).append(contextName);
+        return new Path("http://localhost:" + httpPort).append(contextName); //$NON-NLS-1$
     }
 
     final protected String getHttpPort(IPreferenceStore store) {

@@ -52,7 +52,7 @@ public class ViliProjectPreferencesPropertyPage extends PropertyPage {
         try {
             preferences.save(getProject());
         } catch (CoreException ex) {
-            Activator.getDefault().log("Can't save ViliProjectPreferences", ex);
+            Activator.getDefault().log("Can't save ViliProjectPreferences", ex); //$NON-NLS-1$
             return false;
         }
 

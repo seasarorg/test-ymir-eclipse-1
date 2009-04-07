@@ -187,7 +187,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     public void setRootPackageNames(String[] rootPackageNames) {
         this.rootPackageNames = rootPackageNames;
-        this.rootPackageName = rootPackageNames.length > 0 ? rootPackageNames[0] : "";
+        this.rootPackageName = rootPackageNames.length > 0 ? rootPackageNames[0] : ""; //$NON-NLS-1$
         rootPackagePath = this.rootPackageName.replace('.', '/');
     }
 

@@ -110,7 +110,7 @@ public class ViliProjectPreferencesControl {
         layout.numColumns = 2;
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        group.setText("General");
+        group.setText(Messages.getString("ViliProjectPreferencesControl.12")); //$NON-NLS-1$
 
         Label rootPackageNameLabel = new Label(group, SWT.NONE);
         rootPackageNameLabel.setText(Messages.getString("ViliProjectPreferencesControl.11")); //$NON-NLS-1$
@@ -278,7 +278,7 @@ public class ViliProjectPreferencesControl {
 
     public void setDefaultValues() {
         if (showRootPackageName) {
-            rootPackageNameField.setText("");
+            rootPackageNameField.setText(""); //$NON-NLS-1$
         }
         if (isWebProject) {
             viewEncodingField.setText(ViliProjectPreferences.DEFAULT_VIEWENCODING); //$NON-NLS-1$
@@ -321,7 +321,7 @@ public class ViliProjectPreferencesControl {
         }
         if (isDatabaseProject) {
             Database database = preferences.getDatabase();
-            boolean enabled = !"".equals(database.getName());
+            boolean enabled = !"".equals(database.getName()); //$NON-NLS-1$
             useDatabaseField.setSelection(enabled);
             setDatabaseFieldsEnabled(enabled);
             databaseCombo.setText(database.getName());

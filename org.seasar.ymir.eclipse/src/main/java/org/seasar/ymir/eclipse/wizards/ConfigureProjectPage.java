@@ -342,7 +342,7 @@ public class ConfigureProjectPage extends WizardNewProjectCreationPage {
         if (rootPackageNames.length > 0) {
             return rootPackageNames[0];
         } else {
-            return "";
+            return ""; //$NON-NLS-1$
         }
     }
 }

@@ -466,7 +466,7 @@ public class ViliBehaviorImpl implements ViliBehavior {
 
     public void setTemplateParameterDescription(String name, String description) {
         String key = PREFIX_TEMPLATE_PARAMETER + name + SUFFIX_TEMPLATE_PARAMETER_DESCRIPTION;
-        if (description != null && !description.equals("")) {
+        if (description != null && !description.equals("")) { //$NON-NLS-1$
             properties.setProperty(key, description);
         } else {
             properties.removeProperty(key);

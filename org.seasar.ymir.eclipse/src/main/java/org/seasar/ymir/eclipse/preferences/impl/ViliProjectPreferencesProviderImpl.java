@@ -56,7 +56,7 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
         if (rootPackageNames.length > 0) {
             return rootPackageNames[0];
         } else {
-            return "";
+            return ""; //$NON-NLS-1$
         }
     }
 
@@ -74,7 +74,7 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
 
     public String getViewEncoding() {
         String viewEncoding = store.getString(ParameterKeys.VIEW_ENCODING);
-        if ("".equals(viewEncoding)) {
+        if ("".equals(viewEncoding)) { //$NON-NLS-1$
             viewEncoding = DEFAULT_VIEWENCODING;
         }
         return viewEncoding;

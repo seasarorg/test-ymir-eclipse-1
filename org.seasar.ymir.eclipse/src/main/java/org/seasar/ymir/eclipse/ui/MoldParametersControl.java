@@ -78,7 +78,7 @@ public class MoldParametersControl {
         return composite;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
     void createMoldParametersControl(Composite parent) {
         parameterModelMaps = new Map[molds.length];
         java.util.List<ParameterModel> requiredList = new ArrayList<ParameterModel>();
@@ -234,7 +234,7 @@ public class MoldParametersControl {
                 String[] candidates = behavior.getTemplateParameterCandidates(name);
                 Button[] buttons = new Button[candidates.length];
                 for (int j = 0; j < candidates.length; j++) {
-                    String key = name + "." + candidates[j];
+                    String key = name + "." + candidates[j]; //$NON-NLS-1$
                     Button button = new Button(parent, SWT.RADIO | SWT.LEFT);
                     GridData data = new GridData();
                     data.horizontalSpan = 2;
@@ -264,7 +264,7 @@ public class MoldParametersControl {
                 break;
 
             default:
-                throw new RuntimeException("Unknown model type: " + behavior.getTemplateParameterType(name));
+                throw new RuntimeException("Unknown model type: " + behavior.getTemplateParameterType(name)); //$NON-NLS-1$
             }
 
             modelList.add(model);
