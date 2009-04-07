@@ -75,6 +75,8 @@ abstract public class AbstractConfigurator implements IConfigurator {
         return new HashMap<String, Object>();
     }
 
-    public void notifyPreferenceChanged(ViliProjectPreferencesDelta delta) {
+    public void notifyPreferenceChanged(IProject project,
+            ViliBehavior behavior, ViliProjectPreferences preferences,
+            ViliProjectPreferencesDelta delta) {
     }
 }

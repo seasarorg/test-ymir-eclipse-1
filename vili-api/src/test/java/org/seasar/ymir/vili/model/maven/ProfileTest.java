@@ -4,11 +4,12 @@ import java.beans.Introspector;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
 import org.seasar.kvasir.util.io.IOUtils;
-import org.seasar.ymir.vili.model.maven.Profile;
 
 import net.skirnir.xom.BeanAccessor;
 import net.skirnir.xom.BeanAccessorFactory;
@@ -41,5 +42,11 @@ public class ProfileTest extends TestCase {
                 new StringReader(expected)).getRootElement(), Profile.class),
                 actual);
         assertEquals(expected, actual.toString());
+    }
+
+    public void test_idをキーにすることができること() throws Exception {
+        Map<Profile, String> map = new HashMap<Profile, String>();
+        map.put(new Profile("id"), "ID");
+        assertEquals("ID", map.get(new Profile("id")));
     }
 }

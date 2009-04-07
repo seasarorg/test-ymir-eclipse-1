@@ -8,6 +8,14 @@ import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Database;
 
 public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
+    String NAME_ROOTPACKAGENAMES = "rootPackageNames";
+
+    String NAME_VIEWENCODING = "viewEncoding";
+
+    String NAME_USEDATABASE = "useDatabase";
+
+    String NAME_DATABASE = "database";
+
     void setProjectSpecificTemplateEnabled(
             boolean projectSpecificTemplateEnabled);
 

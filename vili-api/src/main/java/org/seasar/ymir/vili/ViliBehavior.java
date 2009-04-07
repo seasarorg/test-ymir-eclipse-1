@@ -182,6 +182,9 @@ public interface ViliBehavior {
      */
     void notifyPropertiesChanged();
 
+    /**
+     * @since 0.2.2
+     */
     void update();
 
     ClassLoader getClassLoader();

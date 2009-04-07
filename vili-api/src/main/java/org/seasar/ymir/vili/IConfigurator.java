@@ -14,7 +14,9 @@ public interface IConfigurator {
      * <p>このメソッドはこのインスタンスが生成された直後に呼び出されます。
      * </p>
      * <p>フラグメント固有のパラメータをカスタマイズしたい場合は、
-     * behaviorからpropertiesを取り出して値をセットするようにして下さい。
+     * {@link ViliBehavior#setTemplateParameterDefault(String, String)}などのメソッドを使ってbehaviorの状態を変更して下さい。
+     * なおこのメソッド呼び出し後に{@link ViliBehavior#update()}が自動的に呼び出されますので、
+     * このメソッド内で明示的に{@link ViliBehavior#update()}を呼び出す必要はありません。
      * </p>
      * 
      * @param project プロジェクト。
@@ -29,6 +31,11 @@ public interface IConfigurator {
 
     /**
      * フラグメントの展開処理の直前に呼び出されます。
+     * <p>フラグメント固有のパラメータをカスタマイズしたい場合は、
+     * {@link ViliBehavior#setTemplateParameterDefault(String, String)}などのメソッドを使ってbehaviorの状態を変更して下さい。
+     * なおこのメソッド呼び出し後に{@link ViliBehavior#update()}が自動的に呼び出されますので、
+     * このメソッド内で明示的に{@link ViliBehavior#update()}を呼び出す必要はありません。
+     * </p>
      * 
      * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。nullが渡されることはありません。
      * @param behavior ViliBehaviorインスタンス。nullが渡されることはありません。
@@ -52,7 +59,7 @@ public interface IConfigurator {
      * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。nullが渡されることはありません。
      * @param behavior ViliBehaviorインスタンス。nullが渡されることはありません。
      * ViliBehaviorが持つプロパティが変更されることは想定していません。
-     * もしもプロパティを変更した場合は{@link ViliBehavior#notifyPropertiesChanged()}
+     * もしもプロパティを変更した場合は{@link ViliBehavior#update()}
      * を呼び出して下さい。
      * @param preferences ViliProjectPreferencesインスタンス。nullが渡されることはありません。
      * @param parameters フラグメントの展開時に使用されたパラメータ。nullが渡されることはありません。
@@ -77,7 +84,7 @@ public interface IConfigurator {
      * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。nullが渡されることはありません。
      * @param behavior ViliBehaviorインスタンス。nullが渡されることはありません。
      * ViliBehaviorが持つプロパティが変更されることは想定していません。
-     * もしもプロパティを変更した場合は{@link ViliBehavior#notifyPropertiesChanged()}
+     * もしもプロパティを変更した場合は{@link ViliBehavior#update()}
      * を呼び出して下さい。
      * @param preferences ViliProjectPreferencesインスタンス。nullが渡されることはありません。
      * @param parameters フラグメントの展開時に使用されたパラメータ。nullが渡されることはありません。
@@ -103,7 +110,7 @@ public interface IConfigurator {
      * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。nullが渡されることはありません。
      * @param behavior ViliBehaviorインスタンス。nullが渡されることはありません。
      * ViliBehaviorが持つプロパティが変更されることは想定していません。
-     * もしもプロパティを変更した場合は{@link ViliBehavior#notifyPropertiesChanged()}
+     * もしもプロパティを変更した場合は{@link ViliBehavior#update()}
      * を呼び出して下さい。
      * @param preferences ViliProjectPreferencesインスタンス。nullが渡されることはありません。
      * @param parameters フラグメントの展開時に使用されたパラメータ。nullが渡されることはありません。
@@ -132,7 +139,7 @@ public interface IConfigurator {
      * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。nullが渡されることはありません。
      * @param behavior ViliBehaviorインスタンス。nullが渡されることはありません。
      * ViliBehaviorが持つプロパティが変更されることは想定していません。
-     * もしもプロパティを変更した場合は{@link ViliBehavior#notifyPropertiesChanged()}
+     * もしもプロパティを変更した場合は{@link ViliBehavior#update()}
      * を呼び出して下さい。
      * @param preferences ViliProjectPreferencesインスタンス。nullが渡されることはありません。
      * @param parameters フラグメントの展開時に使用されたパラメータ。nullが渡されることはありません。
@@ -149,6 +156,9 @@ public interface IConfigurator {
      * 
      * @param project フラグメントが追加されるプロジェクトを表すIProjectインスタンス。nullが渡されることはありません。
      * @param behavior ViliBehaviorインスタンス。nullが渡されることはありません。
+     * ViliBehaviorが持つプロパティが変更されることは想定していません。
+     * もしもプロパティを変更した場合は{@link ViliBehavior#update()}
+     * を呼び出して下さい。
      * @param preferences ViliProjectPreferencesインスタンス。nullが渡されることはありません。
      * @param parameters フラグメントの展開時に使用されたパラメータ。nullが渡されることはありません。
      * @param monitor プログレスモニタ。nullが渡されることはありません。
@@ -198,8 +208,16 @@ public interface IConfigurator {
     /**
      * プロジェクト情報が変更された場合に呼び出されるメソッドです。
      * 
+     * @param project プロジェクト。nullが渡されることはありません。
+     * @param behavior ViliBehaviorインスタンス。nullが渡されることはありません。
+     * ViliBehaviorが持つプロパティが変更されることは想定していません。
+     * もしもプロパティを変更した場合は{@link ViliBehavior#update()}
+     * を呼び出して下さい。
+     * @param preferences ViliProjectPreferencesインスタンス。nullが渡されることはありません。
      * @param delta 変更情報。
      * @since 0.2.2
      */
-    void notifyPreferenceChanged(ViliProjectPreferencesDelta delta);
+    void notifyPreferenceChanged(IProject project, ViliBehavior behavior,
+            ViliProjectPreferences preferences,
+            ViliProjectPreferencesDelta delta);
 }
