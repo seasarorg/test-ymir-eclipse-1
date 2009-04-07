@@ -1211,7 +1211,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
     public IPersistentPreferenceStore getMoldPreferenceStore(IProject project, Mold mold) {
         Artifact artifact = mold.getArtifact();
         return (IPersistentPreferenceStore) Activator.getDefault().getPreferenceStore(project,
-                Globals.QUALIFIERPREFIX_MOLD + artifact.getGroupId() + ":" + artifact.getArtifactId()); //$NON-NLS-1$
+                Globals.QUALIFIERPREFIX_MOLD + artifact.getGroupId() + "$" + artifact.getArtifactId()); //$NON-NLS-1$
     }
 
     public void addNature(IProject project, String natureId, IProgressMonitor monitor) throws CoreException {

@@ -1,16 +1,23 @@
 package org.seasar.ymir.eclipse;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.eclipse.core.runtime.preferences.InstanceScope;
@@ -23,6 +30,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
+import org.seasar.kvasir.util.PropertyUtils;
 import org.seasar.ymir.eclipse.impl.MoldResolverImpl;
 import org.seasar.ymir.eclipse.impl.ProjectBuilderImpl;
 import org.seasar.ymir.eclipse.impl.ViliBehaviorImpl;
@@ -38,6 +46,10 @@ import org.seasar.ymir.vili.ViliBehavior;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
 import org.seasar.ymir.vili.maven.ArtifactResolver;
+import org.seasar.ymir.vili.model.Fragment;
+import org.seasar.ymir.vili.model.Fragments;
+import org.seasar.ymir.vili.model.Skeleton;
+import org.seasar.ymir.vili.model.Skeletons;
 import org.seasar.ymir.vili.model.Template;
 import org.seasar.ymir.vili.util.XOMUtils;
 
@@ -50,6 +62,10 @@ public class Activator extends AbstractUIPlugin {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.seasar.ymir.eclipse"; //$NON-NLS-1$
 
+    private static final String EXTENSIONPOINTID_SKELETONS = "skeletons";
+
+    private static final String EXTENSIONPOINTID_FRAGMENTS = "fragments";
+
     // The shared instance
     private static Activator plugin;
 
@@ -58,6 +74,8 @@ public class Activator extends AbstractUIPlugin {
     private MoldResolver moldResolver;
 
     private ProjectBuilder projectBuilder;
+
+    private Template contributedTemplate;
 
     private Map<IProject, ProjectRelative> projectRelativeMap = new HashMap<IProject, ProjectRelative>();
 
@@ -91,6 +109,102 @@ public class Activator extends AbstractUIPlugin {
                 }
             }
         });
+
+        contributedTemplate = createContributedTemplate();
+    }
+
+    private Template createContributedTemplate() {
+        IExtensionRegistry registry = Platform.getExtensionRegistry();
+
+        IExtensionPoint skeletonsPoint = registry.getExtensionPoint(getBundle().getSymbolicName() + "."
+                + EXTENSIONPOINTID_SKELETONS);
+        List<Skeleton> skeletonList = new ArrayList<Skeleton>();
+        for (IExtension extension : skeletonsPoint.getExtensions()) {
+            for (IConfigurationElement element : extension.getConfigurationElements()) {
+                if ("skeleton".equals(element.getName())) {
+                    skeletonList.add(buildSkeleton(element));
+                }
+            }
+        }
+
+        IExtensionPoint fragmentsPoint = registry.getExtensionPoint(getBundle().getSymbolicName() + "."
+                + EXTENSIONPOINTID_FRAGMENTS);
+        List<Fragment> fragmentList = new ArrayList<Fragment>();
+        for (IExtension extension : fragmentsPoint.getExtensions()) {
+            for (IConfigurationElement element : extension.getConfigurationElements()) {
+                if ("fragment".equals(element.getName())) {
+                    fragmentList.add(buildFragment(element));
+                }
+            }
+        }
+        Template template = new Template();
+        template.setSkeletons(new Skeletons(skeletonList.toArray(new Skeleton[0])));
+        template.setFragments(new Fragments(fragmentList.toArray(new Fragment[0])));
+        return template;
+    }
+
+    private Skeleton buildSkeleton(IConfigurationElement element) {
+        Skeleton skeleton = new Skeleton();
+        skeleton.setGroupId(valueOf(element.getChildren("groupId")));
+        skeleton.setArtifactId(valueOf(element.getChildren("artifactId")));
+        skeleton.setVersion(valueOf(element.getChildren("version")));
+        skeleton.setName(localize(valueOf(element.getChildren("name"), "")));
+        skeleton.setDescription(localize(valueOf(element.getChildren("description"), "")));
+        IConfigurationElement[] elems = element.getChildren("fragments");
+        if (elems.length > 0) {
+            skeleton.setFragments(buildFragments(elems[0]));
+        }
+        return skeleton;
+    }
+
+    private String localize(String string) {
+        if (string == null || !string.startsWith("%")) {
+            return string;
+        }
+        String localized = Platform.getResourceString(getBundle(), string.substring(1/* ="%".length() */));
+        if (localized == null) {
+            localized = string;
+        }
+        return localized;
+
+    }
+
+    private String valueOf(IConfigurationElement[] elements) {
+        if (elements.length > 0) {
+            return elements[0].getValue().trim();
+        }
+        return null;
+    }
+
+    private String valueOf(IConfigurationElement[] elements, String defaultValue) {
+        String value = valueOf(elements);
+        if (value == null) {
+            value = defaultValue;
+        }
+        return value;
+    }
+
+    private boolean valueOf(IConfigurationElement[] elements, boolean defaultValue) {
+        return PropertyUtils.valueOf(valueOf(elements), defaultValue);
+    }
+
+    private Fragments buildFragments(IConfigurationElement element) {
+        Fragments fragments = new Fragments();
+        for (IConfigurationElement elem : element.getChildren("fragment")) {
+            fragments.addFragment(buildFragment(elem));
+        }
+        return fragments;
+    }
+
+    private Fragment buildFragment(IConfigurationElement element) {
+        Fragment fragment = new Fragment();
+        fragment.setGroupId(valueOf(element.getChildren("groupId")));
+        fragment.setArtifactId(valueOf(element.getChildren("artifactId")));
+        fragment.setVersion(valueOf(element.getChildren("version")));
+        fragment.setName(localize(valueOf(element.getChildren("name"), "")));
+        fragment.setDescription(localize(valueOf(element.getChildren("description"), "")));
+        fragment.setAvailableOnlyIfProjectExists(valueOf(element.getChildren("availableOnlyIfProjectExists"), false));
+        return fragment;
     }
 
     @Override
@@ -124,6 +238,8 @@ public class Activator extends AbstractUIPlugin {
             }
             projectRelativeMap.clear();
         }
+
+        contributedTemplate = null;
 
         super.stop(context);
     }
@@ -197,12 +313,34 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public Template getTemplate() {
+        Template customTemplate;
         try {
-            return createTemplate(getPreferenceStore().getString(PreferenceConstants.P_TEMPLATE));
+            customTemplate = createTemplate(getPreferenceStore().getString(PreferenceConstants.P_TEMPLATE));
         } catch (CoreException ex) {
-            getLog().log(ex.getStatus());
-            return new Template();
+            throw new RuntimeException(ex);
         }
+
+        Template template = new Template();
+
+        Skeletons skeletons = new Skeletons();
+        for (Skeleton skeleton : contributedTemplate.getAllSkeletons()) {
+            skeletons.addSkeleton(skeleton);
+        }
+        for (Skeleton skeleton : customTemplate.getAllSkeletons()) {
+            skeletons.addSkeleton(skeleton);
+        }
+        template.setSkeletons(skeletons);
+
+        Fragments fragments = new Fragments();
+        for (Fragment fragment : contributedTemplate.getAllFragments()) {
+            fragments.addFragment(fragment);
+        }
+        for (Fragment fragment : customTemplate.getAllFragments()) {
+            fragments.addFragment(fragment);
+        }
+        template.setFragments(fragments);
+
+        return template;
     }
 
     public Template createTemplate(String template) throws CoreException {
