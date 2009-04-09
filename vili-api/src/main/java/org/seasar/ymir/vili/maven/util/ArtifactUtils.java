@@ -415,7 +415,7 @@ public class ArtifactUtils {
         URL artifactURL = Activator.getArtifactResolver().getURL(artifact);
         File artifactFile = URLUtils.toFile(artifactURL);
         if (artifactFile == null) {
-            artifactFile = File.createTempFile("ymir", ".jar"); //$NON-NLS-1$ //$NON-NLS-2$
+            artifactFile = File.createTempFile("vili", ".jar"); //$NON-NLS-1$ //$NON-NLS-2$
             artifactFile.deleteOnExit();
             InputStream is = null;
             OutputStream os = null;

@@ -1,7 +1,6 @@
 package org.seasar.ymir.vili;
 
 import org.eclipse.core.runtime.IPath;
-import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.vili.model.Database;
 
 public interface ViliProjectPreferencesProvider {
@@ -38,6 +37,4 @@ public interface ViliProjectPreferencesProvider {
     String getFieldSuffix();
 
     String getFieldSpecialPrefix();
-
-    MapProperties getApplicationProperties();
 }

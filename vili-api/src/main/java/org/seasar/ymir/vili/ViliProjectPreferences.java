@@ -3,7 +3,6 @@ package org.seasar.ymir.vili;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Database;
 
@@ -36,8 +35,6 @@ public interface ViliProjectPreferences extends ViliProjectPreferencesProvider {
     void setVersion(String version);
 
     void setJREContainerPath(IPath jreContainerPath);
-
-    void setApplicationProperties(MapProperties applicationProperties);
 
     void save(IProject project) throws CoreException;
 

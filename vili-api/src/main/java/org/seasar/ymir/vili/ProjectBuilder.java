@@ -51,12 +51,6 @@ public interface ProjectBuilder {
     void mergeProperties(IFile file, MapProperties properties,
             IProgressMonitor monitor) throws CoreException;
 
-    MapProperties loadApplicationProperties(IProject project)
-            throws CoreException;
-
-    void saveApplicationProperties(IProject project, MapProperties properties,
-            boolean merge) throws CoreException;
-
     void updatePom(IProject project, Project pom, IProgressMonitor monitor)
             throws CoreException;
 
