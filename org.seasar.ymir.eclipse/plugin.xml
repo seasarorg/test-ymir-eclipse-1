@@ -291,129 +291,16 @@
          point="org.seasar.ymir.eclipse.skeletonTemplates">
 <skeleton>
   <groupId>org.seasar.ymir.skeleton</groupId>
-  <artifactId>java-skeleton-web</artifactId>
-  <name>%skeleton.ymir.name</name>
-  <description>%skeleton.ymir.description</description>
-  <fragments>
-    <fragment>
-      <groupId>org.seasar.ymir.skeleton</groupId>
-      <artifactId>s2.4-fragment-generic</artifactId>
-    </fragment>
-    <fragment>
-      <groupId>org.seasar.ymir.skeleton</groupId>
-      <artifactId>ymir-fragment-generic</artifactId>
-    </fragment>
-  </fragments>
+  <artifactId>skeleton-skeleton-generic</artifactId>
+  <name>%skeleton.skeleton.name</name>
+  <description>%skeleton.skeleton.description</description>
 </skeleton>
 <skeleton>
   <groupId>org.seasar.ymir.skeleton</groupId>
-  <artifactId>java-skeleton-web</artifactId>
-  <name>%skeleton.ymir+dbflute.name</name>
-  <description>%skeleton.ymir+dbflute.description</description>
-  <fragments>
-    <fragment>
-      <groupId>org.seasar.ymir.skeleton</groupId>
-      <artifactId>s2.4-fragment-generic</artifactId>
-    </fragment>
-    <fragment>
-      <groupId>org.seasar.ymir.skeleton</groupId>
-      <artifactId>ymir-fragment-generic</artifactId>
-    </fragment>
-    <fragment>
-      <groupId>org.seasar.ymir.skeleton</groupId>
-      <artifactId>dbflute-fragment-generic</artifactId>
-    </fragment>
-  </fragments>
+  <artifactId>fragment-skeleton-generic</artifactId>
+  <name>%skeleton.fragment.name</name>
+  <description>%skeleton.fragment.description</description>
 </skeleton>
-<skeleton>
-  <groupId>org.seasar.ymir.skeleton</groupId>
-  <artifactId>java-skeleton-web</artifactId>
-  <name>%skeleton.ysp.name</name>
-  <description>%skeleton.ysp.description</description>
-  <fragments>
-    <fragment>
-      <groupId>org.seasar.ymir.skeleton</groupId>
-      <artifactId>s2.4-fragment-generic</artifactId>
-    </fragment>
-    <fragment>
-      <groupId>org.seasar.ymir.skeleton</groupId>
-      <artifactId>ymir-fragment-generic</artifactId>
-    </fragment>
-    <fragment>
-      <groupId>org.seasar.ymir.skeleton</groupId>
-      <artifactId>ymir-fragment-utility</artifactId>
-    </fragment>
-    <fragment>
-      <groupId>org.seasar.ymir.skeleton</groupId>
-      <artifactId>dbflute-fragment-generic</artifactId>
-    </fragment>
-    <fragment>
-      <groupId>org.seasar.ymir.skeleton.ysp</groupId>
-      <artifactId>ysp-base</artifactId>
-    </fragment>
-  </fragments>
-</skeleton>
-   </extension>
-   <extension
-         point="org.seasar.ymir.eclipse.fragmentTemplates">
-<fragment>
-  <groupId>org.seasar.ymir.skeleton</groupId>
-  <artifactId>ymir-fragment-utility</artifactId>
-  <name>%fragment.ymir-fragment-utility.name</name>
-  <description>%fragment.ymir-fragment-utility.description</description>
-</fragment>
-<fragment>
-  <groupId>org.seasar.ymir.skeleton</groupId>
-  <artifactId>dbflute-fragment-generic</artifactId>
-  <name>%fragment.dbflute-fragment-generic.name</name>
-  <description>
-    %fragment.dbflute-fragment-generic.description
-  </description>
-</fragment>
-<fragment>
-  <groupId>org.seasar.ymir.skeleton</groupId>
-  <artifactId>ymir-fragment-json</artifactId>
-  <name>%fragment.ymir-fragment-json.name</name>
-  <description>%fragment.ymir-fragment-json.description</description>
-</fragment>
-<fragment>
-  <groupId>org.seasar.ymir.skeleton</groupId>
-  <artifactId>ymir-fragment-amf</artifactId>
-  <name>%fragment.ymir-fragment-amf.name</name>
-  <description>%fragment.ymir-fragment-amf.description</description>
-</fragment>
-<fragment>
-  <groupId>org.seasar.ymir.skeleton</groupId>
-  <artifactId>yonex-fragment-generic</artifactId>
-  <name>%fragment.yonex-fragment-generic.name</name>
-  <description>
-    %fragment.yonex-fragment-generic.description
-  </description>
-</fragment>
-<fragment>
-  <groupId>org.seasar.ymir.skeleton.ysp</groupId>
-  <artifactId>ysp-base</artifactId>
-  <name>%fragment.ysp-base.name</name>
-  <description>%fragment.ysp-base.description</description>
-</fragment>
-<fragment>
-  <groupId>org.seasar.ymir.skeleton.ysp</groupId>
-  <artifactId>ysp-login</artifactId>
-  <name>%fragment.ysp-login.name</name>
-  <description>%fragment.ysp-login.description</description>
-</fragment>
-<fragment>
-  <groupId>org.seasar.ymir.skeleton.ysp</groupId>
-  <artifactId>ysp-crud</artifactId>
-  <name>%fragment.ysp-crud.name</name>
-  <description>%fragment.ysp-crud.description</description>
-</fragment>
-<fragment>
-  <groupId>org.seasar.ymir.skeleton</groupId>
-  <artifactId>mailsender-fragment-generic</artifactId>
-  <name>%fragment.mailsender-fragment-generic.name</name>
-  <description>%fragment.mailsender-fragment-generic.description</description>
-</fragment>
    </extension>
 
 </plugin>

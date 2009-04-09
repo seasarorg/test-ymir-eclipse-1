@@ -71,7 +71,6 @@
             <element ref="version" minOccurs="0" maxOccurs="1"/>
             <element ref="name" minOccurs="0" maxOccurs="1"/>
             <element ref="description" minOccurs="0" maxOccurs="1"/>
-            <element ref="availableOnlyIfProjectExists" minOccurs="0" maxOccurs="1"/>
          </sequence>
       </complexType>
    </element>
@@ -89,9 +88,6 @@
    </element>
 
    <element name="description" type="string">
-   </element>
-
-   <element name="availableOnlyIfProjectExists" type="string">
    </element>
 
    <annotation>

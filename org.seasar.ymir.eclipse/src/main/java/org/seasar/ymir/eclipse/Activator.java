@@ -62,9 +62,9 @@ public class Activator extends AbstractUIPlugin {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.seasar.ymir.eclipse"; //$NON-NLS-1$
 
-    private static final String EXTENSIONPOINTID_SKELETONS = "skeletons";
+    private static final String EXTENSIONPOINTID_SKELETONTEMPLATES = "skeletonTemplates";
 
-    private static final String EXTENSIONPOINTID_FRAGMENTS = "fragments";
+    private static final String EXTENSIONPOINTID_FRAGMENTTEMPLATES = "fragmentTemplates";
 
     // The shared instance
     private static Activator plugin;
@@ -117,7 +117,7 @@ public class Activator extends AbstractUIPlugin {
         IExtensionRegistry registry = Platform.getExtensionRegistry();
 
         IExtensionPoint skeletonsPoint = registry.getExtensionPoint(getBundle().getSymbolicName() + "."
-                + EXTENSIONPOINTID_SKELETONS);
+                + EXTENSIONPOINTID_SKELETONTEMPLATES);
         List<Skeleton> skeletonList = new ArrayList<Skeleton>();
         for (IExtension extension : skeletonsPoint.getExtensions()) {
             for (IConfigurationElement element : extension.getConfigurationElements()) {
@@ -128,7 +128,7 @@ public class Activator extends AbstractUIPlugin {
         }
 
         IExtensionPoint fragmentsPoint = registry.getExtensionPoint(getBundle().getSymbolicName() + "."
-                + EXTENSIONPOINTID_FRAGMENTS);
+                + EXTENSIONPOINTID_FRAGMENTTEMPLATES);
         List<Fragment> fragmentList = new ArrayList<Fragment>();
         for (IExtension extension : fragmentsPoint.getExtensions()) {
             for (IConfigurationElement element : extension.getConfigurationElements()) {
