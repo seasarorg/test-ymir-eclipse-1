@@ -5,8 +5,8 @@ import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
 import org.seasar.ymir.eclipse.Activator;
 
-public class YmirProjectNature implements IProjectNature {
-    public static final String ID = Activator.PLUGIN_ID + ".ymirProjectNature"; //$NON-NLS-1$
+public class VeProjectNature implements IProjectNature {
+    public static final String ID = Activator.PLUGIN_ID + ".veProjectNature"; //$NON-NLS-1$
 
     private IProject project;
 

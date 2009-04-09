@@ -1,118 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
-   <extension-point id="skeletonTemplates" name="Skeleton Templates" schema="schema/skeletonTemplates.exsd"/>
-   <extension-point id="fragmentTemplates" name="Fragment Templates" schema="schema/fragmentTemplates.exsd"/>
 
-   <extension
-         point="org.eclipse.ui.newWizards">
-      <wizard
-            category="org.seasar.ymir.eclipse.viliCategory"
-            class="org.seasar.ymir.eclipse.wizards.NewProjectWizard"
-            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
-            icon="icons/newViliProject.gif"
-            id="org.seasar.ymir.eclipse.wizards.NewProjectWizard"
-            name="%newWizard.name"
-            project="true">
-         <description>
-            %newWizard.description
-         </description>
-      </wizard>
-      <category
-            id="org.seasar.ymir.eclipse.viliCategory"
-            name="%newWizard.category.name">
-      </category>
-   </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            name="%plugin.name"
-            class="org.seasar.ymir.eclipse.preferences.ViliPreferencePage"
-            id="org.seasar.ymir.eclipse.preferences.viliPreferencePage">
-      </page>
-      <page
-            category="org.seasar.ymir.eclipse.preferences.viliPreferencePage"
-            class="org.seasar.ymir.eclipse.preferences.TemplatePreferencePage"
-            id="org.seasar.ymir.eclipse.preferences.templatePreferencePage"
-            name="Template">
-      </page>
-   </extension>
-   <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="org.seasar.ymir.eclipse.preferences.PreferenceInitializer">
-      </initializer>
-   </extension>
-   <extension
-         point="org.eclipse.ui.propertyPages">
-      <page
-            class="org.seasar.ymir.eclipse.properties.ViliPropertyPage"
-            id="org.seasar.ymir.eclipse.properties.viliPropertyPage"
-            name="%plugin.name">
-         <enabledWhen>
-            <or>
-               <instanceof
-                     value="org.eclipse.jdt.core.IJavaProject">
-               </instanceof>
-               <adapt
-                     type="org.eclipse.core.resources.IProject">
-               </adapt>
-            </or>
-         </enabledWhen>
-      </page>
-      <page
-            category="org.seasar.ymir.eclipse.properties.viliPropertyPage"
-            class="org.seasar.ymir.eclipse.properties.TemplatePropertyPage"
-            id="org.seasar.ymir.eclipse.properties.templatePropertyPage"
-            name="Template">
-         <enabledWhen>
-            <adapt
-                  type="org.eclipse.core.resources.IProject">
-               <test
-                     property="org.eclipse.core.resources.projectNature"
-                     value="org.seasar.ymir.eclipse.viliProjectNature">
-               </test>
-            </adapt>
-         </enabledWhen>
-      </page>
-      <page
-            category="org.seasar.ymir.eclipse.properties.viliPropertyPage"
-            class="org.seasar.ymir.eclipse.properties.ViliProjectPreferencesPropertyPage"
-            id="org.seasar.ymir.eclipse.properties.viliProjectPreferencesPropertyPage"
-            name="Project Preferences">
-         <enabledWhen>
-            <adapt
-                  type="org.eclipse.core.resources.IProject">
-               <test
-                     property="org.eclipse.core.resources.projectNature"
-                     value="org.seasar.ymir.eclipse.viliProjectNature">
-               </test>
-            </adapt>
-         </enabledWhen>
-      </page>
-      <page
-            category="org.seasar.ymir.eclipse.properties.viliPropertyPage"
-            class="org.seasar.ymir.eclipse.properties.MoldParametersPropertyPage"
-            id="org.seasar.ymir.eclipse.properties.moldParametersPropertyPage"
-            name="Skeleton/Fragment Parameters">
-         <enabledWhen>
-            <adapt
-                  type="org.eclipse.core.resources.IProject">
-               <test
-                     property="org.eclipse.core.resources.projectNature"
-                     value="org.seasar.ymir.eclipse.viliProjectNature">
-               </test>
-            </adapt>
-         </enabledWhen>
-      </page>
-   </extension>
    <extension
          id="org.seasar.ymir.eclipse.viliProjectNature"
          name="Vili Project Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
-               class="org.seasar.ymir.eclipse.natures.ViliProjectNature">
+               class="org.seasar.ymir.eclipse.natures.VeProjectNature">
          </run>
       </runtime>
    </extension>
@@ -134,7 +30,7 @@
             <and>
                <objectState
                      name="projectNature"
-                     value="org.seasar.ymir.eclipse.ymirProjectNature" />
+                     value="org.seasar.ymir.eclipse.veProjectNature" />
                <or>
                   <objectState
                         name="name"
@@ -167,7 +63,7 @@
          <visibility>
             <objectState
                   name="projectNature"
-                  value="org.seasar.ymir.eclipse.ymirProjectNature" />
+                  value="org.seasar.ymir.eclipse.veProjectNature" />
          </visibility>
          <action
                class="org.seasar.ymir.eclipse.actions.CreateSourceAction"
@@ -204,22 +100,9 @@
          <visibility>
             <objectState
                   name="projectNature"
-                  value="org.seasar.ymir.eclipse.viliProjectNature">
+                  value="org.seasar.ymir.eclipse.veProjectNature">
             </objectState>
          </visibility>
-         <action
-               class="org.seasar.ymir.eclipse.actions.AddFragmentsAction"
-               id="org.seasar.ymir.eclipse.addFragmentsAction"
-               label="%action.addFragments"
-               menubarPath="org.seasar.ymir.eclipse.menu/additions2">
-         </action>
-         <action
-               class="org.seasar.ymir.eclipse.actions.ActionAction"
-               id="org.seasar.ymir.eclipse.actionAction"
-               label="%action.action"
-               menubarPath="org.seasar.ymir.eclipse.menu/additions2"
-               style="pulldown">
-         </action>
          <action
                class="org.seasar.ymir.eclipse.actions.CreatePathMappingsAction"
                id="org.seasar.ymir.eclipse.createPathMappingsAction"
@@ -241,7 +124,7 @@
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
-               class="org.seasar.ymir.eclipse.natures.YmirProjectNature">
+               class="org.seasar.ymir.eclipse.natures.VeProjectNature">
          </run>
       </runtime>
    </extension>
@@ -249,7 +132,7 @@
          point="org.eclipse.ui.commands">
       <category
             id="org.seasar.ymir.eclipse.command.category"
-            name="Vili"/>
+            name="Ve"/>
       <command
             categoryId="org.seasar.ymir.eclipse.command.category"
             id="org.seasar.ymir.eclipse.command.TogglePageAndHtmlAction"
@@ -268,11 +151,11 @@
          point="org.eclipse.ui.actionSets">
       <actionSet
             id="org.seasar.ymir.eclipse.plugin.actionSet"
-            label="Vili"
+            label="Ve"
             visible="true">
          <menu
                id="org.seasar.ymir.eclipse.editor.Actions"
-               label="Vili"
+               label="Ve"
                path="Navigate/additions">
             <separator name="additions"/>
          </menu>
@@ -284,23 +167,14 @@
                label="%action.togglePageAndHtml"
                menubarPath="Navigate/org.seasar.ymir.eclipse.editor.Actions/additions"
                style="push">
+            <enablement>
+               <objectState
+                     name="projectNature"
+                     value="org.seasar.ymir.eclipse.veProjectNature">
+               </objectState>
+            </enablement>
          </action>
          </actionSet>
-   </extension>
-   <extension
-         point="org.seasar.ymir.eclipse.skeletonTemplates">
-<skeleton>
-  <groupId>org.seasar.ymir.skeleton</groupId>
-  <artifactId>skeleton-skeleton-generic</artifactId>
-  <name>%skeleton.skeleton.name</name>
-  <description>%skeleton.skeleton.description</description>
-</skeleton>
-<skeleton>
-  <groupId>org.seasar.ymir.skeleton</groupId>
-  <artifactId>fragment-skeleton-generic</artifactId>
-  <name>%skeleton.fragment.name</name>
-  <description>%skeleton.fragment.description</description>
-</skeleton>
    </extension>
 
 </plugin>

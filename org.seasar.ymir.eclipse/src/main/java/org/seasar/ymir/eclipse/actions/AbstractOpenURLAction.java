@@ -11,7 +11,7 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.seasar.ymir.eclipse.Globals;
-import org.seasar.ymir.vili.util.WorkbenchUtils;
+import org.seasar.ymir.eclipse.util.WorkbenchUtils;
 
 abstract public class AbstractOpenURLAction extends AbstractWorkbenchWindowActionDelegate {
     private static final String KEY_BASEDIR = "baseDir"; //$NON-NLS-1$
