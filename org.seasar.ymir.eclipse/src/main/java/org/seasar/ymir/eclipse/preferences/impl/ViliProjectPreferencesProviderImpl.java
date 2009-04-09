@@ -9,12 +9,9 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.seasar.kvasir.util.PropertyUtils;
-import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
-import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.vili.model.Database;
 import org.seasar.ymir.vili.model.maven.Dependency;
@@ -31,16 +28,10 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
 
     private IPreferenceStore store;
 
-    private boolean isYmirProject;
-
-    private MapProperties applicationProperties;
-
     public ViliProjectPreferencesProviderImpl(IProject project) throws CoreException {
         this.project = project;
         javaProject = JavaCore.create(project);
         this.store = Activator.getDefault().getPreferenceStore(project);
-        isYmirProject = project.hasNature(YmirProjectNature.ID);
-        applicationProperties = Activator.getDefault().getProjectBuilder().loadApplicationProperties(project);
     }
 
     public boolean isProjectSpecificTemplateEnabled() {
@@ -65,11 +56,7 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
     }
 
     String getRawRootPackageName() {
-        if (isYmirProject) {
-            return applicationProperties.getProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME);
-        } else {
-            return store.getString(ParameterKeys.ROOT_PACKAGE_NAME);
-        }
+        return store.getString(ParameterKeys.ROOT_PACKAGE_NAME);
     }
 
     public String getViewEncoding() {
@@ -172,9 +159,5 @@ public class ViliProjectPreferencesProviderImpl extends ViliProjectPreferencesPr
 
     public String getFieldSuffix() {
         return JdtUtils.getFieldSuffix(project);
-    }
-
-    public MapProperties getApplicationProperties() {
-        return applicationProperties;
     }
 }

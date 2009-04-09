@@ -17,14 +17,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.seasar.kvasir.util.PropertyUtils;
-import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.impl.PlatformDelegateImpl;
-import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.PlatformDelegate;
@@ -35,7 +32,6 @@ import org.seasar.ymir.vili.ViliProjectPreferencesDelta;
 import org.seasar.ymir.vili.ViliProjectPreferencesProvider;
 import org.seasar.ymir.vili.maven.ArtifactVersion;
 import org.seasar.ymir.vili.model.Database;
-import org.seasar.ymir.vili.util.MapAdapter;
 
 public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
     private static final Map<String, String> JRE_VERSION_MAP;
@@ -76,10 +72,6 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     private PlatformDelegate platformDelegate = new PlatformDelegateImpl();
 
-    private MapProperties applicationProperties;
-
-    private MapAdapter ymir;
-
     private String fieldPrefix;
 
     private String fieldSuffix;
@@ -115,7 +107,6 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         fieldPrefix = provider.getFieldPrefix();
         fieldSuffix = provider.getFieldSuffix();
         fieldSpecialPrefix = provider.getFieldSpecialPrefix();
-        setApplicationProperties(provider.getApplicationProperties());
         viliVersion = newArtifactVersion(readViliVersion());
     }
 
@@ -207,12 +198,6 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     public void save(IProject project) throws CoreException {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore(project);
-        boolean isYmirProject;
-        try {
-            isYmirProject = project.hasNature(YmirProjectNature.ID);
-        } catch (CoreException ex) {
-            isYmirProject = false;
-        }
 
         List<ViliProjectPreferencesDelta> deltaList = new ArrayList<ViliProjectPreferencesDelta>();
 
@@ -236,12 +221,7 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
         }
 
         String[] oldRootPackageNames = provider.getRootPackageNames();
-        if (isYmirProject) {
-            applicationProperties.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, PropertyUtils
-                    .join(rootPackageNames));
-        } else {
-            store.putValue(ParameterKeys.ROOT_PACKAGE_NAME, PropertyUtils.join(rootPackageNames));
-        }
+        store.putValue(ParameterKeys.ROOT_PACKAGE_NAME, PropertyUtils.join(rootPackageNames));
         if (!PropertyUtils.join(oldRootPackageNames).equals(PropertyUtils.join(rootPackageNames))) {
             deltaList.add(new ViliProjectPreferencesDelta(ViliProjectPreferences.NAME_ROOTPACKAGENAMES,
                     oldRootPackageNames, rootPackageNames));
@@ -270,8 +250,6 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
             Activator.getDefault().throwCoreException("Can't store preferences", ex); //$NON-NLS-1$
             return;
         }
-        Activator.getDefault().getProjectBuilder().saveApplicationProperties(project, applicationProperties, true);
-
         for (Mold mold : Activator.getDefault().getProjectRelative(project).getMolds(ProcessContext.TEMPORARY)) {
             ViliBehavior behavior = mold.getBehavior();
             behavior.getConfigurator().start(project, behavior, this);
@@ -356,19 +334,6 @@ public class ViliProjectPreferencesImpl implements ViliProjectPreferences {
 
     public String getFieldSpecialPrefix() {
         return fieldSpecialPrefix;
-    }
-
-    public MapAdapter getYmir() {
-        return ymir;
-    }
-
-    public MapProperties getApplicationProperties() {
-        return applicationProperties;
-    }
-
-    public void setApplicationProperties(MapProperties applicationProperties) {
-        this.applicationProperties = applicationProperties;
-        ymir = new MapAdapter(this.applicationProperties);
     }
 
     public ArtifactVersion getViliVersion() {

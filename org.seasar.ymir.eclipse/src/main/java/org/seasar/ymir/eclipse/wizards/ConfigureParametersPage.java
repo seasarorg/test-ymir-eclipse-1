@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.seasar.ymir.eclipse.ui.MoldParametersControl;
 import org.seasar.ymir.eclipse.ui.ViliProjectPreferencesControl;
-import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
 import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.ProjectType;
 import org.seasar.ymir.vili.ViliBehavior;
@@ -48,8 +47,6 @@ public class ConfigureParametersPage extends WizardPage {
 
     private Composite skeletonTabContent;
 
-    private Composite ymirConfigurationTabContent;
-
     private boolean tabPrepared;
 
     private Mold skeleton;
@@ -57,8 +54,6 @@ public class ConfigureParametersPage extends WizardPage {
     private ViliBehavior skeletonBehavior;
 
     private Mold[] fragments;
-
-    private YmirConfigurationControl ymirConfigurationControl;
 
     public ConfigureParametersPage(IProject project, ViliProjectPreferences preferences) {
         super("ConfigureParametersPage"); //$NON-NLS-1$
@@ -129,7 +124,7 @@ public class ConfigureParametersPage extends WizardPage {
 
             final ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
             scroll.setLayout(new FillLayout());
-            scroll.setExpandHorizontal(true);
+            scroll.setExpandHorizontal(true); // ←君の意味を勘違いしていたせいで8時間を無駄にしたよ... orz 2008-09-20
             scroll.setExpandVertical(true);
             scroll.getVerticalBar().addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -162,48 +157,6 @@ public class ConfigureParametersPage extends WizardPage {
             };
             moldParametersControl.createControl();
             scroll.setMinHeight(skeletonTabContent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-        }
-
-        if (skeleton != null) {
-            if (skeletonBehavior.isProjectOf(ProjectType.YMIR)) {
-                CTabItem ymirConfigurationTabItem = new CTabItem(tabFolder, SWT.NONE);
-                ymirConfigurationTabItem.setText(Messages.getString("ConfigureParametersPage.0")); //$NON-NLS-1$
-
-                final ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
-                scroll.setLayout(new FillLayout());
-                scroll.setExpandHorizontal(true); // ←君の意味を勘違いしていたせいで8時間を無駄にしたよ... orz 2008-09-20
-                scroll.setExpandVertical(true);
-                scroll.getVerticalBar().addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        if (e.detail == SWT.ARROW_UP) {
-                            scroll.getVerticalBar().setIncrement(-SCROLL_UNIT);
-                        } else if (e.detail == SWT.ARROW_DOWN) {
-                            scroll.getVerticalBar().setIncrement(SCROLL_UNIT);
-                        }
-                    }
-                });
-                ymirConfigurationTabItem.setControl(scroll);
-
-                ymirConfigurationTabContent = new Composite(scroll, SWT.NONE);
-                ymirConfigurationTabContent.setLayout(new GridLayout());
-                scroll.setContent(ymirConfigurationTabContent);
-
-                ymirConfigurationControl = new YmirConfigurationControl(ymirConfigurationTabContent, preferences) {
-                    @Override
-                    public void setErrorMessage(String message) {
-                        ConfigureParametersPage.this.setErrorMessage(message);
-                    }
-
-                    @Override
-                    public void setPageComplete(boolean isPageComplete) {
-                        super.setPageComplete(isPageComplete);
-                        notifyPageStatusChanged();
-                    }
-                };
-                ymirConfigurationControl.createControl();
-                scroll.setMinHeight(ymirConfigurationTabContent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-            }
         }
 
         tabFolderParent.layout();
@@ -292,8 +245,7 @@ public class ConfigureParametersPage extends WizardPage {
 
     public void notifyPageStatusChanged() {
         setPageComplete((preferencesControl == null || preferencesControl.isPageComplete())
-                && (moldParametersControl == null || moldParametersControl.isPageComplete())
-                && (ymirConfigurationControl == null || ymirConfigurationControl.isPageComplete()));
+                && (moldParametersControl == null || moldParametersControl.isPageComplete()));
     }
 
     public void notifySkeletonAndFragmentsCleared() {
@@ -316,9 +268,6 @@ public class ConfigureParametersPage extends WizardPage {
         moldParametersControl = null;
         preferencesControl = null;
 
-        ymirConfigurationTabContent = null;
-        ymirConfigurationControl = null;
-
         setPageComplete(false);
     }
 
@@ -340,9 +289,6 @@ public class ConfigureParametersPage extends WizardPage {
         moldParametersControl = null;
         preferencesControl = null;
 
-        ymirConfigurationTabContent = null;
-        ymirConfigurationControl = null;
-
         setPageComplete(false);
     }
 
@@ -352,10 +298,6 @@ public class ConfigureParametersPage extends WizardPage {
         }
 
         if (moldParametersControl != null && !moldParametersControl.validatePage()) {
-            return false;
-        }
-
-        if (ymirConfigurationControl != null && !ymirConfigurationControl.validatePage()) {
             return false;
         }
 
@@ -370,9 +312,6 @@ public class ConfigureParametersPage extends WizardPage {
         if (moldParametersControl != null) {
             moldParametersControl.setDefaultValues();
         }
-        if (ymirConfigurationControl != null) {
-            ymirConfigurationControl.setDefaultValues();
-        }
         if (tabFolder != null) {
             tabFolder.setSelection(0);
         }
@@ -382,9 +321,5 @@ public class ConfigureParametersPage extends WizardPage {
         if (moldParametersControl != null) {
             moldParametersControl.getMolds();
         }
-    }
-
-    public YmirConfigurationControl getYmirConfigurationControl() {
-        return ymirConfigurationControl;
     }
 }

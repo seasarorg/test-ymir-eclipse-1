@@ -41,7 +41,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -58,11 +57,9 @@ import org.osgi.framework.Bundle;
 import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.kvasir.util.io.IOUtils;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
 import org.seasar.ymir.eclipse.ParameterKeys;
 import org.seasar.ymir.eclipse.natures.ViliProjectNature;
-import org.seasar.ymir.eclipse.natures.YmirProjectNature;
 import org.seasar.ymir.eclipse.popup.dialogs.AddFragmentsWizardDialog;
 import org.seasar.ymir.eclipse.preferences.PreferenceConstants;
 import org.seasar.ymir.vili.Mold;
@@ -94,19 +91,11 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 
 public class ProjectBuilderImpl implements ProjectBuilder {
-    private static final char PACKAGE_DELIMITER = '.';
-
     private static final String BUNDLE_PATHPREFIX_JDT_CORE_PREFS = "/prefs/compliance/org.eclipse.jdt.core.prefs-"; //$NON-NLS-1$
 
     private static final String PATH_JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER"; //$NON-NLS-1$
 
     private static final String PATH_JDT_CORE_PREFS = ".settings/org.eclipse.jdt.core.prefs"; //$NON-NLS-1$
-
-    private static final String CREATESUPERCLASS_KEY_PACKAGENAME = "packageName"; //$NON-NLS-1$
-
-    private static final String CREATESUPERCLASS_KEY_CLASSSHORTNAME = "classShortName"; //$NON-NLS-1$
-
-    private static final String TEMPLATEPATH_SUPERCLASS = "templates/Superclass.java.ftl"; //$NON-NLS-1$
 
     private static final String EXTENSION_PROPERTIES = "properties"; //$NON-NLS-1$
 
@@ -235,7 +224,7 @@ public class ProjectBuilderImpl implements ProjectBuilder {
 
     public void createProject(IProject project, IPath locationPath, IPath jreContainerPath, Mold skeleton,
             ViliProjectPreferences preferences, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("ProjectBuilderImpl.12"), 12); //$NON-NLS-1$
+        monitor.beginTask(Messages.getString("ProjectBuilderImpl.12"), 10); //$NON-NLS-1$
         try {
             Activator activator = Activator.getDefault();
 
@@ -331,23 +320,6 @@ public class ProjectBuilderImpl implements ProjectBuilder {
                 throw new OperationCanceledException();
             }
 
-            if (behavior.isProjectOf(ProjectType.YMIR)) {
-                MapProperties applicationProperties = preferences.getApplicationProperties();
-
-                updateApplicationProperties(project, applicationProperties, new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                createSuperclass(project, applicationProperties.getProperty(ApplicationPropertiesKeys.SUPERCLASS),
-                        new SubProgressMonitor(monitor, 1));
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-            } else {
-                monitor.worked(2);
-            }
-
             preferences.save(project);
         } finally {
             monitor.done();
@@ -423,9 +395,6 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             }
 
             newNatureList.add(ViliProjectNature.ID);
-            if (behavior.isProjectOf(ProjectType.YMIR)) {
-                newNatureList.add(YmirProjectNature.ID);
-            }
 
             addNatures(description, newNatureList);
             addBuilders(description, newBuilderList);
@@ -493,54 +462,6 @@ public class ProjectBuilderImpl implements ProjectBuilder {
 
             javaProject.setRawClasspath(newEntryList.toArray(new IClasspathEntry[0]),
                     new SubProgressMonitor(monitor, 1));
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private void updateApplicationProperties(IProject project, MapProperties applicationProperties,
-            IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("ProjectBuilderImpl.20"), 1); //$NON-NLS-1$
-        try {
-            mergeProperties(project.getFile(Globals.PATH_APP_PROPERTIES), applicationProperties,
-                    new SubProgressMonitor(monitor, 1));
-        } finally {
-            monitor.done();
-        }
-    }
-
-    private void createSuperclass(IProject project, String superclass, IProgressMonitor monitor) throws CoreException {
-        monitor.beginTask(Messages.getString("ProjectBuilderImpl.14"), 2); //$NON-NLS-1$
-        try {
-            if (superclass == null) {
-                return;
-            }
-            IFile file = project.getFile(Globals.PATH_SRC_MAIN_JAVA + "/" //$NON-NLS-1$
-                    + superclass.replace('.', '/').concat(".java")); //$NON-NLS-1$
-            if (file.exists()) {
-                return;
-            }
-
-            String packageName;
-            String classShortName;
-            int dot = superclass.lastIndexOf(PACKAGE_DELIMITER);
-            if (dot < 0) {
-                packageName = ""; //$NON-NLS-1$
-                classShortName = superclass;
-            } else {
-                packageName = superclass.substring(0, dot);
-                classShortName = superclass.substring(dot + 1);
-            }
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put(CREATESUPERCLASS_KEY_PACKAGENAME, packageName);
-            map.put(CREATESUPERCLASS_KEY_CLASSSHORTNAME, classShortName);
-            String body = evaluateTemplate(TEMPLATEPATH_SUPERCLASS, map);
-            monitor.worked(1);
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-
-            writeFile(file, body, new SubProgressMonitor(monitor, 1));
         } finally {
             monitor.done();
         }
@@ -1032,54 +953,6 @@ public class ProjectBuilderImpl implements ProjectBuilder {
             mkdirs(folder.getParent(), monitor);
             folder.create(false, true, new SubProgressMonitor(monitor, 1));
         }
-    }
-
-    public MapProperties loadApplicationProperties(IProject project) throws CoreException {
-        MapProperties properties = new MapProperties(new TreeMap<String, String>());
-        boolean isYmirProject = project.hasNature(YmirProjectNature.ID);
-        if (isYmirProject) {
-            IFile file = project.getFile(Globals.PATH_APP_PROPERTIES);
-            if (file.exists()) {
-                InputStream is = null;
-                try {
-                    is = file.getContents();
-                    properties.load(is);
-                } catch (IOException ex) {
-                    Activator.getDefault().throwCoreException("Can't load: " + file, ex); //$NON-NLS-1$
-                } finally {
-                    IOUtils.closeQuietly(is);
-                }
-            }
-        }
-        return properties;
-    }
-
-    public void saveApplicationProperties(IProject project, MapProperties properties, boolean merge)
-            throws CoreException {
-        boolean isYmirProject = project.hasNature(YmirProjectNature.ID);
-        if (!isYmirProject) {
-            return;
-        }
-
-        if (merge) {
-            MapProperties base = loadApplicationProperties(project);
-            for (Enumeration<?> enm = properties.propertyNames(); enm.hasMoreElements();) {
-                String name = (String) enm.nextElement();
-                base.setProperty(name, properties.getProperty(name));
-            }
-            properties = base;
-        }
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            properties.store(baos);
-        } catch (IOException ex) {
-            Activator.getDefault().throwCoreException("Can't happen!", ex); //$NON-NLS-1$
-            return;
-        }
-
-        writeFile(project.getFile(Globals.PATH_APP_PROPERTIES), new ByteArrayInputStream(baos.toByteArray()),
-                new NullProgressMonitor());
     }
 
     public void updatePom(IProject project, Project pom, IProgressMonitor monitor) throws CoreException {

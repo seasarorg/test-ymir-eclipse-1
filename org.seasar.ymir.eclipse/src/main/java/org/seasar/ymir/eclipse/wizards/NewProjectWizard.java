@@ -1,7 +1,6 @@
 package org.seasar.ymir.eclipse.wizards;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.TreeMap;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -21,18 +20,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
-import org.seasar.kvasir.util.collection.MapProperties;
 import org.seasar.ymir.eclipse.Activator;
-import org.seasar.ymir.eclipse.ApplicationPropertiesKeys;
 import org.seasar.ymir.eclipse.Globals;
-import org.seasar.ymir.eclipse.HotdeployType;
-import org.seasar.ymir.eclipse.ui.YmirConfigurationControl;
 import org.seasar.ymir.vili.Mold;
 import org.seasar.ymir.vili.ProcessContext;
 import org.seasar.ymir.vili.ProjectBuilder;
 import org.seasar.ymir.vili.ViliProjectPreferences;
 import org.seasar.ymir.vili.maven.ExtendedContext;
-import org.seasar.ymir.vili.util.JdtUtils;
 
 public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtifactWizard {
     static final String REQUIRED_TEMPLATE = Messages.getString("NewProjectWizard.2"); //$NON-NLS-1$
@@ -105,7 +99,6 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
             final IProject project = secondPage.getProjectHandle();
             final IPath locationPath = secondPage.getLocationPath();
             final IPath jreContainerPath = preferences.getJREContainerPath();
-            preferences.setApplicationProperties(createApplicationProperties());
             IRunnableWithProgress op = new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask(Messages.getString("NewProjectWizard.1"), 2); //$NON-NLS-1$
@@ -145,71 +138,8 @@ public class NewProjectWizard extends Wizard implements INewWizard, ISelectArtif
 
             MessageDialog.openError(getShell(), "Error", message); //$NON-NLS-1$
             return false;
-        } catch (CoreException ex) {
-            ILog log = Activator.getDefault().getLog();
-            log.log(ex.getStatus());
-
-            String message = ex.getMessage();
-            if (message == null || message.length() == 0) {
-                message = ex.getClass().getName();
-            }
-            MessageDialog.openError(getShell(), "Error", message); //$NON-NLS-1$
-            return false;
         }
         return true;
-    }
-
-    private MapProperties createApplicationProperties() throws CoreException {
-        MapProperties prop = new MapProperties(new TreeMap<String, String>());
-        YmirConfigurationControl ymirConfig = thirdPage.getYmirConfigurationControl();
-        if (ymirConfig != null) {
-            prop.setProperty(ApplicationPropertiesKeys.ROOT_PACKAGE_NAME, preferences.getRootPackageName());
-            String value = ymirConfig.getSuperclass();
-            if (value.length() > 0) {
-                prop.setProperty(ApplicationPropertiesKeys.SUPERCLASS, value);
-            }
-            prop.setProperty(ApplicationPropertiesKeys.SOURCECREATOR_ENABLE, String.valueOf(ymirConfig
-                    .isAutoGenerationEnabled()));
-            prop.setProperty(ApplicationPropertiesKeys.FIELDPREFIX, JdtUtils.getFieldPrefix());
-            prop.setProperty(ApplicationPropertiesKeys.FIELDSUFFIX, JdtUtils.getFieldSuffix());
-            prop.setProperty(ApplicationPropertiesKeys.FIELDSPECIALPREFIX, JdtUtils.getFieldSpecialPrefix());
-            prop.setProperty(ApplicationPropertiesKeys.ENABLEINPLACEEDITOR, String.valueOf(ymirConfig
-                    .isInplaceEditorEnabled()));
-            prop.setProperty(ApplicationPropertiesKeys.ENABLECONTROLPANEL, String.valueOf(ymirConfig
-                    .isControlPanelEnabled()));
-            prop.setProperty(ApplicationPropertiesKeys.USING_FREYJA_RENDER_CLASS, String.valueOf(ymirConfig
-                    .isUsingFreyjaRenderClass()));
-            prop.setProperty(ApplicationPropertiesKeys.BEANTABLE_ENABLED, String.valueOf(ymirConfig
-                    .isBeantableEnabled()));
-            prop.setProperty(ApplicationPropertiesKeys.FORM_DTO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
-                    .isFormDtoCreationFeatureEnabled()));
-            prop.setProperty(ApplicationPropertiesKeys.CONVERTER_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
-                    .isConverterCreationFeatureEnabled()));
-            prop.setProperty(ApplicationPropertiesKeys.DAO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
-                    .isDaoCreationFeatureEnabled()));
-            prop.setProperty(ApplicationPropertiesKeys.DXO_CREATION_FEATURE_ENABLED, String.valueOf(ymirConfig
-                    .isDxoCreationFeatureEnabled()));
-            prop.setProperty(ApplicationPropertiesKeys.TRYTOUPDATECLASSESWHENTEMPLATEMODIFIED, String
-                    .valueOf(ymirConfig.isTryToUpdateClassesWhenTemplateModified()));
-
-            boolean eclipseEnabled = ymirConfig.isEclipseEnabled();
-            prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_ENABLED, String.valueOf(eclipseEnabled));
-            if (eclipseEnabled) {
-                value = ymirConfig.getResourceSynchronizerURL();
-                if (value.length() > 0) {
-                    prop.setProperty(ApplicationPropertiesKeys.RESOURCE_SYNCHRONIZER_URL, value);
-                }
-                prop.setProperty(ApplicationPropertiesKeys.ECLIPSE_PROJECTNAME, secondPage.getProjectName());
-            }
-
-            prop.setProperty(ApplicationPropertiesKeys.S2CONTAINER_CLASSLOADING_DISABLEHOTDEPLOY, String
-                    .valueOf(ymirConfig.getHotdeployType() != HotdeployType.S2));
-            prop.setProperty(ApplicationPropertiesKeys.S2CONTAINER_COMPONENTREGISTRATION_DISABLEDYNAMIC, String
-                    .valueOf(ymirConfig.getHotdeployType() == HotdeployType.VOID));
-            prop.setProperty(ApplicationPropertiesKeys.HOTDEPLOY_TYPE, ymirConfig.getHotdeployType().getName());
-        }
-
-        return prop;
     }
 
     public ExtendedContext getNonTransitiveContext() {
