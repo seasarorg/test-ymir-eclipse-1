@@ -1,6 +1,0 @@
-<components>
-  <component class="org.seasar.ymir.impl.YmirPathMapping" name="level1PathMapping">
-    <arg>"/([a-zA-Z][a-zA-Z0-9]*)\\.html"</arg>
-    <arg>"${1}Page"</arg>
-  </component>
-</components>

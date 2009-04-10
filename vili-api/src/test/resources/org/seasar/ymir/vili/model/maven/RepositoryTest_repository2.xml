@@ -1,8 +1,0 @@
-<repository>
-  <id>snapshot.maven.seasar.org</id>
-  <name>The Seasar Foundation Maven2 Snapshot Repository</name>
-  <url>http://maven.seasar.org/maven2-snapshot</url>
-  <snapshots>
-    <enabled>true</enabled>
-  </snapshots>
-</repository>

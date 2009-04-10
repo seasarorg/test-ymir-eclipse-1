@@ -1,8 +1,0 @@
-<action categoryId="upgrade">
-  <groupId>groupId</groupId>
-  <artifactId>artifactId</artifactId>
-  <version>version</version>
-  <actionId>upgrade</actionId>
-  <name>DBFluteをアップグレードする</name>
-  <class>UpgradeDbfluteAction</class>
-</action>
