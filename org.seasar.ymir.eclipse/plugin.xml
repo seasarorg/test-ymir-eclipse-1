@@ -3,8 +3,8 @@
 <plugin>
 
    <extension
-         id="org.seasar.ymir.eclipse.viliProjectNature"
-         name="Vili Project Nature"
+         id="org.seasar.ymir.eclipse.veProjectNature"
+         name="Ve Project Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
