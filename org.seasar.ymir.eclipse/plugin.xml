@@ -119,16 +119,6 @@
       </objectContribution>
    </extension>
    <extension
-         id="org.seasar.ymir.eclipse.ymirProjectNature"
-         name="Ymir Project Nature"
-         point="org.eclipse.core.resources.natures">
-      <runtime>
-         <run
-               class="org.seasar.ymir.eclipse.natures.VeProjectNature">
-         </run>
-      </runtime>
-   </extension>
-   <extension
          point="org.eclipse.ui.commands">
       <category
             id="org.seasar.ymir.eclipse.command.category"
@@ -167,12 +157,6 @@
                label="%action.togglePageAndHtml"
                menubarPath="Navigate/org.seasar.ymir.eclipse.editor.Actions/additions"
                style="push">
-            <enablement>
-               <objectState
-                     name="projectNature"
-                     value="org.seasar.ymir.eclipse.veProjectNature">
-               </objectState>
-            </enablement>
          </action>
          </actionSet>
    </extension>
