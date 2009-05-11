@@ -110,6 +110,12 @@
                menubarPath="org.seasar.ymir.eclipse.menu/additions2">
          </action>
          <action
+               class="org.seasar.ymir.eclipse.actions.ViewSystemConsoleAction"
+               id="org.seasar.ymir.eclipse.viewSystemConsoleAction"
+               label="%action.viewSystemConsole"
+               menubarPath="org.seasar.ymir.eclipse.menu/additions2">
+         </action>
+         <action
                class="org.seasar.ymir.eclipse.actions.ViewRootOnServerAction"
                icon="icons/viewRootOnServer.gif"
                id="org.seasar.ymir.eclipse.viewRootOnServerAction"
